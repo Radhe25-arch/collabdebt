@@ -2,8 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { Github, Mail, Eye, EyeOff, ArrowRight, Loader2, Chrome } from 'lucide-react'
+import { Github, Eye, EyeOff, ArrowRight, Loader2, Chrome } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import toast from 'react-hot-toast'
 
@@ -13,7 +12,6 @@ const OAUTH_PROVIDERS = [
 ]
 
 export default function SignupPage() {
-  const router = useRouter()
   const supabase = createClient()
   const [tab, setTab] = useState<'signup' | 'login'>('signup')
   const [showPass, setShowPass] = useState(false)
@@ -59,9 +57,7 @@ export default function SignupPage() {
 
     if (error) { toast.error(error.message); setLoading(null); return }
 
-    // If email confirmation is disabled, user gets a session immediately
     if (data.session) {
-      // Upsert profile then go to onboarding
       await fetch('/api/profile/upsert', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -72,17 +68,16 @@ export default function SignupPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: form.name, email: form.email }),
       })
-      router.push('/auth/onboarding')
+      window.location.href = '/auth/onboarding'
       return
     }
 
-    // Email confirmation required — go to verify page
     await fetch('/api/email/welcome', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: form.name, email: form.email }),
     })
-    router.push(`/auth/verify?email=${encodeURIComponent(form.email)}`)
+    window.location.href = `/auth/verify?email=${encodeURIComponent(form.email)}`
   }
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -97,10 +92,7 @@ export default function SignupPage() {
 
     if (error) { toast.error('Incorrect email or password'); setLoading(null); return }
 
-    // router.refresh() forces Next.js to re-check middleware with new session cookies
-    // then router.push navigates — without refresh(), middleware sees stale cache
-    router.refresh()
-    router.push('/dashboard')
+    window.location.href = '/dashboard'
   }
 
   return (
@@ -153,9 +145,7 @@ export default function SignupPage() {
                 disabled={loading !== null}
                 className="w-full flex items-center justify-center gap-3 py-2.5 px-4 rounded-xl text-sm font-medium transition-all hover:border-cyan-500"
                 style={{ background: 'var(--surface)', border: '1px solid var(--border-bright)', color: 'var(--text)' }}>
-                {loading === id
-                  ? <Loader2 size={16} className="animate-spin" />
-                  : <Icon size={16} />}
+                {loading === id ? <Loader2 size={16} className="animate-spin" /> : <Icon size={16} />}
                 {loading === id ? `Connecting to ${id}...` : label}
               </button>
             ))}
