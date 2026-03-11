@@ -224,7 +224,7 @@ export default function LandingPage() {
                 <span style={{ fontSize: '32px', fontWeight: 800, letterSpacing: '-1px' }}>{plan.price}</span>
               </div>
               <div style={{ fontSize: '12px', color: 'var(--text-dim)', marginBottom: '24px' }}>{plan.period}</div>
-              <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 24px', spaceY: '8px' }}>
+              <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 24px' }}>
                 {plan.features.map((f, j) => (
                   <li key={j} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: 'var(--text-muted)', marginBottom: '8px' }}>
                     <Check size={13} style={{ color: 'var(--green)', flexShrink: 0 }} /> {f}
