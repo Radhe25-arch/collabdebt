@@ -1,8 +1,9 @@
 'use client'
 
+import { useState, useMemo } from 'react'
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from 'recharts'
-import { TrendingUp, Award, Clock, Download } from 'lucide-react'
-import { MOCK_WEEKLY_STATS, MOCK_TEAM } from '@/lib/mock-data'
+import { Award, Clock, Download, TrendingUp } from 'lucide-react'
+import { useStore } from '@/store/useStore'
 
 const DEBT_BY_TYPE = [
   { name: 'TODO/FIXME', value: 12, color: '#ffd600' },
@@ -40,7 +41,67 @@ const VELOCITY = [
 ]
 
 export default function AnalyticsPage() {
-  const leaderboard = [...MOCK_TEAM].sort((a, b) => b.items_fixed - a.items_fixed)
+  const { debtItems, team, sprints } = useStore()
+  const leaderboard = useMemo(() => [...team].sort((a, b) => (b.items_fixed || 0) - (a.items_fixed || 0)), [team])
+
+  const openItems = useMemo(() => debtItems.filter(d => d.status !== 'fixed'), [debtItems])
+  const fixedItems = useMemo(() => debtItems.filter(d => d.status === 'fixed'), [debtItems])
+  
+  const debtByType = useMemo(() => {
+    const types = ['todo', 'deprecated', 'complexity', 'duplicate', 'dead_code', 'security', 'performance']
+    const colors = ['#ffd600', '#ff9600', '#7c3aed', '#00e5ff', '#6b8fa8', '#ff3b5c', '#00ff88']
+    return types.map((t, i) => ({
+      name: t.toUpperCase(),
+      value: debtItems.filter(d => d.type === t).length,
+      color: colors[i]
+    })).filter(t => t.value > 0)
+  }, [debtItems])
+
+  const debtByModule = useMemo(() => {
+    const modules: Record<string, { items: number, cost: number }> = {}
+    debtItems.forEach(d => {
+      const parts = d.file_path.split('/')
+      const mod = parts.length > 1 ? parts.slice(0, 2).join('/') + '/' : 'root/'
+      if (!modules[mod]) modules[mod] = { items: 0, cost: 0 }
+      modules[mod].items++
+      modules[mod].cost += d.cost_usd || 0
+    })
+    return Object.entries(modules).map(([name, data]) => ({ module: name, ...data }))
+      .sort((a, b) => b.cost - a.cost)
+      .slice(0, 5)
+  }, [debtItems])
+
+  const weeklyStats = useMemo(() => {
+    const weeks = ['W1', 'W2', 'W3', 'W4', 'W5', 'W6', 'W7']
+    return weeks.map((w, i) => {
+      const weekStart = new Date()
+      weekStart.setDate(weekStart.getDate() - (7 * (6 - i)))
+      const weekEnd = new Date(weekStart)
+      weekEnd.setDate(weekEnd.getDate() + 7)
+
+      const total = debtItems.filter(d => {
+        const dDate = new Date(d.created_at)
+        return dDate < weekEnd
+      }).length
+
+      const fixedCount = debtItems.filter(d => {
+        if (!d.fixed_at) return false
+        const fDate = new Date(d.fixed_at)
+        return fDate < weekEnd
+      }).length
+
+      return { week: w, total, fixed: fixedCount }
+    })
+  }, [debtItems])
+
+  const avgFixTime = useMemo(() => {
+    const times = fixedItems.map(d => {
+      const start = new Date(d.created_at).getTime()
+      const end = new Date(d.fixed_at!).getTime()
+      return (end - start) / (1000 * 60 * 60 * 24)
+    })
+    return times.length ? (times.reduce((a, b) => a + b, 0) / times.length).toFixed(1) : '0'
+  }, [fixedItems])
 
   return (
     <div className="space-y-6 max-w-7xl">
@@ -57,10 +118,10 @@ export default function AnalyticsPage() {
       {/* Metrics row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: 'Debt Reduced', value: '28%', icon: TrendingUp, color: '#00ff88', sub: '↑ 12% vs last month' },
-          { label: 'Velocity Gain', value: '18%', icon: TrendingUp, color: '#00e5ff', sub: 'Estimated from debt fixed' },
-          { label: 'Avg Fix Time', value: '1.4d', icon: Clock, color: '#ffd600', sub: '↓ 0.6d vs last sprint' },
-          { label: 'Top Contributor', value: 'Arjun K.', icon: Award, color: '#7c3aed', sub: '24 items fixed' },
+          { label: 'Total Open Debt', value: openItems.length, icon: TrendingUp, color: '#ff3b5c', sub: 'Active anomalies' },
+          { label: 'Resolved Cores', value: fixedItems.length, icon: TrendingUp, color: '#00ff88', sub: 'Neuturalized depth' },
+          { label: 'Avg Fix Time', value: `${avgFixTime}d`, icon: Clock, color: '#ffd600', sub: 'Mean time to stable' },
+          { label: 'Fleet Champion', value: leaderboard[0]?.name.split(' ')[0] || 'N/A', icon: Award, color: '#7c3aed', sub: `${leaderboard[0]?.items_fixed || 0} items fixed` },
         ].map((m, i) => (
           <div key={i} className="metric-card">
             <div className="flex items-start justify-between">
@@ -82,11 +143,11 @@ export default function AnalyticsPage() {
         <div className="card">
           <h2 className="font-semibold mb-4">Debt by Module</h2>
           <div className="space-y-3">
-            {DEBT_BY_MODULE.map((m, i) => (
+            {debtByModule.map((m, i) => (
               <div key={i} className="flex items-center gap-3">
                 <code className="font-mono text-xs w-36 truncate" style={{ color: 'var(--text-muted)' }}>{m.module}</code>
                 <div className="flex-1 progress-bar h-2">
-                  <div className="h-full rounded-full" style={{ width: `${(m.items / 8) * 100}%`, background: 'linear-gradient(90deg, var(--cyan), #7c3aed)' }} />
+                  <div className="h-full rounded-full" style={{ width: `${Math.min(100, (m.items / 10) * 100)}%`, background: 'linear-gradient(90deg, var(--cyan), #7c3aed)' }} />
                 </div>
                 <span className="text-xs font-mono w-6 text-right" style={{ color: 'var(--text)' }}>{m.items}</span>
                 <span className="text-xs font-mono w-16 text-right" style={{ color: 'var(--yellow)' }}>${m.cost.toLocaleString()}</span>
@@ -127,7 +188,7 @@ export default function AnalyticsPage() {
         <div className="lg:col-span-2 card">
           <h2 className="font-semibold mb-4">Debt Trend — 12 Weeks</h2>
           <ResponsiveContainer width="100%" height={220}>
-            <LineChart data={TREND_DATA}>
+            <LineChart data={weeklyStats}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
               <XAxis dataKey="week" tick={{ fill: 'var(--text-muted)', fontSize: 11 }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fill: 'var(--text-muted)', fontSize: 11 }} axisLine={false} tickLine={false} />
@@ -144,15 +205,15 @@ export default function AnalyticsPage() {
           <h2 className="font-semibold mb-4">Debt by Type</h2>
           <ResponsiveContainer width="100%" height={160}>
             <PieChart>
-              <Pie data={DEBT_BY_TYPE} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={70} innerRadius={40}>
-                {DEBT_BY_TYPE.map((entry, i) => <Cell key={i} fill={entry.color} />)}
+              <Pie data={debtByType} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={70} innerRadius={40}>
+                {debtByType.map((entry, i) => <Cell key={i} fill={entry.color} />)}
               </Pie>
               <Tooltip contentStyle={{ background: 'var(--card)', border: '1px solid var(--border-bright)', borderRadius: '8px', fontSize: 12 }}
                 labelStyle={{ color: 'var(--text)' }} />
             </PieChart>
           </ResponsiveContainer>
           <div className="grid grid-cols-2 gap-1 mt-2">
-            {DEBT_BY_TYPE.map(t => (
+            {debtByType.map(t => (
               <div key={t.name} className="flex items-center gap-1.5 text-xs">
                 <div className="w-2 h-2 rounded-full shrink-0" style={{ background: t.color }} />
                 <span className="truncate" style={{ color: 'var(--text-muted)' }}>{t.name}</span>

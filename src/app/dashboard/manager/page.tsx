@@ -1,22 +1,16 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Crown, Eye, AlertTriangle, TrendingDown, DollarSign, Sparkles, Download, Share2, X } from 'lucide-react'
-import { MOCK_TEAM, MOCK_DEBT_ITEMS } from '@/lib/mock-data'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
+import { useStore } from '@/store/useStore'
 import type { TeamMember } from '@/types'
-
-const PRODUCTIVITY_DATA = [
-  { week: 'W1', Arjun: 4, Priya: 3, Rahul: 2, Sneha: 1 },
-  { week: 'W2', Arjun: 5, Priya: 4, Rahul: 3, Sneha: 2 },
-  { week: 'W3', Arjun: 3, Priya: 5, Rahul: 2, Sneha: 3 },
-  { week: 'W4', Arjun: 6, Priya: 4, Rahul: 4, Sneha: 2 },
-  { week: 'W5', Arjun: 5, Priya: 6, Rahul: 3, Sneha: 4 },
-]
 
 const COLORS = ['#00e5ff', '#00ff88', '#7c3aed', '#ffd600']
 
 function InspectModal({ member, onClose }: { member: TeamMember; onClose: () => void }) {
+  const { debtItems } = useStore()
+  
   return (
     <div className="modal-overlay" onClick={e => { if (e.target === e.currentTarget) onClose() }}>
       <div className="modal-box animate-fadeInUp max-w-xl">
@@ -51,22 +45,24 @@ function InspectModal({ member, onClose }: { member: TeamMember; onClose: () => 
         )}
 
         <div className="mb-4">
-          <p className="text-xs font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Last 5 actions</p>
+          <p className="text-xs font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Recent Fleet Actions</p>
           <div className="space-y-2">
-            {[
-              { action: 'Fixed debt item', target: 'Hardcoded API key', time: '2m ago' },
-              { action: 'Updated status', target: 'N+1 query → In Progress', time: '15m ago' },
-              { action: 'Opened file', target: member.current_file || 'src/index.ts', time: '18m ago' },
-              { action: 'Voted on', target: 'Token race condition', time: '42m ago' },
-              { action: 'Joined session', target: 'Sprint planning #14', time: '1h ago' },
-            ].map((a, i) => (
+            {debtItems.filter(d => d.assigned_to === member.id)
+              .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+              .slice(0, 5)
+              .map((d, i) => (
               <div key={i} className="flex items-center gap-3 text-xs py-1.5">
-                <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: 'var(--cyan)' }} />
-                <span style={{ color: 'var(--text-muted)' }}>{a.action}</span>
-                <span className="flex-1 font-mono truncate">{a.target}</span>
-                <span style={{ color: 'var(--text-dim)' }}>{a.time}</span>
+                <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: d.status === 'fixed' ? 'var(--green)' : 'var(--cyan)' }} />
+                <span style={{ color: 'var(--text-muted)' }}>{d.status === 'fixed' ? 'Neutralized' : 'Targeted'}</span>
+                <span className="flex-1 font-mono truncate">{d.title}</span>
+                <span style={{ color: 'var(--text-dim)' }}>{new Date(d.created_at).toLocaleDateString()}</span>
               </div>
             ))}
+            {debtItems.filter(d => d.assigned_to === member.id).length === 0 && (
+              <div className="flex items-center gap-3 text-xs py-1.5 text-slate-500">
+                No recent solo actions recorded.
+              </div>
+            )}
           </div>
         </div>
 
@@ -86,24 +82,35 @@ function InspectModal({ member, onClose }: { member: TeamMember; onClose: () => 
 }
 
 export default function ManagerPage() {
+  const { debtItems, team } = useStore()
   const [inspecting, setInspecting] = useState<TeamMember | null>(null)
   const [aiLoading, setAiLoading] = useState(false)
   const [aiReport, setAiReport] = useState<string | null>(null)
-  const criticalDebt = MOCK_DEBT_ITEMS.filter(d => d.severity === 'critical' && d.status !== 'fixed')
-  const totalCost = MOCK_DEBT_ITEMS.filter(d => d.status !== 'fixed').reduce((s, d) => s + d.cost_usd, 0)
+
+  const criticalDebt = useMemo(() => debtItems.filter(d => d.severity === 'critical' && d.status !== 'fixed'), [debtItems])
+  const totalCost = useMemo(() => debtItems.filter(d => d.status !== 'fixed').reduce((s, d) => s + (d.cost_usd || 0), 0), [debtItems])
+  const topROI = useMemo(() => [...debtItems].filter(d => d.status !== 'fixed').sort((a, b) => (b.cost_usd || 0) - (a.cost_usd || 0)).slice(0, 3), [debtItems])
+  const potentialSavings = topROI.reduce((s, d) => s + (d.cost_usd || 0), 0)
+
+  const productivityData = useMemo(() => {
+    const weeks = ['W1', 'W2', 'W3', 'W4', 'W5']
+    return weeks.map((w, i) => {
+      const data: any = { week: w }
+      team.slice(0, 4).forEach(m => {
+        data[m.name.split(' ')[0]] = Math.floor(Math.random() * 5) + 1 // Keep some variability for demo
+      })
+      return data
+    })
+  }, [team])
 
   const generateReport = () => {
     setAiLoading(true)
     setTimeout(() => {
-      setAiReport(`Based on current debt analysis, fixing the top 5 items will save an estimated **$8,400/month**:
+      setAiReport(`Based on current fleet analysis, neutralize these top ${topROI.length} cores to recover **$${potentialSavings.toLocaleString()}/month**:
 
-1. **Token race condition** — Fix in 2 days, saves $4,200/month. Assign to Priya (auth specialist).
-2. **N+1 query in dashboard** — Fix in 1 day, saves $1,800/month. Assign to Rahul.
-3. **Duplicate payment logic** — Fix in 3 days, saves $2,400/month. Already in progress.
-4. **Deprecated react-query** — Fix in 2 days, saves $600/month. Low effort, high ROI.
-5. **Dead analytics module** — Fix in 0.5 days, saves $150/month. Quick win for sprint velocity.
+${topROI.map((d, i) => `${i + 1}. **${d.title}** — Estimated savings: $${(d.cost_usd || 0).toLocaleString()}/month.`).join('\n')}
 
-**Recommendation:** Allocate 35% of Sprint 15 to debt reduction. Projected velocity improvement: +22% by Sprint 16.`)
+**Strategic Directive:** Prioritize high-cost anomalies in the next cycle. Projected efficiency gain: +${Math.round((potentialSavings / totalCost) * 100) || 0}% recovery rate.`)
       setAiLoading(false)
     }, 2000)
   }
@@ -140,9 +147,9 @@ export default function ManagerPage() {
       {/* Cost impact */}
       <div className="grid grid-cols-3 gap-4">
         {[
-          { label: 'Total Monthly Cost', value: `$${(totalCost / 1000).toFixed(1)}K`, color: 'var(--red)', icon: DollarSign, sub: 'All open debt items' },
-          { label: 'Feature Delivery Slowdown', value: '42%', color: 'var(--yellow)', icon: TrendingDown, sub: 'Estimated from debt volume' },
-          { label: 'Savings If Top 3 Fixed', value: '$8.4K', color: 'var(--green)', icon: DollarSign, sub: 'Monthly cost recovered' },
+          { label: 'Total Monthly Cost', value: `$${(totalCost / 1000).toFixed(1)}K`, color: 'var(--red)', icon: DollarSign, sub: `${debtItems.filter(d => d.status !== 'fixed').length} active anomalies` },
+          { label: 'Feature Delivery Slowdown', value: `${Math.min(60, debtItems.length * 2)}%`, color: 'var(--yellow)', icon: TrendingDown, sub: 'Estimated from debt volume' },
+          { label: 'Savings Potential (Top 3)', value: `$${(potentialSavings / 1000).toFixed(1)}K`, color: 'var(--green)', icon: DollarSign, sub: 'Monthly cost recoverable' },
         ].map((m, i) => (
           <div key={i} className="metric-card">
             <div className="flex items-start justify-between">
@@ -163,7 +170,7 @@ export default function ManagerPage() {
       <div className="card">
         <h2 className="font-semibold mb-4">Live Team Heatmap</h2>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          {MOCK_TEAM.map(member => (
+          {team.map(member => (
             <div key={member.id} className="p-4 rounded-xl border transition-all hover:border-[#234860]"
               style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
               <div className="flex items-start justify-between mb-3">
@@ -206,14 +213,14 @@ export default function ManagerPage() {
       <div className="card">
         <h2 className="font-semibold mb-4">Productivity — Items Fixed per Week</h2>
         <ResponsiveContainer width="100%" height={200}>
-          <BarChart data={PRODUCTIVITY_DATA}>
+          <BarChart data={productivityData}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
             <XAxis dataKey="week" tick={{ fill: 'var(--text-muted)', fontSize: 11 }} axisLine={false} tickLine={false} />
             <YAxis tick={{ fill: 'var(--text-muted)', fontSize: 11 }} axisLine={false} tickLine={false} />
             <Tooltip contentStyle={{ background: 'var(--card)', border: '1px solid var(--border-bright)', borderRadius: '8px', fontSize: 12 }}
               labelStyle={{ color: 'var(--text)' }} />
-            {['Arjun', 'Priya', 'Rahul', 'Sneha'].map((name, i) => (
-              <Bar key={name} dataKey={name} fill={COLORS[i]} radius={[3, 3, 0, 0]} barSize={16} />
+            {team.slice(0, COLORS.length).map((m, i) => (
+              <Bar key={m.id} dataKey={m.name.split(' ')[0]} fill={COLORS[i]} radius={[3, 3, 0, 0]} barSize={16} />
             ))}
           </BarChart>
         </ResponsiveContainer>

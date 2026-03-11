@@ -3,37 +3,19 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
   LayoutDashboard, AlertTriangle, BarChart3, Zap, Users, GitBranch,
   CreditCard, Settings, Bell, Search, Plus, HelpCircle, ChevronDown,
-  LogOut, User, Menu, X, Crown, Code2, GitPullRequest, Loader2
+  LogOut, User, Menu, X, Crown, Code2, GitPullRequest, Loader2,
+  Sparkles, MousePointer2, Briefcase, Globe
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
-import { MOCK_REPOS } from '@/lib/mock-data'
+import { DataProvider } from '@/providers/DataProvider'
+import { useStore } from '@/store/useStore'
 import type { User as AppUser } from '@/types'
 
-const NAV_MAIN = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/dashboard/debt-board', label: 'Debt Board', icon: AlertTriangle, badge: 7 },
-  { href: '/dashboard/analytics', label: 'Analytics', icon: BarChart3 },
-  { href: '/dashboard/sprints', label: 'Sprints', icon: Zap },
-]
-
-const NAV_WORKSPACE = [
-  { href: '/dashboard/team', label: 'Team', icon: Users },
-  { href: '/dashboard/repos', label: 'Repositories', icon: GitBranch },
-  { href: '/dashboard/billing', label: 'Billing', icon: CreditCard },
-  { href: '/dashboard/settings', label: 'Settings', icon: Settings },
-]
-
-const HEALTH_COLOR = (s: number) => s > 70 ? '#00ff88' : s > 40 ? '#ffd600' : '#ff3b5c'
-
-const PLAN_LABEL: Record<string, string> = {
-  free: 'Free Plan',
-  pro: 'Pro Plan',
-  team: 'Team Plan',
-  enterprise: 'Enterprise',
-}
+const HEALTH_COLOR = (s: number) => s > 70 ? '#00f2ff' : s > 40 ? '#ffd600' : '#ff3b5c'
 
 function getInitials(name: string) {
   return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
@@ -42,277 +24,258 @@ function getInitials(name: string) {
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const supabase = createClient()
+  const { currentUser, isAdmin, repos, debtItems } = useStore()
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [notifOpen, setNotifOpen] = useState(false)
-  const [appUser, setAppUser] = useState<AppUser | null>(null)
-  const [loadingUser, setLoadingUser] = useState(true)
 
-  useEffect(() => {
-    const loadUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
-        window.location.href = '/auth/signup'
-        return
-      }
-      const { data } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', user.id)
-        .single()
-      if (data) setAppUser(data as AppUser)
-      setLoadingUser(false)
-    }
-    loadUser()
-  }, [])
+  const nav_main = [
+    { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
+    { href: '/dashboard/debt-board', label: 'Debt Space', icon: AlertTriangle, badge: debtItems.filter(d => d.status !== 'fixed').length },
+    { href: '/dashboard/analytics', label: 'Neural Scan', icon: BarChart3 },
+    { href: '/dashboard/sprints', label: 'Orbits', icon: Zap },
+  ]
+
+  const nav_workspace = [
+    { href: '/dashboard/team', label: 'Fleet', icon: Users },
+    { href: '/dashboard/repos', label: 'Cores', icon: GitBranch },
+    { href: '/dashboard/billing', label: 'Fuel', icon: CreditCard },
+    { href: '/dashboard/settings', label: 'Ship Config', icon: Settings },
+  ]
 
   const signOut = async () => {
     await supabase.auth.signOut()
     window.location.href = '/'
   }
 
-  const isManager = appUser?.role === 'manager'
-
-  if (loadingUser) {
-    return (
-      <div className="flex h-screen items-center justify-center" style={{ background: 'var(--bg)' }}>
-        <Loader2 size={28} className="animate-spin" style={{ color: 'var(--cyan)' }} />
-      </div>
-    )
-  }
+  const isManager = currentUser?.role === 'manager' || isAdmin()
 
   const SidebarContent = () => (
-    <div className="flex flex-col h-full">
-      <div className="p-4 border-b" style={{ borderColor: 'var(--border)' }}>
-        <Link href="/dashboard" className="flex items-center gap-2.5 mb-4">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center font-mono font-bold text-sm shrink-0"
-            style={{ background: 'var(--cyan)', color: 'var(--bg)' }}>CD</div>
-          {sidebarOpen && <span className="font-display font-bold text-base">CollabDebt</span>}
-        </Link>
-        {sidebarOpen && (
-          <button className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all"
-            style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-            <span className="font-medium truncate">My Workspace</span>
-            <ChevronDown size={14} style={{ color: 'var(--text-muted)' }} />
-          </button>
-        )}
+    <div className="flex flex-col h-full py-6">
+      {/* Logo Area */}
+      <div className="px-6 mb-8 group cursor-pointer" onClick={() => window.location.href = '/dashboard'}>
+        <div className="flex items-center gap-3">
+          <motion.div 
+            whileHover={{ scale: 1.1, rotate: 10 }}
+            className="w-10 h-10 rounded-xl glass border-cyan-500/40 flex items-center justify-center font-bold text-cyan-400 shadow-[0_0_20px_rgba(0,242,255,0.2)]"
+          >
+            CD
+          </motion.div>
+          {sidebarOpen && (
+            <motion.span 
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="font-display font-bold text-lg tracking-tight text-white"
+            >
+              CollabDebt
+            </motion.span>
+          )}
+        </div>
       </div>
 
-      <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
-        <div className="mb-4">
-          {sidebarOpen && <p className="px-3 text-[10px] uppercase tracking-widest mb-2 font-semibold" style={{ color: 'var(--text-dim)' }}>Main</p>}
-          {NAV_MAIN.map(item => (
+      <nav className="flex-1 px-3 space-y-1 overflow-y-auto">
+        <div className="mb-8">
+          {sidebarOpen && <p className="px-5 text-[10px] uppercase tracking-[0.2em] mb-4 font-bold text-slate-500">Navigation</p>}
+          {nav_main.map(item => (
             <Link key={item.href} href={item.href}
-              className={`sidebar-link ${pathname === item.href ? 'active' : ''}`}>
-              <item.icon size={18} />
+              className={`sidebar-link group transition-all duration-300 ${pathname === item.href ? 'active-premium' : ''}`}>
+              <item.icon size={20} className={`transition-colors ${pathname === item.href ? 'text-cyan-400' : 'text-slate-400 group-hover:text-white'}`} />
               {sidebarOpen && (
-                <>
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center flex-1 ml-3 font-semibold text-sm">
                   <span className="flex-1">{item.label}</span>
-                  {item.badge && (
-                    <span className="text-[10px] px-1.5 py-0.5 rounded-full font-mono font-bold"
-                      style={{ background: 'rgba(255,59,92,0.2)', color: 'var(--red)' }}>
+                  {item.badge ? (
+                    <span className="badge-cyan text-[10px] px-2 py-0.5 animate-pulse">
                       {item.badge}
                     </span>
-                  )}
-                </>
+                  ) : null}
+                </motion.div>
               )}
             </Link>
           ))}
           {isManager && (
             <Link href="/dashboard/manager"
-              className={`sidebar-link ${pathname === '/dashboard/manager' ? 'active' : ''}`}>
-              <Crown size={18} />
-              {sidebarOpen && <span className="flex-1">Manager View</span>}
-              {sidebarOpen && <span className="badge-cyan text-[9px] px-1">MGR</span>}
+              className={`sidebar-link group transition-all duration-300 ${pathname === '/dashboard/manager' ? 'active-premium' : ''}`}>
+              <Crown size={20} className={`${pathname === '/dashboard/manager' ? 'text-cyan-400' : 'text-slate-400'}`} />
+              {sidebarOpen && <span className="flex-1 ml-3 font-semibold text-sm">Command View</span>}
             </Link>
           )}
-          <Link href="/dashboard/editor"
-            className={`sidebar-link ${pathname === '/dashboard/editor' ? 'active' : ''}`}>
-            <Code2 size={18} />
-            {sidebarOpen && <span className="flex-1">Code Editor</span>}
-          </Link>
         </div>
 
-        <div className="mb-4">
-          {sidebarOpen && <p className="px-3 text-[10px] uppercase tracking-widest mb-2 font-semibold" style={{ color: 'var(--text-dim)' }}>Workspace</p>}
-          {NAV_WORKSPACE.map(item => (
+        <div className="mb-8">
+          {sidebarOpen && <p className="px-5 text-[10px] uppercase tracking-[0.2em] mb-4 font-bold text-slate-500">Workspace</p>}
+          {nav_workspace.map(item => (
             <Link key={item.href} href={item.href}
-              className={`sidebar-link ${pathname === item.href ? 'active' : ''}`}>
-              <item.icon size={18} />
-              {sidebarOpen && <span>{item.label}</span>}
+              className={`sidebar-link group ${pathname === item.href ? 'active-premium' : ''}`}>
+              <item.icon size={20} className={`${pathname === item.href ? 'text-cyan-400' : 'text-slate-400'}`} />
+              {sidebarOpen && <span className="ml-3 font-semibold text-sm">{item.label}</span>}
             </Link>
           ))}
         </div>
 
         {sidebarOpen && (
           <div>
-            <p className="px-3 text-[10px] uppercase tracking-widest mb-2 font-semibold" style={{ color: 'var(--text-dim)' }}>Repositories</p>
-            {MOCK_REPOS.map(repo => (
-              <Link key={repo.id} href="/dashboard/repos" className="sidebar-link group">
-                <div className="w-2 h-2 rounded-full shrink-0" style={{ background: HEALTH_COLOR(repo.health_score) }} />
-                <span className="flex-1 truncate text-xs">{repo.name}</span>
-                <span className="text-[10px] font-mono" style={{ color: HEALTH_COLOR(repo.health_score) }}>{repo.health_score}</span>
+            <p className="px-5 text-[10px] uppercase tracking-[0.2em] mb-4 font-bold text-slate-500">Live Cores</p>
+            {repos.map(repo => (
+              <Link key={repo.id} href="/dashboard/repos" className="flex items-center gap-3 px-4 py-2 hover:bg-white/5 mx-1 rounded-xl group transition-all">
+                <div className="w-2 h-2 rounded-full shrink-0 animate-glow" style={{ background: HEALTH_COLOR(repo.health_score) }} />
+                <span className="flex-1 truncate text-xs font-bold text-slate-400 group-hover:text-white transition-colors">{repo.name}</span>
+                <span className="text-[10px] font-mono font-bold" style={{ color: HEALTH_COLOR(repo.health_score) }}>{repo.health_score}</span>
               </Link>
             ))}
           </div>
         )}
       </nav>
 
-      {/* Plan badge + user */}
-      <div className="p-3 border-t space-y-2" style={{ borderColor: 'var(--border)' }}>
-        {sidebarOpen && appUser && (
-          <div className="px-3 py-2 rounded-lg text-xs" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-            <div className="flex items-center justify-between mb-1">
-              <span className="font-semibold capitalize" style={{ color: 'var(--cyan)' }}>
-                {PLAN_LABEL[appUser.plan] ?? 'Free Plan'}
-              </span>
-              <Link href="/dashboard/billing" className="text-[10px] underline" style={{ color: 'var(--text-muted)' }}>Manage</Link>
-            </div>
-            {appUser.plan === 'free' && (
-              <p style={{ color: 'var(--text-muted)' }}>Upgrade to unlock more features</p>
-            )}
-          </div>
-        )}
-
+      {/* User Logic */}
+      <div className="mt-auto px-3 border-t border-white/5 pt-6">
         <div className="relative">
-          <button onClick={() => setUserMenuOpen(!userMenuOpen)}
-            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all"
-            style={userMenuOpen ? { background: 'var(--surface)' } : {}}>
-            <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
-              style={{ background: 'rgba(0,229,255,0.15)', color: 'var(--cyan)' }}>
-              {appUser ? getInitials(appUser.name) : '?'}
+          <motion.button 
+            whileHover={{ y: -2 }}
+            onClick={() => setUserMenuOpen(!userMenuOpen)}
+            className="w-full glass-card p-3 flex items-center gap-3 group transition-all text-left"
+          >
+            <div className="w-10 h-10 rounded-xl glass border-cyan-500/20 flex items-center justify-center text-xs font-bold shrink-0 text-cyan-400 bg-cyan-400/5 group-hover:scale-110 transition-transform">
+              {currentUser ? getInitials(currentUser.name) : <User size={18} />}
             </div>
-            {sidebarOpen && appUser && (
-              <>
-                <div className="flex-1 text-left min-w-0">
-                  <div className="text-xs font-semibold truncate">{appUser.name}</div>
-                  <div className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
-                    {appUser.username ? `@${appUser.username}` : appUser.user_code}
-                  </div>
+            {sidebarOpen && (
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-bold text-white truncate">{currentUser?.name || 'Commander'}</div>
+                <div className="text-[10px] font-bold text-slate-400 tracking-widest uppercase truncate">
+                  {isAdmin() ? 'Super Admin' : currentUser?.role || 'Officer'}
                 </div>
-                <ChevronDown size={12} style={{ color: 'var(--text-muted)' }} />
-              </>
+              </div>
             )}
-          </button>
+            {sidebarOpen && <ChevronDown size={14} className={`text-slate-500 transition-transform duration-300 ${userMenuOpen ? 'rotate-180' : ''}`} />}
+          </motion.button>
 
-          {userMenuOpen && sidebarOpen && (
-            <div className="absolute bottom-full left-0 right-0 mb-1 rounded-xl overflow-hidden shadow-xl z-50"
-              style={{ background: 'var(--card)', border: '1px solid var(--border-bright)' }}>
-              {appUser && (
-                <div className="px-4 py-2.5 border-b" style={{ borderColor: 'var(--border)' }}>
-                  <div className="text-xs font-semibold">{appUser.name}</div>
-                  <div className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{appUser.email}</div>
-                  <div className="text-[10px] font-mono mt-0.5" style={{ color: 'var(--cyan)' }}>{appUser.user_code}</div>
+          <AnimatePresence>
+            {userMenuOpen && (
+              <motion.div 
+                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                className="absolute bottom-full left-0 right-0 mb-3 glass rounded-2xl overflow-hidden shadow-2xl z-50 border-white/10"
+              >
+                <div className="p-4 border-b border-white/5">
+                  <div className="text-sm font-bold text-white">{currentUser?.name}</div>
+                  <div className="text-xs text-slate-400">{currentUser?.email}</div>
+                  {isAdmin() && <div className="mt-2 badge-cyan inline-block text-[9px] px-2 py-0.5">Admin Privileges Active</div>}
                 </div>
-              )}
-              <Link href="/dashboard/settings" className="flex items-center gap-2.5 px-4 py-2.5 text-sm hover:bg-white/5 transition-colors">
-                <User size={14} style={{ color: 'var(--text-muted)' }} /> Settings
-              </Link>
-              <button onClick={signOut} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm hover:bg-white/5 transition-colors"
-                style={{ color: 'var(--red)' }}>
-                <LogOut size={14} /> Sign out
-              </button>
-            </div>
-          )}
+                <button 
+                   onClick={signOut}
+                   className="w-full flex items-center gap-3 p-4 text-sm font-bold text-red-400 hover:bg-red-400/10 transition-colors"
+                >
+                  <LogOut size={16} /> Abort Mission
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </div>
   )
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: 'var(--bg)' }}>
-      {/* Desktop Sidebar */}
-      <aside className={`hidden md:flex flex-col transition-all duration-200 shrink-0 border-r ${sidebarOpen ? 'w-60' : 'w-16'}`}
-        style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
-        <SidebarContent />
-        <button onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="absolute left-0 bottom-20 translate-x-full -mr-3 w-5 h-10 rounded-r-lg border-y border-r flex items-center justify-center hidden md:flex"
-          style={{ background: 'var(--surface)', borderColor: 'var(--border)', color: 'var(--text-muted)' }}>
-          {sidebarOpen ? '‹' : '›'}
-        </button>
-      </aside>
-
-      {/* Mobile sidebar */}
-      {mobileSidebarOpen && (
-        <div className="md:hidden fixed inset-0 z-50 flex">
-          <div className="w-64 h-full" style={{ background: 'var(--surface)', borderRight: '1px solid var(--border)' }}>
-            <SidebarContent />
-          </div>
-          <div className="flex-1 bg-black/60" onClick={() => setMobileSidebarOpen(false)} />
+    <DataProvider>
+      <div className="flex h-screen overflow-hidden bg-[#020609] selection:bg-cyan-500/30">
+        
+        {/* Spatial Background Elements */}
+        <div className="fixed inset-0 pointer-events-none">
+          <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-cyan-600/10 blur-[150px] rounded-full" />
+          <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-600/10 blur-[150px] rounded-full" />
+          <div className="absolute inset-0 bg-dot-grid opacity-20" />
         </div>
-      )}
 
-      {/* Main content */}
-      <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-        <header className="h-14 border-b flex items-center px-4 gap-4 shrink-0"
-          style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
-          <button onClick={() => setMobileSidebarOpen(true)} className="md:hidden p-1.5 rounded-lg" style={{ color: 'var(--text-muted)' }}>
-            <Menu size={18} />
+        {/* Desktop Sidebar */}
+        <aside 
+          className={`hidden md:flex flex-col transition-all duration-500 shrink-0 relative z-[100] m-4 mr-0 rounded-[32px] glass border-white/5 shadow-2xl ${sidebarOpen ? 'w-72' : 'w-24'}`}
+        >
+          <SidebarContent />
+          <button onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="absolute -right-3 top-1/2 -translate-y-1/2 w-8 h-12 rounded-xl glass border-white/10 flex items-center justify-center text-slate-400 hover:text-white transition-all shadow-xl"
+          >
+            {sidebarOpen ? '‹' : '›'}
           </button>
+        </aside>
 
-          <div className="font-display font-semibold text-sm hidden sm:block capitalize">
-            {pathname.split('/').pop()?.replace('-', ' ') || 'Dashboard'}
-          </div>
+        {/* Mobile Toggle */}
+        <div className="md:hidden fixed top-6 right-6 z-[200]">
+          <button onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)} className="glass-card w-12 h-12 flex items-center justify-center text-white">
+            {mobileSidebarOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
 
-          <div className="flex-1 max-w-md relative hidden sm:block">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-dim)' }} />
-            <input className="input pl-9 py-1.5 text-sm" placeholder="Search debt items, files, users..." />
-          </div>
+        {/* Mobile Sidebar */}
+        <AnimatePresence>
+          {mobileSidebarOpen && (
+            <motion.aside 
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              className="md:hidden fixed inset-0 z-[150] w-72 m-4 rounded-[32px] glass border-white/5 shadow-2xl"
+            >
+              <SidebarContent />
+            </motion.aside>
+          )}
+        </AnimatePresence>
 
-          <div className="flex items-center gap-2 ml-auto">
-            <button className="p-2 rounded-lg transition-colors hover:bg-white/5" style={{ color: 'var(--text-muted)' }}>
-              <GitPullRequest size={17} />
-            </button>
-
-            <div className="relative">
-              <button onClick={() => setNotifOpen(!notifOpen)}
-                className="p-2 rounded-lg transition-colors hover:bg-white/5 relative"
-                style={{ color: 'var(--text-muted)' }}>
-                <Bell size={17} />
-                <span className="absolute top-1 right-1 w-2 h-2 rounded-full" style={{ background: 'var(--red)' }} />
-              </button>
-              {notifOpen && (
-                <div className="absolute right-0 top-full mt-1 w-80 rounded-xl shadow-xl z-50 overflow-hidden"
-                  style={{ background: 'var(--card)', border: '1px solid var(--border-bright)' }}>
-                  <div className="px-4 py-3 border-b flex items-center justify-between" style={{ borderColor: 'var(--border)' }}>
-                    <span className="font-semibold text-sm">Notifications</span>
-                    <button onClick={() => setNotifOpen(false)}><X size={14} style={{ color: 'var(--text-muted)' }} /></button>
-                  </div>
-                  {[
-                    { title: 'Critical debt found', body: 'Token race condition in api-server', time: '2m ago', type: 'critical' },
-                    { title: 'Sprint 14 ending soon', body: '2 items still in progress', time: '1h ago', type: 'sprint' },
-                    { title: 'Debt item fixed', body: 'Hardcoded API key removed', time: '3h ago', type: 'fixed' },
-                  ].map((n, i) => (
-                    <div key={i} className="px-4 py-3 border-b hover:bg-white/5 cursor-pointer flex gap-3" style={{ borderColor: 'var(--border)' }}>
-                      <div className="w-2 h-2 rounded-full mt-1.5 shrink-0"
-                        style={{ background: n.type === 'critical' ? 'var(--red)' : n.type === 'fixed' ? 'var(--green)' : 'var(--cyan)' }} />
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium">{n.title}</div>
-                        <div className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>{n.body}</div>
-                      </div>
-                      <div className="text-xs shrink-0" style={{ color: 'var(--text-dim)' }}>{n.time}</div>
-                    </div>
-                  ))}
-                </div>
-              )}
+        {/* Main content */}
+        <div className="flex flex-col flex-1 min-w-0 overflow-hidden relative">
+          
+          <header className="h-20 flex items-center px-8 gap-6 shrink-0 relative z-50">
+            <div className="flex-1 flex items-center gap-1.5">
+               <h2 className="font-display font-black text-xl text-white uppercase tracking-[0.15em]">
+                  {pathname.split('/').pop()?.replace('-', ' ') || 'Bridge'}
+               </h2>
+               <div className="badge-cyan text-[10px] px-2 py-0.5 rounded-md font-bold">Stable Orbit</div>
             </div>
 
-            <a href="https://support.collabdebt.com" target="_blank" rel="noopener"
-              className="p-2 rounded-lg transition-colors hover:bg-white/5" style={{ color: 'var(--text-muted)' }}>
-              <HelpCircle size={17} />
-            </a>
+            <div className="flex-1 max-w-lg relative hidden lg:block opacity-60 focus-within:opacity-100 transition-opacity">
+              <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-cyan-400" />
+              <input className="glass-card w-full pl-12 pr-4 py-3 text-sm font-medium focus:ring-1 focus:ring-cyan-500/50 outline-none placeholder:text-slate-600" placeholder="Scan records, cores, or fleet members..." />
+            </div>
 
-            <Link href="/dashboard/debt-board" className="btn-primary text-xs py-1.5 px-3 hidden sm:flex">
-              <Plus size={14} /> Add Debt
-            </Link>
-          </div>
-        </header>
+            <div className="flex items-center gap-4">
+               <div className="flex -space-x-2 mr-4">
+                  {[...Array(3)].map((_, i) => (
+                    <div key={i} className="w-8 h-8 rounded-full glass border border-white/10 flex items-center justify-center text-[10px] font-bold text-slate-300">
+                       {['RV', 'AK', 'VN'][i]}
+                    </div>
+                  ))}
+                  <div className="w-8 h-8 rounded-full glass border border-white/10 flex items-center justify-center bg-cyan-500/20 text-[10px] font-bold text-cyan-400">
+                    +4
+                  </div>
+               </div>
 
-        <main className="flex-1 overflow-y-auto p-6">
-          {children}
-        </main>
+               <button className="glass-card p-3 text-slate-400 hover:text-white transition-colors relative">
+                  <Bell size={20} />
+                  <span className="absolute top-3 right-3 w-2 h-2 rounded-full bg-cyan-500 animate-pulse shadow-[0_0_10px_rgba(0,242,255,1)]" />
+               </button>
+
+               <Link href="/dashboard/debt-board" className="btn-primary group px-6 py-3 font-bold text-sm">
+                  <Plus size={18} className="group-hover:rotate-90 transition-transform" /> 
+                  <span className="hidden sm:inline">New Core Fix</span>
+               </Link>
+            </div>
+          </header>
+
+          <main className="flex-1 overflow-y-auto px-8 pb-8 custom-scrollbar relative z-10">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={pathname}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3, ease: 'easeOut' }}
+              >
+                {children}
+              </motion.div>
+            </AnimatePresence>
+          </main>
+
+        </div>
       </div>
-    </div>
+    </DataProvider>
   )
 }
