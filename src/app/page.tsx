@@ -1,413 +1,267 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
-import {
-  Github, Zap, BarChart3, Users, GitBranch, Bot, Shield,
-  ChevronRight, Play, Check, Star, ArrowRight, Menu, X,
-  TrendingDown, AlertTriangle, Clock, DollarSign, Sparkles,
-  MousePointer2, Globe, Cpu
-} from 'lucide-react'
+import { ArrowRight, GitBranch, BarChart3, Users, Zap, Shield, Check, Terminal } from 'lucide-react'
 
-// ── Antigravity Floating Particle Field ──────────────────────────────────────
-function ParticleField() {
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {[...Array(20)].map((_, i) => (
-        <motion.div
-          key={i}
-          className="absolute w-1 h-1 bg-cyan-400/20 rounded-full"
-          initial={{ 
-            x: Math.random() * 100 + '%', 
-            y: Math.random() * 100 + '%',
-            scale: Math.random() * 2
-          }}
-          animate={{
-            y: [null, '-20%', '120%'],
-            opacity: [0, 1, 0]
-          }}
-          transition={{
-            duration: Math.random() * 10 + 10,
-            repeat: Infinity,
-            ease: "linear",
-            delay: Math.random() * 10
-          }}
-        />
-      ))}
-    </div>
-  )
-}
-
-// ── Neural Pulse (Unique Feature) ───────────────────────────────────────────
-function NeuralPulse() {
-  return (
-    <div className="relative w-64 h-64 md:w-96 md:h-96 flex items-center justify-center">
-      {/* Outer rings */}
-      {[...Array(3)].map((_, i) => (
-        <motion.div
-          key={i}
-          className="absolute inset-0 border border-cyan-500/20 rounded-full"
-          animate={{
-            scale: [1, 1.2, 1],
-            rotate: [0, 180, 360],
-            opacity: [0.1, 0.3, 0.1]
-          }}
-          transition={{
-            duration: 8 + i * 2,
-            repeat: Infinity,
-            ease: "linear"
-          }}
-        />
-      ))}
-      
-      {/* Central Hub */}
-      <motion.div 
-        className="w-32 h-32 rounded-full glass flex items-center justify-center relative z-10 shadow-[0_0_50px_rgba(0,242,255,0.2)]"
-        animate={{
-          y: [-10, 10, -10],
-          boxShadow: [
-            "0 0 20px rgba(0,242,255,0.2)",
-            "0 0 50px rgba(0,242,255,0.4)",
-            "0 0 20px rgba(0,242,255,0.2)"
-          ]
-        }}
-        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-      >
-        <Cpu size={48} className="text-cyan-400" />
-      </motion.div>
-
-      {/* Floating nodes */}
-      {[...Array(6)].map((_, i) => (
-        <motion.div
-          key={i}
-          className="absolute w-12 h-12 glass rounded-xl flex items-center justify-center text-cyan-400 shadow-xl"
-          initial={{ rotate: i * 60 }}
-          animate={{
-            rotate: i * 60 + 360,
-          }}
-          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-          style={{ transformOrigin: '50% 150px' }}
-        >
-          <motion.div animate={{ rotate: -(i * 60 + 360) }} transition={{ duration: 20, repeat: Infinity, ease: "linear" }}>
-            {i % 2 === 0 ? <Zap size={16} /> : <Sparkles size={16} />}
-          </motion.div>
-        </motion.div>
-      ))}
-    </div>
-  )
-}
-
-// ── Terminal Animation ───────────────────────────────────────────────────────
-const TERMINAL_LINES = [
-  { text: '$ collabdebt init --ai-pulse', type: 'prompt', delay: 0 },
-  { text: '📡 Initializing neural link...', type: 'info', delay: 800 },
-  { text: '✓ Antigravity core engaged (0.4s)', type: 'output', delay: 1400 },
-  { text: '🧠 Analyzing spatial debt distribution...', type: 'info', delay: 2000 },
-  { text: '🌊 Scanning auth/service.ts (84% complexity)', type: 'error', delay: 2800 },
-  { text: '✨ AI Suggestion: Refactor into spatial micro-hooks', type: 'output', delay: 3600 },
-  { text: '─────────────────────────────────────────', type: 'info', delay: 4200 },
-  { text: '  Current Orbit: Healthy', type: 'output', delay: 4800 },
-  { text: '  Potential Savings: $14,200', type: 'info', delay: 5400 },
+const FEATURES = [
+  {
+    icon: Terminal,
+    title: 'Debt Scanner',
+    desc: 'Automatically detect TODOs, deprecated APIs, N+1 queries, and security vulnerabilities across all your repos.',
+  },
+  {
+    icon: BarChart3,
+    title: 'Analytics',
+    desc: 'Track velocity, cost impact, and resolution trends. Know exactly how much technical debt is costing your team.',
+  },
+  {
+    icon: GitBranch,
+    title: 'Sprint Integration',
+    desc: 'Assign debt items to sprints and track resolution alongside your regular feature work.',
+  },
+  {
+    icon: Users,
+    title: 'Team Collaboration',
+    desc: 'Every engineer sees the same board. Vote, assign, comment, and prioritize as a team.',
+  },
+  {
+    icon: Zap,
+    title: 'Real-time Updates',
+    desc: 'Changes reflect instantly for everyone. No refresh needed, no data drift.',
+  },
+  {
+    icon: Shield,
+    title: 'CollabConnect',
+    desc: 'Discover engineers who want to help. Filter by language, role, and availability. (Pro)',
+  },
 ]
 
-function TerminalHero() {
-  const [visibleLines, setVisibleLines] = useState(0)
-  useEffect(() => {
-    TERMINAL_LINES.forEach((line, i) => {
-      setTimeout(() => setVisibleLines(i + 1), line.delay)
-    })
-  }, [])
-  
-  return (
-    <motion.div 
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      className="terminal max-w-lg w-full"
-    >
-      <div className="flex items-center gap-2 mb-4 pb-3 border-b border-white/5">
-        <div className="flex gap-1.5">
-          <div className="w-2.5 h-2.5 rounded-full bg-red-500/50" />
-          <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/50" />
-          <div className="w-2.5 h-2.5 rounded-full bg-green-500/50" />
-        </div>
-        <span className="text-[10px] text-slate-500 uppercase tracking-widest font-bold ml-2">CollabConnect™ Core</span>
-      </div>
-      <div className="space-y-1.5 min-h-[160px]">
-        {TERMINAL_LINES.slice(0, visibleLines).map((line, i) => (
-          <div key={i} className="terminal-line">
-            <span className={
-              line.type === 'prompt' ? 'text-cyan-400' : 
-              line.type === 'output' ? 'text-emerald-400' : 
-              line.type === 'error' ? 'text-red-400' : 
-              'text-slate-500'
-            }>
-              {line.text}
-            </span>
-          </div>
-        ))}
-        {visibleLines < TERMINAL_LINES.length && (
-          <span className="animate-cursor text-cyan-400">▊</span>
-        )}
-      </div>
-    </motion.div>
-  )
-}
+const PLANS = [
+  {
+    name: 'Free',
+    price: '$0',
+    period: 'forever',
+    features: ['1 repository', '50 debt items', 'Basic analytics', '3 team members'],
+    cta: 'Get started',
+    href: '/auth/signup',
+  },
+  {
+    name: 'Pro',
+    price: '$12',
+    period: 'per user/month',
+    features: ['Unlimited repos', 'Unlimited items', 'Advanced analytics', 'Sprints', 'CollabConnect'],
+    cta: 'Start free trial',
+    href: '/auth/signup',
+    highlight: true,
+  },
+  {
+    name: 'Team',
+    price: '$29',
+    period: 'per user/month',
+    features: ['Everything in Pro', 'Manager view', 'AI recommendations', 'Priority support', 'Custom integrations'],
+    cta: 'Contact us',
+    href: '/auth/signup',
+  },
+]
 
-// ── Main Landing Page ────────────────────────────────────────────────────────
 export default function LandingPage() {
-  const [scrolled, setScrolled] = useState(false)
-  const { scrollYProgress } = useScroll()
-  const opacity = useTransform(scrollYProgress, [0, 0.2], [1, 0])
-  const scale = useTransform(scrollYProgress, [0, 0.2], [1, 0.95])
-
-  useEffect(() => {
-    const handler = () => setScrolled(window.scrollY > 20)
-    window.addEventListener('scroll', handler)
-    return () => window.removeEventListener('scroll', handler)
-  }, [])
-
   return (
-    <div className="relative min-h-screen bg-[#03080c] text-slate-200 selection:bg-cyan-500/30">
-      <ParticleField />
-      
-      {/* ── Navbar ──────────────────────────────────────────────── */}
-      <nav className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-500 ${scrolled ? 'py-3' : 'py-6'}`}>
-        <div className="max-w-7xl mx-auto px-6">
-          <div className={`glass px-6 h-16 rounded-2xl flex items-center justify-between border-white/5 transition-all ${scrolled ? 'shadow-2xl translate-y-2' : ''}`}>
-            <div className="flex items-center gap-3 group cursor-pointer">
-              <div className="w-9 h-9 rounded-xl glass border-cyan-500/30 flex items-center justify-center font-bold text-cyan-400 group-hover:scale-110 transition-transform">
-                CD
-              </div>
-              <span className="font-display font-bold text-xl tracking-tight text-white">CollabDebt</span>
-              <div className="badge-cyan py-0 px-2 rounded-md">Realtime</div>
-            </div>
+    <div style={{ background: 'var(--bg)', color: 'var(--text)', fontFamily: 'Inter, sans-serif', minHeight: '100vh' }}>
 
-            <div className="hidden md:flex items-center gap-8">
-              {['Features', 'Pricing', 'Network'].map(item => (
-                <button key={item} className="text-sm font-bold text-slate-400 hover:text-white transition-colors">{item}</button>
-              ))}
-              <div className="h-4 w-px bg-white/10" />
-              <Link href="/auth/login" className="text-sm font-bold text-slate-400 hover:text-white transition-colors">SignIn</Link>
-              <Link href="/auth/signup" className="btn-primary py-2 px-5 rounded-xl">Launch App</Link>
-            </div>
-          </div>
+      {/* Nav */}
+      <nav style={{
+        display: 'flex', alignItems: 'center', padding: '16px 40px',
+        borderBottom: '1px solid var(--border)', position: 'sticky', top: 0, background: 'var(--bg)', zIndex: 50
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginRight: 'auto' }}>
+          <div style={{
+            width: '28px', height: '28px', borderRadius: '6px', background: 'var(--blue)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: '12px', fontWeight: 700, color: '#fff'
+          }}>CD</div>
+          <span style={{ fontWeight: 700, fontSize: '15px' }}>CollabDebt</span>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+          <Link href="#features" style={{ fontSize: '13px', color: 'var(--text-muted)', textDecoration: 'none' }}>Features</Link>
+          <Link href="#pricing" style={{ fontSize: '13px', color: 'var(--text-muted)', textDecoration: 'none' }}>Pricing</Link>
+          <Link href="/auth/signup" style={{ fontSize: '13px', color: 'var(--text-muted)', textDecoration: 'none' }}>Sign in</Link>
+          <Link href="/auth/signup" style={{
+            fontSize: '13px', fontWeight: 600, padding: '7px 16px',
+            background: 'var(--text)', color: 'var(--bg)', borderRadius: '6px', textDecoration: 'none'
+          }}>
+            Get started
+          </Link>
         </div>
       </nav>
 
-      {/* ── Hero Section ────────────────────────────────────────── */}
-      <section className="relative pt-32 pb-20 px-6 overflow-hidden">
-        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
-          <motion.div 
-            style={{ opacity, scale }}
-            className="space-y-8 relative z-10"
-          >
-            <motion.div 
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full glass border-cyan-500/20 text-cyan-400 text-xs font-bold uppercase tracking-widest"
-            >
-              <Sparkles size={14} /> The Future of Technical Debt
-            </motion.div>
-            
-            <motion.h1 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="font-display text-6xl md:text-8xl font-extrabold leading-[0.9] text-white tracking-tighter"
-            >
-              Zero Gravity <br />
-              <span className="text-gradient-cyan">Development.</span>
-            </motion.h1>
+      {/* Hero */}
+      <section style={{ padding: '100px 40px 80px', maxWidth: '760px', margin: '0 auto', textAlign: 'center' }}>
+        <div style={{
+          display: 'inline-flex', alignItems: 'center', gap: '6px',
+          fontSize: '12px', fontWeight: 500, color: 'var(--blue)',
+          background: 'rgba(0,112,243,0.1)', padding: '4px 12px', borderRadius: '100px',
+          marginBottom: '28px', border: '1px solid rgba(0,112,243,0.2)'
+        }}>
+          <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--blue)', display: 'inline-block' }} />
+          Now with real-time collaboration
+        </div>
 
-            <motion.p 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="text-lg text-slate-400 max-w-lg leading-relaxed"
-            >
-              Stop fighting legacy code. CollabDebt uses neural-scan technology to quantify, 
-              prioritize, and eliminate technical debt in real-time. Experience the anti-gravity workflow.
-            </motion.p>
+        <h1 style={{
+          fontSize: '52px', fontWeight: 800, lineHeight: 1.15,
+          letterSpacing: '-1.5px', marginBottom: '20px', color: 'var(--text)'
+        }}>
+          Manage technical debt<br />
+          <span style={{ color: 'var(--text-muted)' }}>like a product team.</span>
+        </h1>
 
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="flex flex-wrap gap-4 pt-4"
-            >
-              <Link href="/auth/signup" className="btn-primary text-base px-8 py-4">
-                Get Started Free <ArrowRight size={20} />
-              </Link>
-              <button className="btn-ghost text-base px-8 py-4 glass">
-                <Play size={18} /> Watch Demo
-              </button>
-            </motion.div>
+        <p style={{
+          fontSize: '17px', color: 'var(--text-muted)', lineHeight: 1.7,
+          marginBottom: '36px', maxWidth: '560px', margin: '0 auto 36px'
+        }}>
+          CollabDebt gives engineering teams a shared workspace to detect, track, and resolve technical debt — 
+          with real-time updates, sprint integration, and cost impact analysis.
+        </p>
 
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
-              className="grid grid-cols-3 gap-8 pt-8 border-t border-white/5"
-            >
-              {[
-                { label: 'Neural Scans', val: '4.2M' },
-                { label: 'Debt Liquidated', val: '$1.4B' },
-                { label: 'Uptime', val: '99.9%' },
-              ].map((s, i) => (
-                <div key={i}>
-                  <div className="text-2xl font-bold text-white">{s.val}</div>
-                  <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{s.label}</div>
-                </div>
-              ))}
-            </motion.div>
-          </motion.div>
-
-          {/* Hero Visuals */}
-          <div className="relative flex items-center justify-center py-20 lg:py-0">
-            <NeuralPulse />
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-cyan-500/10 blur-[120px] rounded-full animate-glow" />
-            <div className="absolute top-0 right-0 z-20 float-slow">
-              <TerminalHero />
-            </div>
-          </div>
+        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+          <Link href="/auth/signup" style={{
+            display: 'inline-flex', alignItems: 'center', gap: '8px',
+            fontSize: '14px', fontWeight: 600, padding: '11px 24px',
+            background: 'var(--text)', color: 'var(--bg)', borderRadius: '7px', textDecoration: 'none'
+          }}>
+            Start for free <ArrowRight size={14} />
+          </Link>
+          <Link href="#features" style={{
+            display: 'inline-flex', alignItems: 'center', gap: '8px',
+            fontSize: '14px', fontWeight: 500, padding: '11px 24px',
+            border: '1px solid var(--border)', borderRadius: '7px', textDecoration: 'none',
+            color: 'var(--text-muted)'
+          }}>
+            See how it works
+          </Link>
         </div>
       </section>
 
-      {/* ── Brand Marquee ───────────────────────────────────────── */}
-      <div className="py-12 glass border-y border-white/5 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-6 flex items-center gap-8 opacity-40 grayscale hover:grayscale-0 transition-all">
-          <div className="flex gap-16 animate-ticker whitespace-nowrap font-display font-bold text-xl text-slate-400">
-            {[...Array(2)].map((_, repeat) => (
-              <div key={repeat} className="flex gap-16">
-                <span>MICROSOFT</span>
-                <span>GOOGLE</span>
-                <span>ANTHROPIC</span>
-                <span>OPENAI</span>
-                <span>VERCEL</span>
-                <span>SUPABASE</span>
-                <span>STRIPE</span>
+      {/* Code block preview */}
+      <section style={{ padding: '0 40px 80px', maxWidth: '860px', margin: '0 auto' }}>
+        <div style={{
+          background: 'var(--bg-secondary)', border: '1px solid var(--border)',
+          borderRadius: '10px', overflow: 'hidden'
+        }}>
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: '6px',
+            padding: '12px 16px', borderBottom: '1px solid var(--border)'
+          }}>
+            {['#ff5f57', '#febc2e', '#28c840'].map(c => (
+              <div key={c} style={{ width: '10px', height: '10px', borderRadius: '50%', background: c }} />
+            ))}
+            <span style={{ marginLeft: '8px', fontSize: '12px', color: 'var(--text-dim)', fontFamily: 'JetBrains Mono, monospace' }}>
+              debt-scanner.ts
+            </span>
+          </div>
+          <div style={{ padding: '24px 24px', fontFamily: 'JetBrains Mono, monospace', fontSize: '13px', lineHeight: '1.8' }}>
+            {[
+              { indent: 0, text: <><span style={{ color: '#888' }}>// </span><span style={{ color: 'var(--yellow)' }}>TODO: refactor auth to use JWT refresh tokens — est 2d</span></> },
+              { indent: 0, text: <><span style={{ color: 'var(--red)' }}>const</span> <span style={{ color: 'var(--blue)' }}>data</span> = await fetchUser(id)  <span style={{ color: '#888' }}>// N+1 query detected ⚠</span></> },
+              { indent: 0, text: <><span style={{ color: '#888' }}>// </span><span style={{ color: 'var(--orange)' }}>DEPRECATED: remove legacy payment handler</span></> },
+              { indent: 0, text: <><span style={{ color: 'var(--green)' }}>// ✓ debt resolved — PR #247 merged</span></> },
+            ].map((l, i) => (
+              <div key={i} style={{ display: 'flex', gap: '12px' }}>
+                <span style={{ color: 'var(--text-dim)', userSelect: 'none', minWidth: '20px' }}>{i + 1}</span>
+                <span>{l.text}</span>
               </div>
             ))}
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* ── Features Grid ───────────────────────────────────────── */}
-      <section className="py-32 px-6 relative">
-        <div className="max-w-7xl mx-auto relative z-10">
-          <div className="text-center space-y-4 mb-20">
-            <h2 className="font-display text-4xl md:text-5xl font-bold text-white tracking-tight">The Future Operating System <br /> for Code Health.</h2>
-            <p className="text-slate-400 max-w-2xl mx-auto">CollabDebt isn't just a scanner. It's a spatial redistribution layer for your codebase.</p>
-          </div>
+      {/* Features */}
+      <section id="features" style={{ padding: '60px 40px', maxWidth: '1100px', margin: '0 auto' }}>
+        <h2 style={{ fontSize: '28px', fontWeight: 700, letterSpacing: '-0.5px', marginBottom: '8px' }}>
+          Everything your team needs
+        </h2>
+        <p style={{ fontSize: '15px', color: 'var(--text-muted)', marginBottom: '48px' }}>
+          A complete platform for engineering teams serious about code health.
+        </p>
 
-          <div className="grid md:grid-cols-3 gap-6">
-            {[
-              { 
-                icon: Cpu, title: 'Neural AST Mapping', 
-                desc: 'Understands your code contextually. Not just regex, but deep semantic understanding.',
-                color: 'cyan'
-              },
-              { 
-                icon: Globe, title: 'Global Sync', 
-                desc: 'Realtime collaboration across timezones. Your debt board is alive and breathing.',
-                color: 'purple'
-              },
-              { 
-                icon: MousePointer2, title: 'Spatial Prioritization', 
-                desc: 'Drag, drop, and vote in a high-fidelity interface designed for performance.',
-                color: 'green'
-              },
-            ].map((f, i) => (
-              <motion.div 
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                className="glass-card group"
-              >
-                <div className={`w-14 h-14 rounded-2xl glass mb-6 flex items-center justify-center text-${f.color}-400 group-hover:scale-110 transition-transform`}>
-                  <f.icon size={28} />
-                </div>
-                <h3 className="text-xl font-bold text-white mb-3 tracking-tight">{f.title}</h3>
-                <p className="text-slate-400 leading-relaxed text-sm">{f.desc}</p>
-              </motion.div>
-            ))}
-          </div>
+        <div style={{
+          display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1px',
+          background: 'var(--border)', border: '1px solid var(--border)', borderRadius: '10px', overflow: 'hidden'
+        }}>
+          {FEATURES.map((f, i) => (
+            <div key={i} style={{ padding: '28px 24px', background: 'var(--bg-secondary)' }}>
+              <f.icon size={18} style={{ color: 'var(--blue)', marginBottom: '14px' }} />
+              <h3 style={{ fontSize: '14px', fontWeight: 600, marginBottom: '8px', color: 'var(--text)' }}>{f.title}</h3>
+              <p style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.7 }}>{f.desc}</p>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* ── Spatial Dashboard Preview ─────────────────────────────── */}
-      <section className="py-20 px-6 relative overflow-hidden">
-        <div className="max-w-6xl mx-auto">
-          <motion.div 
-             initial={{ opacity: 0, scale: 0.95 }}
-             whileInView={{ opacity: 1, scale: 1 }}
-             className="glass rounded-[40px] p-4 border-white/5 shadow-[0_0_100px_rgba(0,0,0,0.5)] relative"
-          >
-            <div className="bg-[#03080c] rounded-[32px] overflow-hidden aspect-[16/10] relative shadow-inner">
-               <div className="absolute inset-0 bg-dot-grid" />
-               <div className="absolute inset-0 flex items-center justify-center flex-col space-y-6">
-                  <div className="badge-cyan py-1 px-4 text-xs font-bold">Preview Live Env</div>
-                  <h3 className="text-5xl font-display font-bold text-white tracking-tighter">Liquid Interface.</h3>
-                  <p className="text-slate-400 text-center max-w-md">Experience a dashboard that responds to your team's rhythm. Floating cards, holographic charts, and neural health scores.</p>
-                  <Link href="/auth/signup" className="btn-primary">Explore Interface</Link>
-               </div>
+      {/* Pricing */}
+      <section id="pricing" style={{ padding: '60px 40px', maxWidth: '1000px', margin: '0 auto' }}>
+        <h2 style={{ fontSize: '28px', fontWeight: 700, letterSpacing: '-0.5px', marginBottom: '8px' }}>
+          Simple pricing
+        </h2>
+        <p style={{ fontSize: '15px', color: 'var(--text-muted)', marginBottom: '48px' }}>
+          Start free. Scale when your team grows.
+        </p>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+          {PLANS.map((plan, i) => (
+            <div
+              key={i}
+              style={{
+                background: plan.highlight ? 'var(--bg-secondary)' : 'var(--bg)',
+                border: `1px solid ${plan.highlight ? 'var(--blue)' : 'var(--border)'}`,
+                borderRadius: '10px', padding: '28px 24px'
+              }}
+            >
+              <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '12px' }}>
+                {plan.name}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginBottom: '6px' }}>
+                <span style={{ fontSize: '32px', fontWeight: 800, letterSpacing: '-1px' }}>{plan.price}</span>
+              </div>
+              <div style={{ fontSize: '12px', color: 'var(--text-dim)', marginBottom: '24px' }}>{plan.period}</div>
+              <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 24px', spaceY: '8px' }}>
+                {plan.features.map((f, j) => (
+                  <li key={j} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: 'var(--text-muted)', marginBottom: '8px' }}>
+                    <Check size={13} style={{ color: 'var(--green)', flexShrink: 0 }} /> {f}
+                  </li>
+                ))}
+              </ul>
+              <Link href={plan.href} style={{
+                display: 'block', textAlign: 'center', padding: '9px 16px',
+                background: plan.highlight ? 'var(--blue)' : 'transparent',
+                color: plan.highlight ? '#fff' : 'var(--text)',
+                border: `1px solid ${plan.highlight ? 'var(--blue)' : 'var(--border)'}`,
+                borderRadius: '6px', fontSize: '13px', fontWeight: 600, textDecoration: 'none'
+              }}>
+                {plan.cta}
+              </Link>
             </div>
-          </motion.div>
+          ))}
         </div>
       </section>
 
-      {/* ── CTA ─────────────────────────────────────────────────── */}
-      <section className="py-32 px-6 relative">
-        <div className="max-w-4xl mx-auto glass rounded-[50px] p-20 text-center relative overflow-hidden border-cyan-500/10">
-          <div className="absolute inset-0 mesh-cyan opacity-20" />
-          <h2 className="font-display text-5xl md:text-6xl font-bold text-white mb-8 tracking-tighter relative z-10">
-            Escape the Gravity <br /> of Legacy Code.
-          </h2>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center relative z-10">
-            <Link href="/auth/signup" className="btn-primary text-lg px-10 py-5">
-               Engage Neural Scan
-            </Link>
-            <Link href="/auth/signup" className="btn-ghost text-lg px-10 py-5 glass">
-               Contact Flight Support
-            </Link>
-          </div>
+      {/* Footer */}
+      <footer style={{
+        borderTop: '1px solid var(--border)', padding: '32px 40px',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{
+            width: '22px', height: '22px', borderRadius: '4px', background: 'var(--blue)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: '10px', fontWeight: 700, color: '#fff'
+          }}>CD</div>
+          <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>© 2025 CollabDebt</span>
         </div>
-      </section>
-
-      {/* ── Footer ──────────────────────────────────────────────── */}
-      <footer className="py-20 px-6 border-t border-white/5">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-12 text-slate-500">
-          <div>
-             <div className="flex items-center gap-3 mb-6">
-                <div className="w-8 h-8 rounded-xl glass border-cyan-500/30 flex items-center justify-center font-bold text-cyan-400">CD</div>
-                <span className="font-display font-bold text-xl text-white">CollabDebt</span>
-             </div>
-             <p className="max-w-xs text-sm leading-relaxed">Quantifying technical debt through neural spatial analysis. Built for teams that move at warp speed.</p>
-          </div>
-          <div className="grid grid-cols-2 lg:grid-cols-3 gap-12">
-            <div>
-               <h4 className="text-white font-bold mb-6 text-sm uppercase tracking-widest">Orbit</h4>
-               <ul className="space-y-4 text-sm font-medium">
-                  <li><button className="hover:text-cyan-400 transition-colors">Neural Scans</button></li>
-                  <li><button className="hover:text-cyan-400 transition-colors">Global Sync</button></li>
-                  <li><button className="hover:text-cyan-400 transition-colors">Antigravity Core</button></li>
-               </ul>
-            </div>
-            <div>
-               <h4 className="text-white font-bold mb-6 text-sm uppercase tracking-widest">Support</h4>
-               <ul className="space-y-4 text-sm font-medium">
-                  <li><button className="hover:text-cyan-400 transition-colors">Documentation</button></li>
-                  <li><button className="hover:text-cyan-400 transition-colors">Flight Logs</button></li>
-                  <li><button className="hover:text-cyan-400 transition-colors">Network Status</button></li>
-               </ul>
-            </div>
-          </div>
-        </div>
-        <div className="max-w-7xl mx-auto pt-12 mt-12 border-t border-white/5 flex justify-between items-center text-[11px] font-bold uppercase tracking-[0.2em]">
-           <span>© 2026 CollabConnect™ Industries</span>
-           <span>Universal Standard Time</span>
+        <div style={{ display: 'flex', gap: '20px' }}>
+          {['Privacy', 'Terms', 'GitHub'].map(l => (
+            <Link key={l} href="#" style={{ fontSize: '12px', color: 'var(--text-dim)', textDecoration: 'none' }}>{l}</Link>
+          ))}
         </div>
       </footer>
     </div>

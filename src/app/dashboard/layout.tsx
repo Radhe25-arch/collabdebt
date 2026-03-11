@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, AlertTriangle, BarChart3, Zap, Users, GitBranch,
   CreditCard, Settings, Bell, Search, Plus, ChevronDown,
-  LogOut, User, Menu, X, Crown
+  LogOut, User, Menu, X, Crown, Users2
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { DataProvider } from '@/providers/DataProvider'
@@ -32,6 +32,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { href: '/dashboard/debt-board', label: 'Debt Board', icon: AlertTriangle, badge: openCount || undefined },
     { href: '/dashboard/analytics', label: 'Analytics', icon: BarChart3 },
     { href: '/dashboard/sprints', label: 'Sprints', icon: Zap },
+    { href: '/dashboard/collab', label: 'CollabConnect', icon: Users2 },
   ]
 
   const nav_workspace = [

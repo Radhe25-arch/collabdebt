@@ -1,279 +1,267 @@
 'use client'
 
-'use client'
-
 import { useState, useEffect, useRef } from 'react'
-import Link from 'next/link'
-import { Github, Eye, EyeOff, ArrowRight, Loader2, Chrome, CheckCircle, XCircle, AtSign, ShieldAlert, Sparkles, Zap, ShieldCheck } from 'lucide-react'
+import { Github, Eye, EyeOff, Loader2, Check, X, AlertCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useStore } from '@/store/useStore'
 import toast from 'react-hot-toast'
-import { motion, AnimatePresence } from 'framer-motion'
 
-const OAUTH_PROVIDERS = [
-  { id: 'github', label: 'GitHub Network', icon: Github },
-  { id: 'google', label: 'Google Interface', icon: Chrome },
-]
-
+type Tab = 'signin' | 'signup'
 type UsernameStatus = 'idle' | 'checking' | 'available' | 'taken' | 'invalid'
 
-export default function SignupPage() {
+export default function AuthPage() {
   const supabase = createClient()
   const { setCurrentUser } = useStore()
-  const [tab, setTab] = useState<'signup' | 'login'>('signup')
+  const [tab, setTab] = useState<Tab>('signin')
   const [showPass, setShowPass] = useState(false)
   const [loading, setLoading] = useState<string | null>(null)
-
-  const [form, setForm] = useState({
-    name: '', username: '', email: '', password: '', bio: ''
-  })
-
   const [usernameStatus, setUsernameStatus] = useState<UsernameStatus>('idle')
   const usernameTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+  const [form, setForm] = useState({ name: '', username: '', email: '', password: '' })
+  const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm(f => ({ ...f, [k]: e.target.value }))
 
+  // Username availability check
   useEffect(() => {
+    if (tab !== 'signup') return
     const raw = form.username.trim()
     if (!raw) { setUsernameStatus('idle'); return }
-    if (raw.length < 3) { setUsernameStatus('invalid'); return }
-    if (raw.length > 30) { setUsernameStatus('invalid'); return }
-    const validPattern = /^[a-zA-Z0-9._\-@#$!~]+$/
-    if (!validPattern.test(raw)) { setUsernameStatus('invalid'); return }
-
+    if (!/^[a-zA-Z0-9._-]{3,30}$/.test(raw)) { setUsernameStatus('invalid'); return }
     setUsernameStatus('checking')
     if (usernameTimer.current) clearTimeout(usernameTimer.current)
     usernameTimer.current = setTimeout(async () => {
-      const { data } = await supabase
-        .from('users')
-        .select('username')
-        .eq('username', raw)
-        .maybeSingle()
+      const { data } = await supabase.from('users').select('username').eq('username', raw).single()
       setUsernameStatus(data ? 'taken' : 'available')
     }, 500)
+  }, [form.username, tab])
 
-    return () => { if (usernameTimer.current) clearTimeout(usernameTimer.current) }
-  }, [form.username])
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!form.name || !form.username || !form.email || !form.password) {
+      toast.error('All fields are required'); return
+    }
+    if (usernameStatus !== 'available') {
+      toast.error('Please choose a valid, available username'); return
+    }
+    setLoading('signup')
+    const { error, data } = await supabase.auth.signUp({
+      email: form.email,
+      password: form.password,
+      options: { data: { name: form.name, username: form.username } }
+    })
+    setLoading(null)
+    if (error) { toast.error(error.message); return }
+    if (data.user) {
+      setCurrentUser({
+        id: data.user.id, email: data.user.email || '',
+        name: form.name, username: form.username,
+        user_code: 'CD#' + Math.floor(1000 + Math.random() * 9000),
+        plan: 'free', role: 'developer', onboarding_done: false,
+        avatar_url: undefined, created_at: data.user.created_at,
+        last_seen: new Date().toISOString()
+      })
+      window.location.href = '/auth/onboarding'
+    }
+  }
+
+  const handleSignin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!form.email || !form.password) { toast.error('Enter your credentials'); return }
+    setLoading('signin')
+    const { error, data } = await supabase.auth.signInWithPassword({ email: form.email, password: form.password })
+    setLoading(null)
+    if (error) { toast.error('Invalid credentials'); return }
+    if (data.user) {
+      setCurrentUser({
+        id: data.user.id, email: data.user.email || '',
+        name: data.user.user_metadata?.name || 'User',
+        username: data.user.user_metadata?.username || '',
+        user_code: 'CD#' + data.user.id.slice(0, 4).toUpperCase(),
+        plan: 'free', role: 'developer', onboarding_done: true,
+        avatar_url: data.user.user_metadata?.avatar_url,
+        created_at: data.user.created_at, last_seen: new Date().toISOString()
+      })
+      window.location.href = '/dashboard'
+    }
+  }
 
   const handleOAuth = async (provider: 'github' | 'google') => {
     setLoading(provider)
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: {
-        redirectTo: `${window.location.origin}/api/auth/callback`,
-      },
-    })
-    if (error) { toast.error(error.message); setLoading(null) }
+    await supabase.auth.signInWithOAuth({ provider, options: { redirectTo: `${location.origin}/dashboard` } })
   }
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!form.email || !form.password) { toast.error('Enter credentials'); return }
-    setLoading('email')
-    
-    // Simulate/Perform Login
-    const { error, data } = await supabase.auth.signInWithPassword({
-      email: form.email, password: form.password,
-    })
-    
-    if (error) { 
-       toast.error('Authentication Failed'); 
-       setLoading(null); 
-       return 
-    }
-    
-    if (data.user) {
-       setCurrentUser({
-          id: data.user.id,
-          email: data.user.email || '',
-          name: data.user.user_metadata?.name || 'Unknown',
-          username: data.user.user_metadata?.username || 'unknown',
-          user_code: 'CD#' + Math.floor(1000 + Math.random() * 9000),
-          plan: 'free',
-          role: 'developer',
-          onboarding_done: true,
-          avatar_url: data.user.user_metadata?.avatar_url || null,
-          created_at: data.user.created_at,
-          last_seen: new Date().toISOString()
-       })
-    }
-    
-    window.location.href = '/dashboard'
-  }
-
-  // ADMIN BYPASS
-  const handleAdminBypass = () => {
-     setLoading('admin')
-     setTimeout(() => {
-        setCurrentUser({
-           id: 'admin-id',
-           email: 'admin@collabdebt.com',
-           name: 'Project Administrator',
-           username: 'admin_core',
-           user_code: 'CD#0000',
-           plan: 'enterprise',
-           role: 'manager',
-           onboarding_done: true,
-           avatar_url: null,
-           created_at: new Date().toISOString(),
-           last_seen: new Date().toISOString()
-        })
-        setLoading(null)
-        toast.success('Neural Override Granted: Admin Access')
-        window.location.href = '/dashboard'
-     }, 1500)
+  const UsernameIcon = () => {
+    if (usernameStatus === 'checking') return <Loader2 size={13} className="animate-spin" style={{ color: 'var(--text-dim)' }} />
+    if (usernameStatus === 'available') return <Check size={13} style={{ color: 'var(--green)' }} />
+    if (usernameStatus === 'taken') return <X size={13} style={{ color: 'var(--red)' }} />
+    if (usernameStatus === 'invalid') return <AlertCircle size={13} style={{ color: 'var(--yellow)' }} />
+    return null
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12 relative overflow-hidden bg-[#020609]">
-      
-      {/* Antigravity Background Elements */}
-      <div className="absolute inset-0 pointer-events-none">
-         <div className="absolute top-0 left-0 w-full h-full opacity-20 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] bg-repeat" />
-         <motion.div 
-           animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0.2, 0.1] }}
-           transition={{ duration: 10, repeat: Infinity }}
-           className="absolute -top-[20%] -left-[10%] w-[60%] h-[60%] bg-cyan-500/20 blur-[150px] rounded-full" 
-         />
-         <motion.div 
-           animate={{ scale: [1, 1.3, 1], opacity: [0.05, 0.15, 0.05] }}
-           transition={{ duration: 12, repeat: Infinity, delay: 2 }}
-           className="absolute -bottom-[20%] -right-[10%] w-[60%] h-[60%] bg-purple-500/10 blur-[150px] rounded-full" 
-         />
-      </div>
+    <div style={{
+      minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      background: 'var(--bg)', padding: '24px'
+    }}>
+      <div style={{ width: '100%', maxWidth: '380px' }}>
 
-      <div className="relative w-full max-w-xl">
-        {/* Branding */}
-        <div className="text-center mb-10">
-          <Link href="/" className="inline-flex flex-col items-center gap-4 group">
-            <div className="w-16 h-16 rounded-[24px] glass border-cyan-500/30 flex items-center justify-center font-bold text-2xl text-cyan-400 group-hover:scale-110 transition-transform shadow-[0_0_40px_rgba(0,242,255,0.2)]">
-              CD
-            </div>
-            <div>
-               <span className="font-display font-black text-2xl text-white tracking-tighter uppercase">Collab<span className="text-cyan-400">Debt</span></span>
-               <div className="text-[10px] font-black text-slate-600 uppercase tracking-[0.4em] mt-1">Neural Access Terminal</div>
-            </div>
-          </Link>
+        {/* Logo */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '36px' }}>
+          <div style={{
+            width: '28px', height: '28px', borderRadius: '6px', background: 'var(--blue)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: '12px', fontWeight: 700, color: '#fff'
+          }}>CD</div>
+          <span style={{ fontWeight: 700, fontSize: '15px', color: 'var(--text)' }}>CollabDebt</span>
         </div>
 
-        {/* Access Terminal Module */}
-        <motion.div 
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="glass shadow-2xl rounded-[40px] p-10 border-white/5 relative overflow-hidden"
+        {/* Toggle */}
+        <div style={{
+          display: 'flex', borderRadius: '8px',
+          background: 'var(--bg-secondary)', border: '1px solid var(--border)',
+          padding: '3px', marginBottom: '28px'
+        }}>
+          {(['signin', 'signup'] as Tab[]).map(t => (
+            <button
+              key={t}
+              onClick={() => { setTab(t); setForm({ name: '', username: '', email: '', password: '' }); setUsernameStatus('idle') }}
+              style={{
+                flex: 1, padding: '7px', borderRadius: '6px', fontSize: '13px', fontWeight: 500,
+                border: 'none', cursor: 'pointer', transition: 'all 0.15s',
+                background: tab === t ? 'var(--bg)' : 'transparent',
+                color: tab === t ? 'var(--text)' : 'var(--text-muted)',
+                boxShadow: tab === t ? '0 1px 3px rgba(0,0,0,0.3)' : 'none',
+              }}
+            >
+              {t === 'signin' ? 'Sign in' : 'Create account'}
+            </button>
+          ))}
+        </div>
+
+        {/* OAuth */}
+        <button
+          onClick={() => handleOAuth('github')}
+          disabled={!!loading}
+          style={{
+            width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+            padding: '10px', borderRadius: '7px', fontSize: '13px', fontWeight: 500,
+            background: 'var(--bg-secondary)', border: '1px solid var(--border)', cursor: 'pointer',
+            color: 'var(--text)', marginBottom: '16px'
+          }}
         >
-          {/* Top Holographic Strip */}
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-50" />
-          
-          <div className="flex rounded-2xl p-1.5 mb-10 glass border-white/5">
-            {(['signup', 'login'] as const).map(t => (
-              <button key={t} onClick={() => setTab(t)}
-                className="flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-[0.1em] transition-all relative z-10"
-                style={tab === t
-                  ? { background: 'rgba(255,255,255,0.05)', color: '#00f2ff' }
-                  : { color: '#475569' }}>
-                {t === 'signup' ? 'Deploy New Core' : 'Identify Asset'}
-              </button>
-            ))}
-          </div>
+          {loading === 'github' ? <Loader2 size={14} className="animate-spin" /> : (
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
+            </svg>
+          )}
+          Continue with GitHub
+        </button>
 
-          <div className="space-y-8">
-            <div className="text-center">
-               <h2 className="text-xl font-display font-black text-white uppercase tracking-tight">
-                 {tab === 'signup' ? 'Initialize Integration' : 'Asset Verification'}
-               </h2>
-               <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-2">
-                 Protocol v4.0 Secure Uplink Active
-               </p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+          <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
+          <span style={{ fontSize: '11px', color: 'var(--text-dim)' }}>or</span>
+          <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
+        </div>
+
+        {/* Form */}
+        <form onSubmit={tab === 'signin' ? handleSignin : handleSignup} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+
+          {tab === 'signup' && (
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: 'var(--text-muted)', marginBottom: '5px' }}>
+                Full name <span style={{ color: 'var(--red)' }}>*</span>
+              </label>
+              <input className="input" placeholder="Jane Doe" value={form.name} onChange={set('name')} required />
             </div>
+          )}
 
-            {/* Neural Bypass Section (ADMIN) */}
-            <div className="p-1 glass border-yellow-500/20 rounded-2xl relative group">
-               <div className="absolute -top-3 left-6 px-2 bg-[#050b14] text-[8px] font-black text-yellow-500 uppercase tracking-widest border border-yellow-500/30 rounded-full">Neural Bypass</div>
-               <button 
-                 onClick={handleAdminBypass}
-                 className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-yellow-500/[0.03] transition-all"
-               >
-                  <div className="flex items-center gap-4 text-left">
-                     <div className="w-10 h-10 rounded-xl glass border-yellow-500/30 flex items-center justify-center text-yellow-500">
-                        <ShieldAlert size={20} />
-                     </div>
-                     <div>
-                        <div className="text-[11px] font-black text-white uppercase tracking-wider">Administrator Access</div>
-                        <div className="text-[9px] font-bold text-slate-500 uppercase mt-0.5 tracking-tight group-hover:text-yellow-400/80 transition-colors">Grant full system clearance & paid metrics</div>
-                     </div>
-                  </div>
-                  {loading === 'admin' ? <Loader2 size={16} className="animate-spin text-yellow-500" /> : <Zap size={16} className="text-yellow-500" />}
-               </button>
-            </div>
-
-            {/* OAuth Modules */}
-            <div className="grid grid-cols-2 gap-4">
-              {OAUTH_PROVIDERS.map(({ id, label, icon: Icon }) => (
-                <button key={id}
-                  onClick={() => handleOAuth(id as 'github' | 'google')}
-                  disabled={loading !== null}
-                  className="flex flex-col items-center gap-3 p-5 glass border-white/5 rounded-3xl hover:border-cyan-400/30 transition-all text-slate-500 hover:text-white"
-                >
-                  <Icon size={24} />
-                  <span className="text-[9px] font-black uppercase tracking-widest">{label}</span>
-                </button>
-              ))}
-            </div>
-
-            <div className="relative py-4">
-               <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/5"></div></div>
-               <div className="relative flex justify-center"><span className="px-4 bg-[#050b14] text-[9px] font-black text-slate-700 uppercase tracking-[0.2em]">Legacy Email Protocol</span></div>
-            </div>
-
-            {/* Form */}
-            <form onSubmit={handleLogin} className="space-y-5">
-              <div className="space-y-4">
-                <div className="relative group">
-                   <div className="absolute inset-y-0 left-4 flex items-center text-slate-600 group-focus-within:text-cyan-400 transition-colors">
-                      <AtSign size={16} />
-                   </div>
-                   <input 
-                     value={form.email}
-                     onChange={set('email')}
-                     className="w-full glass border-white/10 p-4 pl-12 rounded-2xl text-white font-bold text-sm outline-none focus:ring-1 focus:ring-cyan-400/30 placeholder:text-slate-700" 
-                     placeholder="neural.link@provider.com" 
-                   />
-                </div>
-                <div className="relative group">
-                   <div className="absolute inset-y-0 left-4 flex items-center text-slate-600 group-focus-within:text-cyan-400 transition-colors">
-                      <Zap size={16} />
-                   </div>
-                   <input 
-                     type={showPass ? 'text' : 'password'}
-                     value={form.password}
-                     onChange={set('password')}
-                     className="w-full glass border-white/10 p-4 pl-12 pr-12 rounded-2xl text-white font-bold text-sm outline-none focus:ring-1 focus:ring-cyan-400/30 placeholder:text-slate-700" 
-                     placeholder="Cypher Key Required" 
-                   />
-                   <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-600 hover:text-white">
-                      {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
-                   </button>
+          {tab === 'signup' && (
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: 'var(--text-muted)', marginBottom: '5px' }}>
+                Username <span style={{ color: 'var(--red)' }}>*</span>
+              </label>
+              <div style={{ position: 'relative' }}>
+                <span style={{
+                  position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)',
+                  fontSize: '13px', color: 'var(--text-dim)'
+                }}>@</span>
+                <input
+                  className="input"
+                  style={{ paddingLeft: '26px', paddingRight: '32px' }}
+                  placeholder="janedoe"
+                  value={form.username}
+                  onChange={set('username')}
+                  required
+                />
+                <div style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)' }}>
+                  <UsernameIcon />
                 </div>
               </div>
+              {usernameStatus === 'taken' && <p style={{ fontSize: '11px', color: 'var(--red)', marginTop: '4px' }}>Username already taken</p>}
+              {usernameStatus === 'invalid' && <p style={{ fontSize: '11px', color: 'var(--yellow)', marginTop: '4px' }}>3–30 chars, letters/numbers/._- only</p>}
+              {usernameStatus === 'available' && <p style={{ fontSize: '11px', color: 'var(--green)', marginTop: '4px' }}>@{form.username} is available</p>}
+            </div>
+          )}
 
-              <motion.button 
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                type="submit" 
-                disabled={loading !== null}
-                className="w-full btn-primary-cyan py-5 rounded-2xl font-black uppercase tracking-[0.3em] text-xs shadow-xl shadow-cyan-400/10 flex items-center justify-center gap-3"
-              >
-                {loading === 'email' ? <Loader2 size={18} className="animate-spin" /> : <><ShieldCheck size={18} /> Establish Uplink</>}
-              </motion.button>
-            </form>
-
-            <p className="text-center text-[10px] font-bold text-slate-600 uppercase tracking-widest">
-               By initiating uplink, you accept all <span className="text-white">Neural Protocols</span>
-            </p>
+          <div>
+            <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: 'var(--text-muted)', marginBottom: '5px' }}>
+              Email <span style={{ color: 'var(--red)' }}>*</span>
+            </label>
+            <input className="input" type="email" placeholder="you@company.com" value={form.email} onChange={set('email')} required />
           </div>
-        </motion.div>
+
+          <div>
+            <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: 'var(--text-muted)', marginBottom: '5px' }}>
+              Password <span style={{ color: 'var(--red)' }}>*</span>
+            </label>
+            <div style={{ position: 'relative' }}>
+              <input
+                className="input"
+                type={showPass ? 'text' : 'password'}
+                placeholder="Min 8 characters"
+                value={form.password}
+                onChange={set('password')}
+                style={{ paddingRight: '36px' }}
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPass(!showPass)}
+                style={{
+                  position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)',
+                  background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-dim)', padding: 0
+                }}
+              >
+                {showPass ? <EyeOff size={14} /> : <Eye size={14} />}
+              </button>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            className="btn-primary"
+            disabled={!!loading || (tab === 'signup' && usernameStatus !== 'available')}
+            style={{ width: '100%', justifyContent: 'center', marginTop: '4px' }}
+          >
+            {loading === 'signin' || loading === 'signup'
+              ? <Loader2 size={14} className="animate-spin" />
+              : tab === 'signin' ? 'Sign in' : 'Create account'}
+          </button>
+        </form>
+
+        {tab === 'signin' && (
+          <p style={{ textAlign: 'center', fontSize: '12px', color: 'var(--text-dim)', marginTop: '16px' }}>
+            <a href="#" style={{ color: 'var(--blue)', textDecoration: 'none' }}>Forgot password?</a>
+          </p>
+        )}
+
+        <p style={{ fontSize: '12px', color: 'var(--text-dim)', marginTop: '24px', textAlign: 'center', lineHeight: 1.6 }}>
+          By continuing, you agree to our{' '}
+          <a href="#" style={{ color: 'var(--text-muted)', textDecoration: 'underline' }}>Terms</a>
+          {' '}and{' '}
+          <a href="#" style={{ color: 'var(--text-muted)', textDecoration: 'underline' }}>Privacy Policy</a>.
+        </p>
       </div>
     </div>
   )
