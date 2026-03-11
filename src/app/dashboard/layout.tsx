@@ -46,7 +46,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   useEffect(() => {
     const loadUser = async () => {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.push('/auth/login'); return }
+      if (!user) { window.location.href = '/auth/login'; return }
 
       const { data } = await supabase
         .from('users')
@@ -65,7 +65,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const signOut = async () => {
     await supabase.auth.signOut()
-    router.push('/')
+    window.location.href = '/'
   }
 
   const isPremium = appUser?.plan === 'pro' || appUser?.plan === 'team' || appUser?.plan === 'enterprise'
