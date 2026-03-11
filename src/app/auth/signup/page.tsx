@@ -89,8 +89,13 @@ export default function SignupPage() {
           email: data.user.email || '',
           name: data.user.user_metadata?.name || 'Unknown',
           username: data.user.user_metadata?.username || 'unknown',
-          avatar_url: null,
-          created_at: new Date().toISOString()
+          user_code: 'CD#' + Math.floor(1000 + Math.random() * 9000),
+          plan: 'free',
+          role: 'developer',
+          onboarding_done: true,
+          avatar_url: data.user.user_metadata?.avatar_url || null,
+          created_at: data.user.created_at,
+          last_seen: new Date().toISOString()
        })
     }
     
@@ -106,9 +111,15 @@ export default function SignupPage() {
            email: 'admin@collabdebt.com',
            name: 'Project Administrator',
            username: 'admin_core',
+           user_code: 'CD#0000',
+           plan: 'enterprise',
+           role: 'manager',
+           onboarding_done: true,
            avatar_url: null,
-           created_at: new Date().toISOString()
+           created_at: new Date().toISOString(),
+           last_seen: new Date().toISOString()
         })
+        setLoading(null)
         toast.success('Neural Override Granted: Admin Access')
         window.location.href = '/dashboard'
      }, 1500)
