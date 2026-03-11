@@ -1,13 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { ArrowRight, ArrowLeft, Check, Loader2, Crown } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
 
-// ── Tech categories ────────────────────────────────────────────────────────
 const TECH_ROLES = [
   { id: 'frontend', label: 'Frontend Developer', icon: '🖥️', desc: 'React, Vue, Angular, CSS' },
   { id: 'backend', label: 'Backend Developer', icon: '⚙️', desc: 'Node, Python, Go, Java' },
@@ -58,49 +56,28 @@ const COLLAB_GOALS = [
 
 const STEPS = ['Role', 'Experience', 'Skills', 'Goals', 'Plan']
 
-// Premium plans — "Connect" feature is premium
 const CONNECT_PLANS = [
   {
-    id: 'free',
-    name: 'Free',
-    price: '₹0',
-    perMonth: '/forever',
+    id: 'free', name: 'Free', price: '₹0', perMonth: '/forever',
     features: ['1 repo', '50 debt items', '2 AI hrs/mo', 'Debt board & sprints'],
-    connect: false,
-    cta: 'Start free',
-    color: 'var(--border)',
+    connect: false, color: 'var(--border)',
   },
   {
-    id: 'pro',
-    name: 'Pro',
-    price: '₹499',
-    perMonth: '/month',
+    id: 'pro', name: 'Pro', price: '₹499', perMonth: '/month',
     features: ['5 repos', '500 debt items', '10 AI hrs/mo', 'CollabConnect™ — find devs', 'Private collab sessions', 'Priority support'],
-    connect: true,
-    cta: 'Upgrade to Pro',
-    color: 'var(--cyan)',
-    popular: true,
+    connect: true, color: 'var(--cyan)', popular: true,
   },
   {
-    id: 'team',
-    name: 'Team',
-    price: '₹1,499',
-    perMonth: '/month',
+    id: 'team', name: 'Team', price: '₹1,499', perMonth: '/month',
     features: ['Unlimited repos', '25 members', 'CollabConnect™ + filters', 'Team collab sessions', 'Manager dashboard', 'Analytics'],
-    connect: true,
-    cta: 'Upgrade to Team',
-    color: '#a855f7',
+    connect: true, color: '#a855f7',
   },
 ]
 
 export default function OnboardingPage() {
-  const router = useRouter()
   const supabase = createClient()
-
   const [step, setStep] = useState(0)
   const [saving, setSaving] = useState(false)
-
-  // Form state
   const [selectedRoles, setSelectedRoles] = useState<string[]>([])
   const [experience, setExperience] = useState('')
   const [selectedSkills, setSelectedSkills] = useState<string[]>([])
@@ -123,10 +100,9 @@ export default function OnboardingPage() {
     setSaving(true)
     try {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.push('/auth/login'); return }
+      if (!user) { window.location.href = '/auth/login'; return }
 
-      // Save tech profile to users table
-      await supabase.from('users').update({
+      const { error } = await supabase.from('users').update({
         tech_roles: selectedRoles,
         experience_level: experience,
         skills: selectedSkills,
@@ -135,16 +111,19 @@ export default function OnboardingPage() {
         onboarding_done: true,
       }).eq('id', user.id)
 
-      // If paid plan — go to billing
+      if (error) {
+        console.error('Update error:', error)
+        // Even if update fails, still go to dashboard
+      }
+
       if (chosenPlan !== 'free') {
-        router.push(`/dashboard/billing?upgrade=${chosenPlan}`)
+        window.location.href = `/dashboard/billing?upgrade=${chosenPlan}`
       } else {
-        router.push('/dashboard')
+        window.location.href = '/dashboard'
       }
     } catch (err) {
       console.error(err)
       toast.error('Something went wrong, please try again')
-    } finally {
       setSaving(false)
     }
   }
@@ -159,16 +138,14 @@ export default function OnboardingPage() {
     fontSize: '13px',
     fontWeight: active ? 600 : 400,
     transition: 'all 0.15s',
-    display: 'inline-flex',
-    alignItems: 'center',
+    display: 'inline-flex' as const,
+    alignItems: 'center' as const,
     gap: '6px',
   })
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12 relative overflow-hidden"
       style={{ background: 'var(--bg)' }}>
-
-      {/* Grid bg */}
       <div className="absolute inset-0 pointer-events-none"
         style={{
           backgroundImage: 'linear-gradient(rgba(0,229,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(0,229,255,0.025) 1px, transparent 1px)',
@@ -176,7 +153,6 @@ export default function OnboardingPage() {
         }} />
 
       <div className="relative w-full max-w-2xl">
-        {/* Logo */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl flex items-center justify-center font-mono font-bold text-sm"
@@ -210,36 +186,22 @@ export default function OnboardingPage() {
 
         <div className="rounded-2xl p-8" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
 
-          {/* ─── Step 0: Roles ──────────────────────────────────────── */}
           {step === 0 && (
             <div>
               <h2 className="font-display font-bold text-2xl mb-1">What do you do?</h2>
-              <p className="text-sm mb-6" style={{ color: 'var(--text-muted)' }}>
-                Select all that apply — you can pick multiple roles.
-              </p>
+              <p className="text-sm mb-6" style={{ color: 'var(--text-muted)' }}>Select all that apply — you can pick multiple roles.</p>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {TECH_ROLES.map(role => {
                   const active = selectedRoles.includes(role.id)
                   return (
-                    <button key={role.id}
-                      onClick={() => toggleMulti(role.id, selectedRoles, setSelectedRoles)}
+                    <button key={role.id} onClick={() => toggleMulti(role.id, selectedRoles, setSelectedRoles)}
                       className="flex flex-col items-start p-4 rounded-xl text-left transition-all"
-                      style={{
-                        background: active ? 'rgba(0,229,255,0.07)' : 'var(--surface)',
-                        border: `1px solid ${active ? 'var(--cyan)' : 'var(--border)'}`,
-                      }}>
+                      style={{ background: active ? 'rgba(0,229,255,0.07)' : 'var(--surface)', border: `1px solid ${active ? 'var(--cyan)' : 'var(--border)'}` }}>
                       <div className="flex items-center justify-between w-full mb-1.5">
                         <span className="text-xl">{role.icon}</span>
-                        {active && (
-                          <div className="w-5 h-5 rounded-full flex items-center justify-center"
-                            style={{ background: 'var(--cyan)' }}>
-                            <Check size={11} color="#000" />
-                          </div>
-                        )}
+                        {active && <div className="w-5 h-5 rounded-full flex items-center justify-center" style={{ background: 'var(--cyan)' }}><Check size={11} color="#000" /></div>}
                       </div>
-                      <div className="text-sm font-semibold" style={{ color: active ? 'var(--cyan)' : 'var(--text)' }}>
-                        {role.label}
-                      </div>
+                      <div className="text-sm font-semibold" style={{ color: active ? 'var(--cyan)' : 'var(--text)' }}>{role.label}</div>
                       <div className="text-xs mt-0.5" style={{ color: 'var(--text-dim)' }}>{role.desc}</div>
                     </button>
                   )
@@ -248,7 +210,6 @@ export default function OnboardingPage() {
             </div>
           )}
 
-          {/* ─── Step 1: Experience ─────────────────────────────────── */}
           {step === 1 && (
             <div>
               <h2 className="font-display font-bold text-2xl mb-1">How experienced are you?</h2>
@@ -257,23 +218,12 @@ export default function OnboardingPage() {
                 {EXPERIENCE_LEVELS.map(level => {
                   const active = experience === level.id
                   return (
-                    <button key={level.id}
-                      onClick={() => setExperience(level.id)}
+                    <button key={level.id} onClick={() => setExperience(level.id)}
                       className="flex flex-col items-start p-4 rounded-xl text-left transition-all"
-                      style={{
-                        background: active ? 'rgba(0,229,255,0.07)' : 'var(--surface)',
-                        border: `1px solid ${active ? 'var(--cyan)' : 'var(--border)'}`,
-                      }}>
+                      style={{ background: active ? 'rgba(0,229,255,0.07)' : 'var(--surface)', border: `1px solid ${active ? 'var(--cyan)' : 'var(--border)'}` }}>
                       <div className="flex items-center justify-between w-full mb-1">
-                        <span className="text-sm font-bold" style={{ color: active ? 'var(--cyan)' : 'var(--text)' }}>
-                          {level.label}
-                        </span>
-                        {active && (
-                          <div className="w-5 h-5 rounded-full flex items-center justify-center"
-                            style={{ background: 'var(--cyan)' }}>
-                            <Check size={11} color="#000" />
-                          </div>
-                        )}
+                        <span className="text-sm font-bold" style={{ color: active ? 'var(--cyan)' : 'var(--text)' }}>{level.label}</span>
+                        {active && <div className="w-5 h-5 rounded-full flex items-center justify-center" style={{ background: 'var(--cyan)' }}><Check size={11} color="#000" /></div>}
                       </div>
                       <div className="text-xs" style={{ color: 'var(--text-dim)' }}>{level.desc}</div>
                     </button>
@@ -283,25 +233,19 @@ export default function OnboardingPage() {
             </div>
           )}
 
-          {/* ─── Step 2: Skills ─────────────────────────────────────── */}
           {step === 2 && (
             <div>
               <h2 className="font-display font-bold text-2xl mb-1">What&apos;s in your stack?</h2>
               <p className="text-sm mb-6" style={{ color: 'var(--text-muted)' }}>
-                Pick your top skills (select as many as you like).
-                <span className="ml-2 font-mono text-xs" style={{ color: 'var(--cyan)' }}>
-                  {selectedSkills.length} selected
-                </span>
+                Pick your top skills.
+                <span className="ml-2 font-mono text-xs" style={{ color: 'var(--cyan)' }}>{selectedSkills.length} selected</span>
               </p>
               <div className="flex flex-wrap gap-2">
                 {TOP_SKILLS.map(skill => {
                   const active = selectedSkills.includes(skill)
                   return (
-                    <button key={skill}
-                      onClick={() => toggleMulti(skill, selectedSkills, setSelectedSkills)}
-                      style={chipStyle(active)}>
-                      {active && <Check size={11} />}
-                      {skill}
+                    <button key={skill} onClick={() => toggleMulti(skill, selectedSkills, setSelectedSkills)} style={chipStyle(active)}>
+                      {active && <Check size={11} />}{skill}
                     </button>
                   )
                 })}
@@ -309,7 +253,6 @@ export default function OnboardingPage() {
             </div>
           )}
 
-          {/* ─── Step 3: Goals ──────────────────────────────────────── */}
           {step === 3 && (
             <div>
               <h2 className="font-display font-bold text-2xl mb-1">What brings you here?</h2>
@@ -318,20 +261,14 @@ export default function OnboardingPage() {
                 {COLLAB_GOALS.map(goal => {
                   const active = goals.includes(goal.id)
                   return (
-                    <button key={goal.id}
-                      onClick={() => toggleMulti(goal.id, goals, setGoals)}
+                    <button key={goal.id} onClick={() => toggleMulti(goal.id, goals, setGoals)}
                       className="w-full flex items-center gap-3 p-4 rounded-xl text-left transition-all"
-                      style={{
-                        background: active ? 'rgba(0,229,255,0.07)' : 'var(--surface)',
-                        border: `1px solid ${active ? 'var(--cyan)' : 'var(--border)'}`,
-                      }}>
+                      style={{ background: active ? 'rgba(0,229,255,0.07)' : 'var(--surface)', border: `1px solid ${active ? 'var(--cyan)' : 'var(--border)'}` }}>
                       <div className="w-5 h-5 rounded flex items-center justify-center shrink-0"
                         style={{ background: active ? 'var(--cyan)' : 'var(--border)', transition: 'all 0.15s' }}>
                         {active && <Check size={11} color="#000" />}
                       </div>
-                      <span className="text-sm font-medium" style={{ color: active ? 'var(--text)' : 'var(--text-muted)' }}>
-                        {goal.label}
-                      </span>
+                      <span className="text-sm font-medium" style={{ color: active ? 'var(--text)' : 'var(--text-muted)' }}>{goal.label}</span>
                     </button>
                   )
                 })}
@@ -339,36 +276,26 @@ export default function OnboardingPage() {
             </div>
           )}
 
-          {/* ─── Step 4: Plan — CollabConnect is premium ────────────── */}
           {step === 4 && (
             <div>
               <h2 className="font-display font-bold text-2xl mb-1">Choose your plan</h2>
               <p className="text-sm mb-6" style={{ color: 'var(--text-muted)' }}>
-                <span style={{ color: 'var(--cyan)', fontWeight: 600 }}>CollabConnect™</span> — find & work with devs — is a paid feature.
-                You can always upgrade later.
+                <span style={{ color: 'var(--cyan)', fontWeight: 600 }}>CollabConnect™</span> — find & work with devs — is a paid feature. You can always upgrade later.
               </p>
               <div className="grid sm:grid-cols-3 gap-4">
                 {CONNECT_PLANS.map(plan => {
                   const active = chosenPlan === plan.id
                   return (
-                    <button key={plan.id}
-                      onClick={() => setChosenPlan(plan.id)}
+                    <button key={plan.id} onClick={() => setChosenPlan(plan.id)}
                       className="flex flex-col text-left p-5 rounded-xl transition-all relative"
-                      style={{
-                        background: active ? `${plan.color}10` : 'var(--surface)',
-                        border: `1.5px solid ${active ? plan.color : 'var(--border)'}`,
-                      }}>
-                      {plan.popular && (
+                      style={{ background: active ? `${plan.color}10` : 'var(--surface)', border: `1.5px solid ${active ? plan.color : 'var(--border)'}` }}>
+                      {(plan as any).popular && (
                         <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-2.5 py-0.5 rounded-full text-[10px] font-bold"
-                          style={{ background: plan.color, color: '#000' }}>
-                          POPULAR
-                        </div>
+                          style={{ background: plan.color, color: '#000' }}>POPULAR</div>
                       )}
                       <div className="flex items-start justify-between mb-3">
                         <div>
-                          <div className="font-bold text-base" style={{ color: active ? plan.color : 'var(--text)' }}>
-                            {plan.name}
-                          </div>
+                          <div className="font-bold text-base" style={{ color: active ? plan.color : 'var(--text)' }}>{plan.name}</div>
                           <div className="flex items-baseline gap-1 mt-0.5">
                             <span className="font-display text-xl font-bold">{plan.price}</span>
                             <span className="text-xs" style={{ color: 'var(--text-dim)' }}>{plan.perMonth}</span>
@@ -379,7 +306,6 @@ export default function OnboardingPage() {
                           {active && <Check size={11} color="#000" />}
                         </div>
                       </div>
-
                       {plan.connect && (
                         <div className="flex items-center gap-1.5 mb-3 px-2 py-1 rounded-lg"
                           style={{ background: 'rgba(0,229,255,0.08)', border: '1px solid rgba(0,229,255,0.2)' }}>
@@ -387,7 +313,6 @@ export default function OnboardingPage() {
                           <span className="text-[10px] font-bold" style={{ color: 'var(--cyan)' }}>CollabConnect™ included</span>
                         </div>
                       )}
-
                       <ul className="space-y-1.5">
                         {plan.features.map(f => (
                           <li key={f} className="flex items-start gap-2 text-xs" style={{ color: 'var(--text-muted)' }}>
@@ -406,24 +331,20 @@ export default function OnboardingPage() {
           {/* Navigation */}
           <div className="flex items-center justify-between mt-8 pt-6 border-t" style={{ borderColor: 'var(--border)' }}>
             <button
-              onClick={() => step > 0 ? setStep(s => s - 1) : router.push('/dashboard')}
+              onClick={() => step > 0 ? setStep(s => s - 1) : window.location.href = '/dashboard'}
               className="btn-ghost text-sm py-2 px-4 flex items-center gap-2">
               <ArrowLeft size={14} />
               {step === 0 ? 'Skip for now' : 'Back'}
             </button>
 
             {step < STEPS.length - 1 ? (
-              <button
-                onClick={() => setStep(s => s + 1)}
-                disabled={!canNext()}
+              <button onClick={() => setStep(s => s + 1)} disabled={!canNext()}
                 className="btn-primary text-sm py-2.5 px-6 flex items-center gap-2"
                 style={!canNext() ? { opacity: 0.5, cursor: 'not-allowed' } : {}}>
                 Continue <ArrowRight size={14} />
               </button>
             ) : (
-              <button
-                onClick={handleFinish}
-                disabled={saving}
+              <button onClick={handleFinish} disabled={saving}
                 className="btn-primary text-sm py-2.5 px-6 flex items-center gap-2">
                 {saving
                   ? <><Loader2 size={14} className="animate-spin" /> Saving...</>
