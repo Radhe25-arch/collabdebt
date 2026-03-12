@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, AlertTriangle, BarChart3, Zap, Users, GitBranch,
   CreditCard, Settings, Bell, Search, Plus, ChevronDown,
-  LogOut, User, Menu, X, Crown, Users2
+  LogOut, User, Menu, X, Crown, Users2, Terminal as TerminalIcon
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { DataProvider } from '@/providers/DataProvider'
@@ -14,8 +14,11 @@ import { useStore } from '@/store/useStore'
 
 const HEALTH_COLOR = (s: number) => s > 70 ? 'var(--green)' : s > 40 ? 'var(--yellow)' : 'var(--red)'
 
-function getInitials(name: string) {
-  return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+function getInitials(name: string | undefined) {
+  if (!name) return '??'
+  const parts = name.trim().split(' ')
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase()
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
 }
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -29,6 +32,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const nav_main = [
     { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
+    { href: '/dashboard/editor', label: 'Workspace', icon: TerminalIcon },
     { href: '/dashboard/debt-board', label: 'Debt Board', icon: AlertTriangle, badge: openCount || undefined },
     { href: '/dashboard/analytics', label: 'Analytics', icon: BarChart3 },
     { href: '/dashboard/sprints', label: 'Sprints', icon: Zap },
@@ -134,11 +138,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             className="w-7 h-7 rounded-md flex items-center justify-center text-[11px] font-bold shrink-0"
             style={{ background: 'var(--bg-tertiary)', color: 'var(--text-muted)', border: '1px solid var(--border)' }}
           >
-            {currentUser ? getInitials(currentUser.name) : <User size={13} />}
+            {currentUser?.name ? getInitials(currentUser.name) : <User size={13} />}
           </div>
           <div className="flex-1 min-w-0">
             <div className="text-xs font-semibold truncate" style={{ color: 'var(--text)' }}>
-              {currentUser?.name || 'User'}
+              {currentUser?.name || 'Authorized User'}
             </div>
             <div className="text-[10px] truncate" style={{ color: 'var(--text-dim)' }}>
               {currentUser?.email || 'No session'}

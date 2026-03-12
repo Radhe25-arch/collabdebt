@@ -6,20 +6,25 @@
 
 /* ── TOKENS ─────────────────────────────────────────────────────────── */
 :root {
-  --bg: #0a0a0a;
-  --bg-secondary: #111111;
-  --bg-tertiary: #1a1a1a;
-  --border: #222222;
-  --border-hover: #333333;
-  --text: #ededed;
-  --text-muted: #888888;
-  --text-dim: #555555;
-  --blue: #0070f3;
-  --blue-hover: #0060d3;
-  --green: #00b341;
-  --red: #e5484d;
-  --yellow: #f5a623;
-  --orange: #f06523;
+  --bg: #030609;
+  --bg-secondary: #0a0f14;
+  --bg-tertiary: #12181f;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-hover: rgba(255, 255, 255, 0.15);
+  --text: #ffffff;
+  --text-muted: #a1a1aa;
+  --text-dim: #52525b;
+  --blue: #00f2ff;
+  --blue-hover: #00d8e6;
+  --green: #00ff88;
+  --red: #ff3b5c;
+  --yellow: #ffd600;
+  --orange: #ff9d00;
+  --emerald: #10b981;
+  --cyan: #06b6d4;
+  --glass-bg: rgba(10, 15, 20, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.1);
+
 }
 
 * { box-sizing: border-box; padding: 0; margin: 0; }
@@ -224,17 +229,45 @@ html, body {
   /* Minimal divider */
   .divider { height: 1px; background: var(--border); }
 
-  /* Glass / backdrop - minimal version used in layout */
+  /* Glass / backdrop - premium version */
   .glass {
-    background: var(--bg-secondary);
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+  }
+
+  .glass-card {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
+    backdrop-filter: blur(10px);
     border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  }
+
+  .text-gradient-emerald {
+    background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .active-premium {
+    background: linear-gradient(90deg, rgba(0, 242, 255, 0.1) 0%, transparent 100%);
+    border-left: 2px solid var(--blue);
+    color: var(--blue);
   }
 
   /* Animate fadeInUp - kept minimal, one-shot only */
-  .animate-fadeInUp {
-    animation: fadeInUp 0.15s ease both;
+  .animate-fadeIn {
+    animation: fadeIn 0.5s ease both;
   }
 }
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 
 /* ── ANIMATIONS - Only necessary ones ─────────────────────────────── */
 @keyframes fadeInUp {

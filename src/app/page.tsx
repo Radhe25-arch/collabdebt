@@ -175,6 +175,58 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Product Intelligence Showcase (Video Guide) */}
+      <section style={{ padding: '80px 40px', background: 'linear-gradient(180deg, var(--bg) 0%, var(--bg-secondary) 100%)' }}>
+        <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: '60px' }}>
+            <h2 style={{ fontSize: '36px', fontWeight: 800, letterSpacing: '-1px', marginBottom: '16px' }} className="text-gradient">
+              Experience the Future of Code Health
+            </h2>
+            <p style={{ fontSize: '16px', color: 'var(--text-muted)', maxWidth: '600px', margin: '0 auto' }}>
+              A cinematic walkthrough of the CollabDebt ecosystem. Learn how to scan, track, and resolve technical debt with AI-powered intelligence.
+            </p>
+          </div>
+
+          <div style={{ position: 'relative', borderRadius: '24px', overflow: 'hidden', border: '1px solid var(--border)', boxShadow: '0 0 80px rgba(0, 242, 255, 0.1)' }} className="glass">
+             {/* Fallback to image if video is not provided, making it interactive */}
+             <div style={{ width: '100%', aspectRatio: '16/9', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#000' }}>
+                <div style={{ position: 'relative', zIndex: 10, textAlign: 'center' }}>
+                   <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'var(--blue)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', cursor: 'pointer', boxShadow: '0 0 30px var(--blue)' }}>
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg>
+                   </div>
+                   <p style={{ fontWeight: 700, fontSize: '14px', color: '#fff', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Watch Guide Session</p>
+                </div>
+                {/* Visual highlight overlay */}
+                <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 50% 50%, rgba(0, 242, 255, 0.1) 0%, transparent 70%)' }}></div>
+                <img 
+                  src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=2070" 
+                  alt="Interface Guide" 
+                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.4 }} 
+                />
+             </div>
+             
+             {/* Feature floating badges */}
+             <div style={{ position: 'absolute', bottom: '24px', left: '24px', display: 'flex', gap: '12px' }}>
+                <span className="badge badge-cyan" style={{ padding: '6px 12px', borderRadius: '100px' }}>Neural Scan active</span>
+                <span className="badge badge-muted" style={{ padding: '6px 12px', borderRadius: '100px' }}>v4.0 Protocol</span>
+             </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16">
+             {[
+               { title: 'Data Vault', desc: 'Secure repository uplink with health monitoring' },
+               { title: 'Debt Board', desc: 'Collaborative kanban for debt lifecycle' },
+               { title: 'AI Workspace', desc: 'Advanced code analysis and refactoring' }
+             ].map(item => (
+                <div key={item.title} className="glass-card p-6 border-l-2 border-emerald-500/30">
+                   <h4 style={{ fontWeight: 700, marginBottom: '8px', fontSize: '15px' }}>{item.title}</h4>
+                   <p style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.6 }}>{item.desc}</p>
+                </div>
+             ))}
+          </div>
+        </div>
+      </section>
+
       {/* Features */}
       <section id="features" style={{ padding: '60px 40px', maxWidth: '1100px', margin: '0 auto' }}>
         <h2 style={{ fontSize: '28px', fontWeight: 700, letterSpacing: '-0.5px', marginBottom: '8px' }}>

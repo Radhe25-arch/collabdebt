@@ -37,13 +37,13 @@ export default function OnboardingPage() {
   const [loading, setLoading] = useState(false)
 
   const [selected, setSelected] = useState({
-    role: '',
+    roles: [] as string[],
     languages: [] as string[],
     goals: [] as string[],
     bio: '',
   })
 
-  const toggleMulti = (key: 'languages' | 'goals', val: string) => {
+  const toggleMulti = (key: 'roles' | 'languages' | 'goals', val: string) => {
     setSelected(s => ({
       ...s,
       [key]: s[key].includes(val) ? s[key].filter(v => v !== val) : [...s[key], val]
@@ -54,10 +54,10 @@ export default function OnboardingPage() {
   const stepIdx = steps.indexOf(step)
 
   const canNext = {
-    role: !!selected.role,
+    role: selected.roles.length > 0,
     languages: selected.languages.length > 0,
     goals: selected.goals.length > 0,
-    bio: true, // bio is optional, but page is required
+    bio: true,
   }
 
   const handleNext = () => {
@@ -72,30 +72,34 @@ export default function OnboardingPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { window.location.href = '/auth/signup'; return }
 
-      await supabase.from('users').upsert({
+      const payload = {
         id: user.id,
         email: user.email,
-        name: currentUser?.name || user.user_metadata?.name,
-        username: currentUser?.username || user.user_metadata?.username,
-        user_code: currentUser?.user_code || 'CD#0000',
+        name: currentUser?.name || user.user_metadata?.name || 'User',
+        username: currentUser?.username || user.user_metadata?.username || 'user' + user.id.slice(0, 4),
+        user_code: currentUser?.user_code || 'CD#' + Math.floor(1000 + Math.random() * 9000),
         plan: 'free',
         role: 'developer',
         onboarding_done: true,
         bio: selected.bio,
-        tech_roles: [selected.role],
+        tech_roles: selected.roles,
         skills: selected.languages,
         collab_goals: selected.goals,
         last_seen: new Date().toISOString(),
         created_at: user.created_at,
-      })
+      }
+
+      const { error } = await supabase.from('users').upsert(payload)
+      if (error) throw error
 
       if (currentUser) {
-        setCurrentUser({ ...currentUser, onboarding_done: true })
+        setCurrentUser({ ...currentUser, onboarding_done: true, role: 'developer', plan: 'free' } as any)
       }
 
       window.location.href = '/dashboard'
-    } catch (err) {
-      toast.error('Something went wrong, please try again.')
+    } catch (err: any) {
+      console.error(err)
+      toast.error(err.message || 'Something went wrong, please try again.')
     } finally {
       setLoading(false)
     }
@@ -134,24 +138,28 @@ export default function OnboardingPage() {
               What do you do?
             </h2>
             <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '24px' }}>
-              Select your primary engineering role.
+              Select your engineering roles (You can pick multiple).
             </p>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-              {ROLES.map(role => (
-                <button
-                  key={role}
-                  onClick={() => setSelected(s => ({ ...s, role }))}
-                  style={{
-                    padding: '11px 14px', borderRadius: '7px', fontSize: '13px', fontWeight: 500,
-                    textAlign: 'left', cursor: 'pointer', transition: 'all 0.15s',
-                    background: selected.role === role ? 'rgba(0,112,243,0.1)' : 'var(--bg-secondary)',
-                    border: `1px solid ${selected.role === role ? 'var(--blue)' : 'var(--border)'}`,
-                    color: selected.role === role ? 'var(--blue)' : 'var(--text-muted)',
-                  }}
-                >
-                  {role}
-                </button>
-              ))}
+              {ROLES.map(role => {
+                const active = selected.roles.includes(role)
+                return (
+                  <button
+                    key={role}
+                    onClick={() => toggleMulti('roles', role)}
+                    style={{
+                      padding: '11px 14px', borderRadius: '7px', fontSize: '13px', fontWeight: 500,
+                      textAlign: 'left', cursor: 'pointer', transition: 'all 0.15s',
+                      background: active ? 'rgba(0,112,243,0.1)' : 'var(--bg-secondary)',
+                      border: `1px solid ${active ? 'var(--blue)' : 'var(--border)'}`,
+                      color: active ? 'var(--blue)' : 'var(--text-muted)',
+                    }}
+                  >
+                    {active && <span style={{ marginRight: '6px' }}>✓</span>}
+                    {role}
+                  </button>
+                )
+              })}
             </div>
           </div>
         )}
@@ -244,7 +252,7 @@ export default function OnboardingPage() {
             <textarea
               value={selected.bio}
               onChange={e => setSelected(s => ({ ...s, bio: e.target.value }))}
-              placeholder="e.g. Senior engineer at Stripe. Passionate about distributed systems, Rust, and DX tooling. Open to collaborating on infra and performance projects."
+              placeholder="e.g. Senior engineer at Stripe. Passionate about distributed systems, Rust, and DX tooling."
               rows={5}
               style={{
                 width: '100%', padding: '12px', fontSize: '13px', lineHeight: 1.7,
@@ -252,8 +260,6 @@ export default function OnboardingPage() {
                 borderRadius: '8px', color: 'var(--text)', resize: 'vertical',
                 fontFamily: 'inherit', outline: 'none',
               }}
-              onFocus={e => e.target.style.borderColor = 'var(--blue)'}
-              onBlur={e => e.target.style.borderColor = 'var(--border)'}
             />
             <p style={{ fontSize: '11px', color: 'var(--text-dim)', marginTop: '6px' }}>
               {selected.bio.length} / 400 characters

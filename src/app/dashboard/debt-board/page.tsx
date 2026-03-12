@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import { ThumbsUp, Plus, X, ExternalLink, Loader2, Search, ChevronDown } from 'lucide-react'
+import toast from 'react-hot-toast'
 import { useStore } from '@/store/useStore'
 import type { DebtItem, DebtSeverity, DebtStatus } from '@/types'
 
@@ -167,9 +168,131 @@ function DebtModal({ item, onClose }: { item: DebtItem; onClose: () => void }) {
   )
 }
 
+function NewDebtModal({ onClose }: { onClose: () => void }) {
+  const { mutateAddDebtItem, repos } = useStore()
+  const [loading, setLoading] = useState(false)
+  const [form, setForm] = useState({
+    title: '',
+    description: '',
+    repo_id: repos[0]?.id || '',
+    severity: 'medium' as DebtSeverity,
+    type: 'todo' as DebtType,
+    cost_usd: 0,
+    fix_days: 1,
+  })
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    try {
+      await mutateAddDebtItem({
+        ...form,
+        status: 'identified',
+        created_by: 'manual',
+        votes: 0,
+      })
+      toast.success('Debt item recorded successfully')
+      onClose()
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to add item')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="modal-overlay" onClick={e => { if (e.target === e.currentTarget) onClose() }}>
+      <div className="modal-box max-w-lg">
+        <div className="flex items-center justify-between mb-6">
+          <h2 style={{ fontSize: '18px', fontWeight: 700 }}>Record Technical Debt</h2>
+          <button onClick={onClose} className="text-slate-500 hover:text-white"><X size={20} /></button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">Designation (Title)</label>
+            <input 
+              required
+              className="input" 
+              placeholder="e.g. Refactor Auth Middleware"
+              value={form.title}
+              onChange={e => setForm({ ...form, title: e.target.value })}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">Core Repository</label>
+              <select 
+                className="input"
+                value={form.repo_id}
+                onChange={e => setForm({ ...form, repo_id: e.target.value })}
+              >
+                {repos.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">Anomaly Severity</label>
+              <select 
+                className="input"
+                value={form.severity}
+                onChange={e => setForm({ ...form, severity: e.target.value as DebtSeverity })}
+              >
+                <option value="critical">Critical</option>
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">Cost Impact ($/mo)</label>
+              <input 
+                type="number"
+                className="input" 
+                value={form.cost_usd}
+                onChange={e => setForm({ ...form, cost_usd: Number(e.target.value) })}
+              />
+            </div>
+            <div>
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">Est. Fix Duration (days)</label>
+              <input 
+                type="number"
+                className="input" 
+                value={form.fix_days}
+                onChange={e => setForm({ ...form, fix_days: Number(e.target.value) })}
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">Description</label>
+            <textarea 
+              className="input h-24 pt-2"
+              placeholder="Provide technical details about the anomaly..."
+              value={form.description}
+              onChange={e => setForm({ ...form, description: e.target.value })}
+            />
+          </div>
+
+          <div className="flex justify-end gap-3 pt-4">
+            <button type="button" onClick={onClose} className="btn-ghost">Cancel</button>
+            <button type="submit" className="btn-primary" disabled={loading}>
+              {loading ? <Loader2 size={14} className="animate-spin" /> : 'Synchronize Debt'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
 export default function DebtBoardPage() {
   const { debtItems } = useStore()
   const [selected, setSelected] = useState<DebtItem | null>(null)
+  const [showAdd, setShowAdd] = useState(false)
   const [search, setSearch] = useState('')
   const [filterSev, setFilterSev] = useState<string>('all')
 
@@ -206,10 +329,17 @@ export default function DebtBoardPage() {
           <option value="medium">Medium</option>
           <option value="low">Low</option>
         </select>
-        <div style={{ marginLeft: 'auto' }}>
+        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span style={{ fontSize: '12px', color: 'var(--text-dim)' }}>
             {filtered.length} of {debtItems.length} issues
           </span>
+          <button 
+            onClick={() => setShowAdd(true)}
+            className="btn-primary" 
+            style={{ padding: '6px 12px', fontSize: '12px', background: 'var(--emerald)', border: 'none' }}
+          >
+            <Plus size={14} /> New Item
+          </button>
         </div>
       </div>
 
@@ -263,6 +393,7 @@ export default function DebtBoardPage() {
       </div>
 
       {selected && <DebtModal item={selected} onClose={() => setSelected(null)} />}
+      {showAdd && <NewDebtModal onClose={() => setShowAdd(false)} />}
     </div>
   )
 }

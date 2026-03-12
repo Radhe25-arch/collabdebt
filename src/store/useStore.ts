@@ -55,19 +55,28 @@ export const useStore = create<AppState>((set, get) => ({
 
   mutateAddDebtItem: async (item: Partial<DebtItem>) => {
     const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('Not authenticated')
+
     const { error } = await supabase
       .from('debt_items')
-      .insert([item])
+      .insert([{ ...item, user_id: user.id }])
     if (error) throw error
   },
 
   mutateAddSprint: async (sprint: Partial<Sprint>) => {
     const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('Not authenticated')
+
     const { error } = await supabase
       .from('sprints')
-      .insert([sprint])
+      .insert([{ ...sprint, user_id: user.id }])
     if (error) throw error
   },
 
-  isAdmin: () => get().currentUser?.email === 'admin@collabdebt.com'
+  isAdmin: () => {
+    const user = get().currentUser
+    return user?.email === 'admin@collabdebt.com' || user?.role === 'manager'
+  }
 }))

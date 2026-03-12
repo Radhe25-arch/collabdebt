@@ -1,372 +1,234 @@
 'use client'
 
-import { useState, useCallback, Suspense } from 'react'
-import dynamic from 'next/dynamic'
-import { useSearchParams } from 'next/navigation'
+import { useState, useEffect } from 'react'
 import {
-  FileText, ChevronRight, ChevronDown, Upload, Zap,
-  AlertTriangle, X, Sparkles, Bug, Clock, Loader2
+  Terminal as TerminalIcon, FileCode, Play, Save, Share2,
+  Bot, Clock, Activity, Search, ChevronRight, ChevronDown,
+  Layout, PanelLeft, PanelRight, MessageSquare, Shield,
+  Eye, Zap, Globe, GitBranch
 } from 'lucide-react'
-import { MOCK_DEBT_ITEMS } from '@/lib/mock-data'
-
-const MonacoEditor = dynamic(() => import('@monaco-editor/react'), { ssr: false, loading: () => (
-  <div className="flex-1 flex items-center justify-center" style={{ background: '#020c12' }}>
-    <Loader2 size={24} className="animate-spin" style={{ color: 'var(--text-dim)' }} />
-  </div>
-) })
-
-const SAMPLE_CODE = `// src/auth/token.service.ts
-import { db } from '../db'
-import { generateNewToken } from './generate'
-
-/**
- * Refreshes the auth token for a given user.
- * Called when the current token is about to expire.
- */
-async function refreshToken(userId: string) {
-  // TODO: handle race condition when multiple tabs
-  // refresh simultaneously — this causes logout
-  const token = await db.tokens.findOne({ userId })
-
-  // FIXME: this doesn't handle expired refresh tokens
-  // properly, users get logged out randomly
-  if (!token) return null
-
-  // HACK: sleep 100ms to avoid duplicate refresh calls
-  // This is terrible, but it works... sometimes
-  await sleep(100)
-
-  const newToken = await generateNewToken(token)
-
-  // TODO: invalidate old token after generating new one
-  return newToken
-}
-
-// Dead code — this was replaced 6 months ago
-// @deprecated use refreshToken instead
-async function legacyRefresh(userId: string) {
-  const token = await db.legacy_tokens.findOne({ userId })
-  return token?.value ?? null
-}
-
-export { refreshToken }
-`
-
-const FILE_TREE = [
-  { name: 'src', type: 'folder', children: [
-    { name: 'auth', type: 'folder', children: [
-      { name: 'token.service.ts', type: 'file', debt: 'critical' },
-      { name: 'auth.service.ts', type: 'file', debt: 'high' },
-      { name: 'guards.ts', type: 'file', debt: null },
-    ]},
-    { name: 'api', type: 'folder', children: [
-      { name: 'users', type: 'folder', children: [
-        { name: 'dashboard.ts', type: 'file', debt: 'high' },
-      ]},
-    ]},
-    { name: 'payments', type: 'folder', children: [
-      { name: 'checkout.ts', type: 'file', debt: 'high' },
-      { name: 'cart.ts', type: 'file', debt: 'medium' },
-    ]},
-    { name: 'hooks', type: 'folder', children: [
-      { name: 'useUserData.ts', type: 'file', debt: 'medium' },
-    ]},
-    { name: 'index.ts', type: 'file', debt: null },
-  ]},
-]
-
-const DEBT_COLOR: Record<string, string> = {
-  critical: '#ff3b5c', high: '#ff9600', medium: '#ffd600', low: '#00ff88',
-}
-
-function FileNode({ node, depth = 0 }: { node: typeof FILE_TREE[0], depth?: number }) {
-  const [open, setOpen] = useState(depth === 0)
-  if (node.type === 'folder') {
-    return (
-      <div>
-        <button onClick={() => setOpen(!open)}
-          className="flex items-center gap-1.5 w-full px-2 py-1 text-xs rounded hover:bg-white/5 transition-colors text-left"
-          style={{ paddingLeft: `${8 + depth * 12}px`, color: 'var(--text-muted)' }}>
-          {open ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
-          <span>{node.name}</span>
-        </button>
-        {open && node.children?.map(child => (
-          <FileNode key={child.name} node={child as typeof FILE_TREE[0]} depth={depth + 1} />
-        ))}
-      </div>
-    )
-  }
-  return (
-    <button className="flex items-center gap-1.5 w-full px-2 py-1 text-xs rounded hover:bg-white/5 transition-colors text-left"
-      style={{ paddingLeft: `${8 + depth * 12}px`, color: 'var(--text)' }}>
-      <FileText size={11} style={{ color: 'var(--text-dim)', flexShrink: 0 }} />
-      <span className="flex-1 truncate">{node.name}</span>
-      {(node as typeof FILE_TREE[0] & { debt?: string | null }).debt && (
-        <div className="w-1.5 h-1.5 rounded-full shrink-0"
-          style={{ background: DEBT_COLOR[(node as typeof FILE_TREE[0] & { debt?: string | null }).debt!] }} />
-      )}
-    </button>
-  )
-}
-
-function EditorContent() {
-  const params = useSearchParams()
-  const [aiOpen, setAiOpen] = useState(false)
-  const [aiLoading, setAiLoading] = useState(false)
-  const [aiSuggestion, setAiSuggestion] = useState<string | null>(null)
-  const [bugPanelOpen, setBugPanelOpen] = useState(false)
-  const [rightPanel, setRightPanel] = useState(true)
-  const [aiMinutes] = useState(47)
-  const fileDebtItems = MOCK_DEBT_ITEMS.filter(d => d.file_path.includes('token'))
-
-  const handleAIFix = useCallback(() => {
-    setAiLoading(true)
-    setTimeout(() => {
-      setAiSuggestion(
-`async function refreshToken(userId: string) {
-  // Use a distributed lock to prevent race conditions
-  const lockKey = \`token:refresh:\${userId}\`
-  const lock = await redisClient.set(lockKey, '1', 'EX', 5, 'NX')
-  
-  if (!lock) {
-    // Another tab is already refreshing — wait and retry
-    await sleep(200)
-    return db.tokens.findOne({ userId })
-  }
-
-  try {
-    const token = await db.tokens.findOne({ userId })
-    if (!token || isExpired(token)) return null
-    
-    const newToken = await generateNewToken(token)
-    await db.tokens.invalidate(token.id) // Invalidate old token
-    return newToken
-  } finally {
-    await redisClient.del(lockKey) // Always release lock
-  }
-}`
-      )
-      setAiLoading(false)
-    }, 1800)
-  }, [])
-
-  return (
-    <div className="flex h-[calc(100vh-56px)] -m-6 overflow-hidden">
-      {/* File tree */}
-      <div className="w-52 shrink-0 border-r flex flex-col" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
-        <div className="flex items-center justify-between px-3 py-2.5 border-b" style={{ borderColor: 'var(--border)' }}>
-          <span className="text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>FILES</span>
-          <button className="p-1 rounded hover:bg-white/10 transition-colors" style={{ color: 'var(--text-muted)' }} title="Upload ZIP">
-            <Upload size={12} />
-          </button>
-        </div>
-        <div className="flex-1 overflow-y-auto py-2">
-          {FILE_TREE.map(node => <FileNode key={node.name} node={node} />)}
-        </div>
-      </div>
-
-      {/* Editor area */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Editor topbar */}
-        <div className="h-10 border-b flex items-center px-4 gap-3 shrink-0"
-          style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
-          <span className="font-mono text-xs" style={{ color: 'var(--text-muted)' }}>
-            src/auth/<span style={{ color: 'var(--text)' }}>token.service.ts</span>
-          </span>
-          <span className="badge-cyan text-[10px] px-1.5">TypeScript</span>
-          <span className="badge-critical text-[10px] px-1.5">Score: 28/100</span>
-          <div className="ml-auto flex items-center gap-2">
-            <button onClick={() => setAiOpen(true)}
-              className="flex items-center gap-1.5 text-xs px-3 py-1 rounded-lg transition-all"
-              style={{ background: 'rgba(0,229,255,0.1)', color: 'var(--cyan)', border: '1px solid rgba(0,229,255,0.2)' }}>
-              <Sparkles size={12} /> Ctrl+K — AI Fix
-            </button>
-            <button onClick={() => setBugPanelOpen(!bugPanelOpen)}
-              className="flex items-center gap-1.5 text-xs px-3 py-1 rounded-lg transition-all"
-              style={{ background: 'rgba(255,59,92,0.08)', color: 'var(--red)', border: '1px solid rgba(255,59,92,0.2)' }}>
-              <Bug size={12} /> Bug Finder
-            </button>
-          </div>
-        </div>
-
-        {/* Monaco */}
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <MonacoEditor
-            height="100%"
-            defaultLanguage="typescript"
-            defaultValue={SAMPLE_CODE}
-            theme="vs-dark"
-            options={{
-              fontSize: 13,
-              fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
-              fontLigatures: true,
-              lineHeight: 22,
-              minimap: { enabled: false },
-              scrollBeyondLastLine: false,
-              wordWrap: 'on',
-              padding: { top: 16 },
-              renderLineHighlight: 'gutter',
-              cursorBlinking: 'smooth',
-              smoothScrolling: true,
-            }}
-          />
-
-          {/* AI usage bar */}
-          <div className="h-8 border-t flex items-center px-4 gap-3 shrink-0"
-            style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
-            <Zap size={12} style={{ color: 'var(--cyan)' }} />
-            <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
-              AI: <span style={{ color: 'var(--cyan)' }}>{aiMinutes} min</span> used today (2hr limit)
-            </span>
-            <div className="w-32 progress-bar h-1">
-              <div className="h-full rounded-full" style={{ width: `${(aiMinutes / 120) * 100}%`, background: 'linear-gradient(90deg, var(--cyan), #7c3aed)' }} />
-            </div>
-            <span className="text-xs ml-auto" style={{ color: 'var(--text-dim)' }}>Resets midnight IST</span>
-          </div>
-
-          {/* Bug finder panel */}
-          {bugPanelOpen && (
-            <div className="border-t shrink-0" style={{ background: 'var(--surface)', borderColor: 'var(--border)', maxHeight: '180px', overflowY: 'auto' }}>
-              <div className="flex items-center justify-between px-4 py-2 border-b" style={{ borderColor: 'var(--border)' }}>
-                <span className="text-xs font-semibold flex items-center gap-2">
-                  <Bug size={12} style={{ color: 'var(--red)' }} /> Bug Finder — 3 issues
-                </span>
-                <button onClick={() => setBugPanelOpen(false)}><X size={12} style={{ color: 'var(--text-muted)' }} /></button>
-              </div>
-              {[
-                { file: 'token.service.ts:11', type: 'Race Condition', impact: '$4,200/mo if in production', sev: 'critical' },
-                { file: 'token.service.ts:16', type: 'Missing null check', impact: 'Potential crash on edge case', sev: 'high' },
-                { file: 'token.service.ts:30', type: 'Dead code block', impact: 'No runtime impact, adds confusion', sev: 'low' },
-              ].map((bug, i) => (
-                <div key={i} className="flex items-center gap-4 px-4 py-2 border-b text-xs cursor-pointer hover:bg-white/5"
-                  style={{ borderColor: 'var(--border)' }}>
-                  <span className="font-mono" style={{ color: 'var(--text-muted)' }}>{bug.file}</span>
-                  <span className="flex-1 font-medium">{bug.type}</span>
-                  <span style={{ color: 'var(--yellow)' }}>{bug.impact}</span>
-                  <span className={bug.sev === 'critical' ? 'badge-critical' : bug.sev === 'high' ? 'badge-high' : 'badge-low'}>
-                    {bug.sev}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Right panel — debt info */}
-      {rightPanel && (
-        <div className="w-64 shrink-0 border-l flex flex-col overflow-y-auto"
-          style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
-          <div className="flex items-center justify-between px-3 py-2.5 border-b" style={{ borderColor: 'var(--border)' }}>
-            <span className="text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>DEBT INFO</span>
-            <button onClick={() => setRightPanel(false)} style={{ color: 'var(--text-dim)' }}><X size={12} /></button>
-          </div>
-
-          {/* File score */}
-          <div className="p-4 border-b" style={{ borderColor: 'var(--border)' }}>
-            <p className="text-xs mb-2" style={{ color: 'var(--text-muted)' }}>File Debt Score</p>
-            <div className="flex items-center gap-3">
-              <div className="relative w-14 h-14">
-                <svg viewBox="0 0 48 48" className="w-full h-full -rotate-90">
-                  <circle cx="24" cy="24" r="20" fill="none" stroke="var(--border)" strokeWidth="4" />
-                  <circle cx="24" cy="24" r="20" fill="none" stroke="#ff3b5c" strokeWidth="4"
-                    strokeDasharray={`${(28 / 100) * 125.6} 125.6`} strokeLinecap="round" />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-xs font-bold font-display" style={{ color: '#ff3b5c' }}>28</span>
-                </div>
-              </div>
-              <div>
-                <p className="text-sm font-bold" style={{ color: '#ff3b5c' }}>Critical</p>
-                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>3 items in file</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Debt items */}
-          <div className="flex-1 p-3 space-y-2">
-            {fileDebtItems.map(item => (
-              <div key={item.id} className="p-3 rounded-xl cursor-pointer hover:bg-white/5 transition-colors border"
-                style={{ background: 'var(--card)', borderColor: 'var(--border)' }}>
-                <div className="flex items-center justify-between gap-2 mb-1.5">
-                  <span className={item.severity === 'critical' ? 'badge-critical' : item.severity === 'high' ? 'badge-high' : 'badge-medium'}>
-                    {item.severity.toUpperCase()}
-                  </span>
-                  <span className="font-mono text-[10px]" style={{ color: 'var(--text-dim)' }}>:{item.line_start}</span>
-                </div>
-                <p className="text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>{item.title}</p>
-                <p className="text-[10px] mt-1.5 font-mono" style={{ color: 'var(--yellow)' }}>${item.cost_usd.toLocaleString()}/mo</p>
-              </div>
-            ))}
-            {fileDebtItems.length === 0 && (
-              <p className="text-xs text-center py-4" style={{ color: 'var(--text-dim)' }}>No debt items in this file</p>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* AI Fix Modal */}
-      {aiOpen && (
-        <div className="modal-overlay" onClick={e => { if (e.target === e.currentTarget) { setAiOpen(false); setAiSuggestion(null) } }}>
-          <div className="modal-box max-w-2xl animate-fadeInUp">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <Sparkles size={18} style={{ color: 'var(--cyan)' }} />
-                <h2 className="font-display text-lg font-bold">AI Fix Suggestion</h2>
-              </div>
-              <button onClick={() => { setAiOpen(false); setAiSuggestion(null) }}>
-                <X size={18} style={{ color: 'var(--text-muted)' }} />
-              </button>
-            </div>
-
-            <div className="p-3 rounded-lg mb-4 text-xs font-mono" style={{ background: 'var(--surface)', color: 'var(--text-muted)' }}>
-              Selected: <span style={{ color: 'var(--cyan)' }}>token.service.ts:11–30</span>
-            </div>
-
-            {!aiSuggestion ? (
-              <div className="text-center py-8">
-                <p className="text-sm mb-4" style={{ color: 'var(--text-muted)' }}>
-                  Claude will analyze the selected code and suggest a fix for the race condition and missing error handling.
-                </p>
-                <button onClick={handleAIFix} disabled={aiLoading} className="btn-primary">
-                  {aiLoading ? (
-                    <><Loader2 size={14} className="animate-spin" /> Generating fix...</>
-                  ) : (
-                    <><Sparkles size={14} /> Generate Fix</>
-                  )}
-                </button>
-              </div>
-            ) : (
-              <>
-                <p className="text-xs mb-2 font-semibold" style={{ color: 'var(--text-muted)' }}>Suggested fix:</p>
-                <div className="terminal text-xs overflow-x-auto mb-4">
-                  <pre style={{ color: '#4ade80' }}>{aiSuggestion}</pre>
-                </div>
-                <div className="flex gap-3">
-                  <button className="btn-primary flex-1 justify-center text-sm">Apply fix</button>
-                  <button className="btn-ghost px-4 text-sm" onClick={() => setAiSuggestion(null)}>Try again</button>
-                  <button className="btn-ghost px-4 text-sm" onClick={() => { setAiOpen(false); setAiSuggestion(null) }}>Cancel</button>
-                </div>
-              </>
-            )}
-
-            <div className="mt-4 flex items-center gap-2 text-xs" style={{ color: 'var(--text-dim)' }}>
-              <Clock size={11} />
-              <span>{aiMinutes} of 120 AI minutes used today</span>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
+import toast from 'react-hot-toast'
+import { useStore } from '@/store/useStore'
 
 export default function EditorPage() {
+  const { currentUser, isAdmin } = useStore()
+  const [activeFile, setActiveFile] = useState('src/app/page.tsx')
+  const [code, setCode] = useState('// ── ANTIGRAVITY NEURAL ENGINE ──────────────────────────────────────\n// Protocol: v4.0.2-stable\n// Sequence: 8Xf-99-A\n\nimport { useEffect } from \'react\'\n\nexport default function NeuralCore() {\n  useEffect(() => {\n    console.log("Antigravity pulse active.");\n  }, []);\n\n  return (\n    <div className="neural-grid">\n      <h1 className="text-gradient">Core Optimized</h1>\n    </div>\n  );\n}')
+  const [sessionActive, setSessionActive] = useState(false)
+  const [aiChat, setAiChat] = useState<{ role: 'user' | 'agent'; text: string }[]>([
+    { role: 'agent', text: 'Neural Intelligence Agent online. Advanced code structural analysis active. How can I assist your session?' }
+  ])
+  const [prompt, setPrompt] = useState('')
+
+  const isPro = currentUser?.plan === 'pro' || currentUser?.plan === 'team' || isAdmin()
+
+  const files = [
+    { name: 'src/app/page.tsx', lang: 'typescript' },
+    { name: 'src/lib/supabase.ts', lang: 'typescript' },
+    { name: 'src/store/useStore.ts', lang: 'typescript' },
+    { name: 'public/globals.css', lang: 'css' },
+    { name: 'next.config.js', lang: 'javascript' },
+  ]
+
+  const handlePrompt = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!prompt.trim()) return
+    if (!isPro) {
+      setAiChat(prev => [...prev, { role: 'user', text: prompt }, { role: 'agent', text: 'AI Neural Mapping is a Premium protocol. Synchronize subscription to unlock.' }])
+      setPrompt('')
+      return
+    }
+    setAiChat(prev => [...prev, { role: 'user', text: prompt }, { role: 'agent', text: 'Neural scan complete. Found 2 structural vulnerabilities. Recommendation: Abstract the data fetching logic into a custom hook.' }])
+    setPrompt('')
+  }
+
+  const generateSession = () => {
+    setSessionActive(true)
+    const link = `https://collabdebt.vercel.app/collab/join?session=${Math.random().toString(36).slice(2, 9)}`
+    navigator.clipboard.writeText(link)
+    toast.success('Secure Collaboration Link uplinked to clipboard.')
+  }
+
   return (
-    <Suspense fallback={<div className="flex-1 flex items-center justify-center" style={{ background: '#020c12' }}>
-      <Loader2 size={24} className="animate-spin" style={{ color: 'var(--text-dim)' }} />
-    </div>}>
-      <EditorContent />
-    </Suspense>
+    <div style={{ 
+      height: 'calc(100vh - 48px)', 
+      display: 'flex', 
+      flexDirection: 'column', 
+      background: '#020609', 
+      marginTop: '-24px', 
+      marginLeft: '-24px', 
+      marginRight: '-24px', 
+      position: 'relative', 
+      overflow: 'hidden',
+      color: '#fff' 
+    }}>
+      
+      {/* Background Glows */}
+      <div style={{ position: 'absolute', top: '-100px', left: '-100px', width: '400px', height: '400px', background: 'radial-gradient(circle, rgba(0, 242, 255, 0.05) 0%, transparent 70%)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', bottom: '-100px', right: '-100px', width: '400px', height: '400px', background: 'radial-gradient(circle, rgba(16, 185, 129, 0.05) 0%, transparent 70%)', pointerEvents: 'none' }} />
+
+      {/* Modern Toolbar */}
+      <div className="glass h-10 px-4 flex items-center justify-between border-b border-white/5 z-20">
+        <div className="flex items-center gap-4">
+           <div className="flex items-center gap-2 group cursor-pointer">
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 group-hover:animate-ping" />
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-400">Live Workspace</span>
+           </div>
+           <div className="h-4 w-[1px] bg-white/10" />
+           <div className="flex items-center gap-2 text-[11px] font-bold text-slate-400">
+              <FileCode size={14} />
+              <span className="hover:text-white transition-colors">{activeFile}</span>
+           </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+           <button className="flex items-center gap-2 px-3 py-1 rounded bg-white/5 hover:bg-white/10 text-[10px] font-black uppercase tracking-widest transition-all">
+              <Save size={12} className="text-blue-400" /> Commit
+           </button>
+           <button className="flex items-center gap-2 px-3 py-1 rounded bg-emerald-500/10 hover:bg-emerald-500/20 text-[10px] font-black uppercase tracking-widest text-emerald-400 transition-all">
+              <Play size={12} /> Execute
+           </button>
+           <div className="h-4 w-[1px] bg-white/10" />
+           <button 
+             onClick={generateSession} 
+             className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-500 hover:bg-blue-600 text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-blue-500/20 transition-all"
+           >
+              <Share2 size={12} /> {sessionActive ? 'Add Uplinks' : 'Initiate Collab'}
+           </button>
+        </div>
+      </div>
+
+      <div className="flex-1 flex overflow-hidden z-10">
+        
+        {/* Explorer Panel */}
+        <aside className="w-60 glass border-r border-white/5 flex flex-col">
+           <div className="p-4 flex items-center justify-between">
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">Explorer</span>
+              <Activity size={12} className="text-emerald-400/50" />
+           </div>
+           <nav className="flex-1 overflow-y-auto px-2 space-y-1">
+              {files.map(f => (
+                <div 
+                  key={f.name}
+                  onClick={() => setActiveFile(f.name)}
+                  className={`flex items-center gap-2.5 px-3 py-2 rounded-lg cursor-pointer transition-all ${activeFile === f.name ? 'bg-white/5 text-blue-400 border border-white/5 shadow-xl' : 'text-slate-500 hover:text-slate-300'}`}
+                >
+                   <FileCode size={14} className={activeFile === f.name ? 'text-blue-400' : 'text-slate-600'} />
+                   <span className="text-xs font-bold truncate">{f.name.split('/').pop()}</span>
+                   {activeFile === f.name && <div className="ml-auto w-1 h-3 rounded-full bg-blue-400" />}
+                </div>
+              ))}
+           </nav>
+           <div className="p-4 border-t border-white/5">
+              <div className="glass-card p-3 space-y-2">
+                 <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-widest text-slate-500">
+                    <span>Health Score</span>
+                    <span className="text-emerald-400">Stable</span>
+                 </div>
+                 <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                    <div className="h-full w-4/5 bg-emerald-400 shadow-[0_0_10px_#10b981]" />
+                 </div>
+              </div>
+           </div>
+        </aside>
+
+        {/* Neural Editor Area */}
+        <main className="flex-1 flex flex-col relative">
+           <div className="flex-1 flex">
+              {/* Line Numbers Simulation */}
+              <div className="w-12 bg-black/20 border-r border-white/5 flex flex-col items-center pt-8 text-[10px] font-mono text-slate-700 select-none">
+                 {[...Array(20)].map((_, i) => (
+                   <div key={i} className="h-6">{i + 1}</div>
+                 ))}
+              </div>
+              <textarea 
+                value={code}
+                onChange={e => setCode(e.target.value)}
+                spellCheck={false}
+                className="flex-1 bg-transparent p-8 font-mono text-[13px] leading-[1.8] text-slate-300 outline-none resize-none custom-scrollbar"
+                style={{ caretColor: 'var(--blue)' }}
+              />
+           </div>
+
+           {/* Integrated Command Terminal */}
+           <div className="h-40 glass border-t border-white/5 flex flex-col">
+              <div className="h-8 px-4 flex items-center justify-between border-b border-white/5 bg-black/20">
+                 <div className="flex items-center gap-2">
+                    <TerminalIcon size={12} className="text-slate-500" />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Neural Log Output</span>
+                 </div>
+                 <div className="flex gap-4">
+                    <div className="flex items-center gap-1.5 text-[9px] font-bold text-emerald-400">
+                       <Zap size={10} /> Sync 14ms
+                    </div>
+                    <div className="flex items-center gap-1.5 text-[9px] font-bold text-blue-400">
+                       <GitBranch size={10} /> Main
+                    </div>
+                 </div>
+              </div>
+              <div className="flex-1 p-4 font-mono text-[11px] overflow-y-auto space-y-1 custom-scrollbar">
+                 <div className="text-emerald-400">[SYSTEM] Intelligence Engine V4 uplink established...</div>
+                 <div className="text-slate-500">[INFO] Workspace mapped to 12.4GB repository structure.</div>
+                 <div className="text-yellow-400">[WARN] Security Policy: Unsigned commits detected in 2 branches.</div>
+                 <div className="text-slate-500 flex items-center gap-2">
+                    <span className="text-blue-400">➜</span>
+                    <span className="text-white animate-pulse">_</span>
+                 </div>
+              </div>
+           </div>
+        </main>
+
+        {/* Intelligence Sidebar */}
+        <aside className="w-72 glass border-l border-white/5 flex flex-col">
+           {/* Surveillance Module */}
+           {(currentUser?.role === 'manager' || isAdmin()) && (
+              <div className="p-4 border-b border-white/5 bg-red-500/5">
+                 <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.2em] text-red-500 mb-4">
+                    <Shield size={12} /> Surveillance Mode
+                 </div>
+                 <div className="glass p-3 rounded-xl border-red-500/20">
+                    <div className="flex items-center gap-3 mb-2">
+                       <div className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-[10px] font-bold text-white border border-white/10">JC</div>
+                       <div>
+                          <p className="text-[11px] font-bold text-white">Jane Cooper</p>
+                          <p className="text-[9px] text-slate-500 capitalize">Role: Developer</p>
+                       </div>
+                    </div>
+                    <div className="flex items-center gap-2 text-[10px] font-bold text-emerald-400">
+                       <Activity size={12} className="animate-pulse" /> 104 ACTIONS/MIN
+                    </div>
+                 </div>
+              </div>
+           )}
+
+           {/* AI Chat Logic */}
+           <div className="flex-1 flex flex-col p-4 overflow-hidden">
+              <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-4">
+                 <Bot size={13} /> Neural Interaction
+              </div>
+              <div className="flex-1 overflow-y-auto space-y-4 custom-scrollbar pr-2 mb-4">
+                 {aiChat.map((m, i) => (
+                   <div key={i} className={`flex flex-col ${m.role === 'user' ? 'items-end' : 'items-start'}`}>
+                      <div className={`max-w-[85%] p-3 rounded-2xl text-xs leading-relaxed ${m.role === 'user' ? 'bg-blue-600 text-white rounded-tr-none' : 'bg-white/5 text-slate-300 rounded-tl-none border border-white/5 shadow-2xl'}`}>
+                         {m.text}
+                      </div>
+                   </div>
+                 ))}
+              </div>
+              <form onSubmit={handlePrompt} className="relative mt-auto">
+                 <input 
+                   value={prompt}
+                   onChange={e => setPrompt(e.target.value)}
+                   className="w-full h-11 bg-white/5 border border-white/10 rounded-xl px-4 pr-12 text-xs focus:ring-2 focus:ring-blue-500/50 outline-none transition-all placeholder:text-slate-600"
+                   placeholder="Neural request..."
+                 />
+                 <button type="submit" className="absolute right-2 top-2 w-7 h-7 bg-blue-500 hover:bg-blue-600 rounded-lg flex items-center justify-center text-white transition-all">
+                    <ChevronRight size={16} />
+                 </button>
+              </form>
+           </div>
+        </aside>
+      </div>
+    </div>
   )
 }

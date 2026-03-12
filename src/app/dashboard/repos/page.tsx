@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react'
 import { GitBranch, Plus, RefreshCw, Settings, X, Github, Database, Shield, Zap, Search, LayoutGrid, List } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import toast from 'react-hot-toast'
 import { useStore } from '@/store/useStore'
 
 const HEALTH_COLOR = (s: number) => s > 70 ? '#00f2ff' : s > 40 ? '#ffd600' : '#ff3b5c'
@@ -217,6 +218,10 @@ export default function ReposPage() {
                    <motion.button 
                      whileHover={{ scale: 1.02 }}
                      whileTap={{ scale: 0.98 }}
+                     onClick={() => {
+                        setConnectOpen(false);
+                        toast.success('Neural Handshake Successful. Core linked.');
+                     }}
                      className="btn-primary-emerald w-full py-4 font-black uppercase tracking-[0.2em] text-xs shadow-xl shadow-emerald-500/20"
                    >
                      Initiate Handshake

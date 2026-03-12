@@ -1,196 +1,174 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { UserPlus, Search, MoreHorizontal, Crown, MessageSquare, UserCheck, X, Shield, Activity, Share2, Mail, Terminal } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { UserPlus, Search, Crown, MessageSquare, Mail, X, Shield, Plus, Loader2 } from 'lucide-react'
 import { useStore } from '@/store/useStore'
 
 export default function TeamPage() {
-  const { team } = useStore()
+  const { team, currentUser, isAdmin } = useStore()
   const [inviteOpen, setInviteOpen] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
+  const [search, setSearch] = useState('')
+  const [loading, setLoading] = useState(false)
 
   const filtered = useMemo(() => {
     return team.filter(m =>
-      m.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      m.user_code.toLowerCase().includes(searchQuery.toLowerCase())
+      m.name.toLowerCase().includes(search.toLowerCase()) ||
+      m.email?.toLowerCase().includes(search.toLowerCase())
     )
-  }, [team, searchQuery])
+  }, [team, search])
+
+  const handleInvite = (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    setTimeout(() => {
+      setLoading(false)
+      setInviteOpen(false)
+    }, 1000)
+  }
+
+  const isManager = currentUser?.role === 'manager' || isAdmin()
 
   return (
-    <div className="space-y-8 animate-fadeIn">
-      
-      {/* Header Area */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 text-purple-400 font-bold text-xs uppercase tracking-[0.2em]">
-            <Shield size={14} /> Fleet Security Division
+    <div className="max-w-6xl">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text)' }}>Fleet Command</h1>
+          <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Manage your engineering personnel and roles.</p>
+        </div>
+        {isManager && (
+          <button onClick={() => setInviteOpen(true)} className="btn-primary py-1.5 px-4 text-xs">
+            <UserPlus size={14} /> Enlist Personnel
+          </button>
+        )}
+      </div>
+
+      {/* Control bar */}
+      <div className="flex items-center gap-3 mb-6">
+        <div style={{ position: 'relative', flex: 1, maxWidth: '320px' }}>
+          <Search size={13} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-dim)' }} />
+          <input
+            className="input"
+            style={{ paddingLeft: '32px', fontSize: '12px' }}
+            placeholder="Scan by identity or email..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+        </div>
+        <div style={{ marginLeft: 'auto', fontSize: '12px', color: 'var(--text-dim)' }}>
+          {filtered.length} personnel active
+        </div>
+      </div>
+
+      {/* Grid */}
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {filtered.map((member) => (
+          <div key={member.id} className="card group">
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div style={{
+                  width: '40px', height: '40px', borderRadius: '8px', background: 'var(--bg-tertiary)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '14px', fontWeight: 700, color: 'var(--text-muted)', border: '1px solid var(--border)'
+                }}>
+                  {member.name.split(' ').map(n => n[0]).join('')}
+                </div>
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>{member.name}</span>
+                    {member.role === 'manager' && <Crown size={11} className="text-yellow-500" />}
+                  </div>
+                  <div style={{ fontSize: '11px', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    {member.role === 'manager' ? 'Command Officer' : 'Fleet Engineer'}
+                  </div>
+                </div>
+              </div>
+              <div className={`w-1.5 h-1.5 rounded-full ${member.online ? 'bg-green-500' : 'bg-zinc-700'}`} />
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 mb-4">
+              <div style={{ background: 'var(--bg-tertiary)', padding: '10px', borderRadius: '6px' }}>
+                <div style={{ fontSize: '10px', color: 'var(--text-dim)', marginBottom: '2px', textTransform: 'uppercase' }}>Items Fixed</div>
+                <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--purple)' }}>{member.items_fixed}</div>
+              </div>
+              <div style={{ background: 'var(--bg-tertiary)', padding: '10px', borderRadius: '6px' }}>
+                <div style={{ fontSize: '10px', color: 'var(--text-dim)', marginBottom: '2px', textTransform: 'uppercase' }}>Fleet ID</div>
+                <div style={{ fontSize: '11px', fontFamily: 'JetBrains Mono, monospace', color: 'var(--text-muted)', marginTop: '4px' }}>{member.user_code}</div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button className="btn-ghost flex-1 py-1.5 text-[11px] font-semibold">
+                <Mail size={12} /> Contact
+              </button>
+              <button className="btn-ghost p-1.5">
+                <Shield size={12} className="text-zinc-500" />
+              </button>
+            </div>
           </div>
-          <h1 className="text-4xl font-display font-black text-white tracking-tighter">Command <span className="text-gradient-purple">Fleet.</span></h1>
-        </div>
-        <div className="flex items-center gap-3">
-           <div className="glass-card px-4 py-2 flex items-center gap-2 text-xs font-bold text-slate-400">
-              <Activity size={14} className="text-purple-400" /> Active Ranks: {team.length}
-           </div>
-           <motion.button 
-             whileHover={{ scale: 1.02 }}
-             whileTap={{ scale: 0.98 }}
-             onClick={() => setInviteOpen(true)} 
-             className="btn-primary-purple px-6 py-2.5 text-sm shadow-[0_0_20px_rgba(168,85,247,0.2)]"
-           >
-             <UserPlus size={16} /> Enlist Personnel
-           </motion.button>
-        </div>
+        ))}
       </div>
 
-      {/* Control Module */}
-      <div className="glass shadow-2xl p-4 rounded-[24px] flex flex-wrap items-center gap-4 relative overflow-hidden">
-        <div className="absolute inset-0 bg-purple-400/[0.02] pointer-events-none" />
-        <div className="w-10 h-10 rounded-xl glass border-white/5 flex items-center justify-center text-slate-500">
-           <Search size={18} />
-        </div>
-        <input 
-          className="bg-transparent flex-1 min-w-[200px] px-2 text-sm font-bold text-white outline-none placeholder:text-slate-600 uppercase tracking-widest" 
-          placeholder="Scan by identity or fleet code..."
-          value={searchQuery} 
-          onChange={e => setSearchQuery(e.target.value)} 
-        />
-        <div className="flex gap-2">
-           <button className="glass p-2 text-slate-500 hover:text-white transition-all"><Terminal size={16} /></button>
-           <button className="glass p-2 text-slate-500 hover:text-white transition-all"><Share2 size={16} /></button>
-        </div>
-      </div>
-
-      {/* Fleet Grid */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <AnimatePresence mode="popLayout" initial={false}>
-          {filtered.map((member, i) => (
-            <motion.div 
-              key={member.id}
-              layout
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
-              className="glass-card group p-6 relative overflow-hidden transition-all duration-500 hover:border-purple-500/30"
-            >
-              <div className="absolute top-0 right-0 p-4">
-                 <div className={`w-2 h-2 rounded-full ${member.online ? 'bg-cyan-400 animate-glow shadow-[0_0_10px_rgba(0,242,255,1)]' : 'bg-slate-700'}`} />
-              </div>
-
-              <div className="flex items-center gap-4 mb-6">
-                <div className="w-14 h-14 rounded-2xl glass border-white/10 flex items-center justify-center relative shadow-xl transform group-hover:rotate-6 transition-transform">
-                  <div className="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-purple-500 to-cyan-500 rounded-full blur-[1px]" />
-                  <span className="text-lg font-black text-white">{member.name.split(' ').map(n => n[0]).join('')}</span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-sm font-black text-white truncate flex items-center gap-2 uppercase tracking-tight">
-                    {member.name}
-                    {member.role === 'manager' && <Crown size={12} className="text-yellow-400 drop-shadow-[0_0_5px_rgba(250,204,21,0.5)]" />}
-                  </h3>
-                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mt-1">{member.role === 'manager' ? 'Command Officer' : 'Fleet Engineer'}</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4 mb-6">
-                <div className="glass p-3 rounded-xl space-y-1">
-                   <p className="text-[8px] font-black text-slate-600 uppercase tracking-widest leading-none">Cores Fixed</p>
-                   <p className="text-base font-black text-purple-400 leading-none">{member.items_fixed}</p>
-                </div>
-                <div className="glass p-3 rounded-xl space-y-1 text-right">
-                   <p className="text-[8px] font-black text-slate-600 uppercase tracking-widest leading-none">Fleet ID</p>
-                   <p className="text-xs font-mono font-bold text-slate-400 truncate leading-none mt-1.5">{member.user_code}</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                 <button className="flex-1 glass py-2 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-white transition-all flex items-center justify-center gap-2">
-                    <Mail size={12} /> Contact
-                 </button>
-                 <button className="glass w-10 h-9 flex items-center justify-center rounded-xl text-slate-500 hover:text-white transition-all">
-                    <MoreHorizontal size={14} />
-                 </button>
-              </div>
-            </motion.div>
-          ))}
-        </AnimatePresence>
-      </div>
-
-      {/* Pending Transmission */}
-      <div className="glass-card p-6 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-purple-500/[0.03] to-transparent pointer-events-none" />
-        <h2 className="text-sm font-black uppercase tracking-[0.2em] text-white mb-6 flex items-center gap-2">
-           <Activity size={16} className="text-slate-500" /> Pending Transmission
+      {/* Transmissions */}
+      <div className="mt-12">
+        <h2 style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Plus size={14} style={{ color: 'var(--text-dim)' }} /> Pending Transmissions
         </h2>
-        <div className="space-y-4">
+        <div className="space-y-2">
           {[
-            { email: 'commander_alpha@acme.space', rank: 'Captain', status: 'Warping...' },
+            { email: 'commander_alpha@acme.space', rank: 'Captain', status: 'Pending' },
             { email: 'officer_gamma@labs.io', rank: 'Navigator', status: 'En route' },
           ].map((inv, i) => (
-            <div key={i} className="flex items-center justify-between p-4 glass rounded-2xl border-white/5 hover:border-purple-500/20 transition-all">
-              <div className="flex items-center gap-4">
-                <div className="w-8 h-8 rounded-lg glass flex items-center justify-center"><Mail size={14} className="text-slate-500" /></div>
-                <div>
-                  <div className="text-xs font-black text-white uppercase tracking-tight">{inv.email}</div>
-                  <div className="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-1">Rank: {inv.rank} · Active Scan</div>
-                </div>
+            <div key={i} className="table-row">
+              <Mail size={13} style={{ color: 'var(--text-dim)' }} />
+              <div className="flex-1">
+                <div style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text)' }}>{inv.email}</div>
+                <div style={{ fontSize: '11px', color: 'var(--text-dim)' }}>Rank: {inv.rank}</div>
               </div>
-              <div className="flex items-center gap-4">
-                <span className="badge-purple text-[8px] font-black uppercase tracking-widest animate-pulse px-3 py-1">{inv.status}</span>
-                <button className="w-8 h-8 rounded-lg glass flex items-center justify-center text-slate-600 hover:text-red-400 transition-colors"><X size={14} /></button>
-              </div>
+              <span className="badge badge-muted">{inv.status}</span>
+              <button className="p-1.5 text-zinc-500 hover:text-red-500 transition-colors">
+                <X size={14} />
+              </button>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Personnel Enlistment Modal */}
-      <AnimatePresence>
-        {inviteOpen && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm" onClick={e => { if (e.target === e.currentTarget) setInviteOpen(false) }}>
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9, y: 30 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 30 }}
-              className="glass border-white/10 max-w-md w-full rounded-[32px] p-8 shadow-2xl relative overflow-hidden"
-            >
-              <div className="absolute top-0 right-0 p-4">
-                 <X size={20} className="text-slate-600 cursor-pointer hover:text-white transition-colors" onClick={() => setInviteOpen(false)} />
-              </div>
-              
-              <div className="text-center mb-8">
-                <div className="w-16 h-16 rounded-[24px] glass border-purple-500/20 flex items-center justify-center mx-auto text-purple-400 mb-4 shadow-xl shadow-purple-500/10">
-                   <UserPlus size={32} />
-                </div>
-                <h2 className="text-xl font-display font-black text-white uppercase tracking-tight line-clamp-1">Enlist Personnel</h2>
-                <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mt-1">Expansion Order 14</p>
-              </div>
+      {/* Modal */}
+      {inviteOpen && (
+        <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setInviteOpen(false)}>
+          <div className="modal-box" style={{ maxWidth: '400px' }}>
+            <div className="flex items-center justify-between mb-6">
+              <h2 style={{ fontSize: '16px', fontWeight: 700 }}>Enlist Personnel</h2>
+              <X size={16} style={{ cursor: 'pointer', color: 'var(--text-dim)' }} onClick={() => setInviteOpen(false)} />
+            </div>
 
-              <div className="space-y-6">
-                <div>
-                  <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-3 ml-1">Universal Address</label>
-                  <input className="glass-card w-full p-4 text-sm font-bold bg-transparent outline-none focus:ring-1 focus:ring-purple-500/30 text-white placeholder:text-slate-700" type="email" placeholder="ENTITY_ID@DOMAIN.SPACE" />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-3 ml-1">Command Rank</label>
-                  <select className="glass-card w-full p-4 text-sm font-bold bg-transparent outline-none focus:ring-1 focus:ring-purple-500/30 text-white">
-                    <option value="developer" className="bg-[#020609]">FLEET ENGINEER</option>
-                    <option value="viewer" className="bg-[#020609]">FLEET OBSERVER</option>
-                  </select>
-                </div>
-                <div className="pt-4 flex gap-4">
-                  <motion.button 
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="btn-primary-purple flex-1 py-4 font-black uppercase tracking-[0.2em] text-xs shadow-xl shadow-purple-500/20"
-                  >
-                    Authorize Enlistment
-                  </motion.button>
-                </div>
+            <form onSubmit={handleInvite} className="space-y-4">
+              <div>
+                <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '6px', textTransform: 'uppercase' }}>
+                  Email Address
+                </label>
+                <input className="input" type="email" placeholder="jane@company.com" required />
               </div>
-            </motion.div>
+              <div>
+                <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '6px', textTransform: 'uppercase' }}>
+                  Command Rank
+                </label>
+                <select className="input">
+                  <option value="developer">Fleet Engineer</option>
+                  <option value="manager">Command Officer</option>
+                  <option value="viewer">Fleet Observer</option>
+                </select>
+              </div>
+              <div className="pt-4">
+                <button type="submit" disabled={loading} className="btn-primary w-full py-2.5 justify-center">
+                  {loading ? <Loader2 size={16} className="animate-spin" /> : 'Authorize Enlistment'}
+                </button>
+              </div>
+            </form>
           </div>
-        )}
-      </AnimatePresence>
+        </div>
+      )}
     </div>
   )
 }
