@@ -145,23 +145,24 @@ ${topROI.map((d, i) => `${i + 1}. **${d.title}** — Estimated savings: $${(d.co
       )}
 
       {/* Cost impact */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {[
-          { label: 'Total Monthly Cost', value: `$${(totalCost / 1000).toFixed(1)}K`, color: 'var(--red)', icon: DollarSign, sub: `${debtItems.filter(d => d.status !== 'fixed').length} active anomalies` },
-          { label: 'Feature Delivery Slowdown', value: `${Math.min(60, debtItems.length * 2)}%`, color: 'var(--yellow)', icon: TrendingDown, sub: 'Estimated from debt volume' },
-          { label: 'Savings Potential (Top 3)', value: `$${(potentialSavings / 1000).toFixed(1)}K`, color: 'var(--green)', icon: DollarSign, sub: 'Monthly cost recoverable' },
+          { label: 'Total Monthly Cost', value: `$${(totalCost / 1000).toFixed(1)}K`, color: 'var(--red)', icon: DollarSign, sub: `${debtItems.filter(d => d.status !== 'fixed').length} active anomalies`, glow: 'rgba(255,59,92,0.1)' },
+          { label: 'Delivery Slowdown', value: `${Math.min(60, debtItems.length * 2)}%`, color: 'var(--yellow)', icon: TrendingDown, sub: 'Estimated productivity impact', glow: 'rgba(255,214,0,0.1)' },
+          { label: 'Savings Potential', value: `$${(potentialSavings / 1000).toFixed(1)}K`, color: 'var(--green)', icon: DollarSign, sub: 'Monthly ROI from top 3', glow: 'rgba(0,255,136,0.1)' },
         ].map((m, i) => (
-          <div key={i} className="metric-card">
-            <div className="flex items-start justify-between">
+          <div key={i} className="glass p-6 rounded-[24px] border border-white/5 relative overflow-hidden group hover:border-white/10 transition-all">
+            <div className="absolute inset-0 pointer-events-none" style={{ background: `radial-gradient(circle at top right, ${m.glow} 0%, transparent 70%)` }} />
+            <div className="flex items-start justify-between relative z-10">
               <div>
-                <p className="metric-label">{m.label}</p>
-                <p className="text-2xl font-bold font-display mt-1" style={{ color: m.color }}>{m.value}</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] mb-1" style={{ color: 'var(--text-dim)' }}>{m.label}</p>
+                <p className="text-3xl font-display font-black" style={{ color: m.color }}>{m.value}</p>
               </div>
-              <div className="p-2.5 rounded-lg" style={{ background: `${m.color}15` }}>
-                <m.icon size={18} style={{ color: m.color }} />
+              <div className="p-3 rounded-2xl" style={{ background: 'var(--bg-tertiary)', border: '1px solid var(--border)' }}>
+                <m.icon size={20} style={{ color: m.color }} />
               </div>
             </div>
-            <p className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>{m.sub}</p>
+            <p className="text-[10px] font-bold mt-4 relative z-10" style={{ color: 'var(--text-muted)' }}>{m.sub}</p>
           </div>
         ))}
       </div>

@@ -9,8 +9,7 @@ const NAV = [
   { id: 'integrations', label: 'Integrations', icon: Puzzle },
   { id: 'billing', label: 'Billing', icon: CreditCard },
   { id: 'security', label: 'Security', icon: Shield },
-  { id: 'api', label: 'API Keys', icon: Key },
-]
+];
 
 function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
   return (
@@ -142,31 +141,6 @@ export default function SettingsPage() {
           ))}
           <button className="text-sm mt-3" style={{ color: 'var(--red)' }}>Revoke all sessions</button>
         </div>
-      </div>
-    ),
-    api: (
-      <div className="space-y-6">
-        <h2 className="font-display text-lg font-bold">API Keys</h2>
-        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-          Use API keys to integrate CollabDebt with your own tools and workflows.
-        </p>
-        <div className="p-4 rounded-xl" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium">Production Key</span>
-            <span className="badge-low text-[10px]">Active</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <code className="font-mono text-xs flex-1 truncate" style={{ color: 'var(--text-muted)' }}>
-              cd_sk_live_••••••••••••••••••••
-            </code>
-            <button onClick={copyKey} className="p-1.5 rounded-lg hover:bg-white/10 transition-colors" style={{ color: 'var(--text-muted)' }}>
-              {copied ? <Check size={14} style={{ color: 'var(--green)' }} /> : <Copy size={14} />}
-            </button>
-          </div>
-        </div>
-        <button className="btn-primary text-sm">
-          <Key size={14} /> Generate New Key
-        </button>
       </div>
     ),
   }

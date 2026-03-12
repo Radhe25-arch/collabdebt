@@ -60,53 +60,72 @@ export default function TeamPage() {
         </div>
       </div>
 
-      {/* Grid */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filtered.map((member) => (
-          <div key={member.id} className="card group">
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div style={{
-                  width: '40px', height: '40px', borderRadius: '8px', background: 'var(--bg-tertiary)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '14px', fontWeight: 700, color: 'var(--text-muted)', border: '1px solid var(--border)'
-                }}>
-                  {member.name.split(' ').map(n => n[0]).join('')}
-                </div>
-                <div>
+      {/* Team List */}
+      <div className="card overflow-hidden p-0" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)' }}>
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--border)' }}>
+              <th className="px-6 py-4 text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-dim)' }}>Personnel</th>
+              <th className="px-6 py-4 text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-dim)' }}>Status</th>
+              <th className="px-6 py-4 text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-dim)' }}>Role</th>
+              <th className="px-6 py-4 text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-dim)' }}>Activity</th>
+              <th className="px-6 py-4 text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-dim)' }}>Fleet ID</th>
+              <th className="px-6 py-4"></th>
+            </tr>
+          </thead>
+          <tbody className="divide-y" style={{ borderColor: 'var(--border)' }}>
+            {filtered.map((member) => (
+              <tr key={member.id} className="hover:bg-white/[0.02] transition-colors">
+                <td className="px-6 py-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-md flex items-center justify-center font-bold text-xs"
+                      style={{ background: 'var(--bg-tertiary)', color: 'var(--text-muted)', border: '1px solid var(--border)' }}>
+                      {member.name.split(' ').map(n => n[0]).join('')}
+                    </div>
+                    <div>
+                      <div className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{member.name}</div>
+                      <div className="text-[10px]" style={{ color: 'var(--text-dim)' }}>{member.email}</div>
+                    </div>
+                  </div>
+                </td>
+                <td className="px-6 py-4">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-1.5 h-1.5 rounded-full ${member.online ? 'bg-green-500' : 'bg-zinc-600'}`} />
+                    <span className="text-xs" style={{ color: member.online ? 'var(--green)' : 'var(--text-dim)' }}>
+                      {member.online ? 'Active' : 'Offline'}
+                    </span>
+                  </div>
+                </td>
+                <td className="px-6 py-4">
                   <div className="flex items-center gap-1.5">
-                    <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>{member.name}</span>
-                    {member.role === 'manager' && <Crown size={11} className="text-yellow-500" />}
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-medium ${member.role === 'manager' ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20' : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'}`}>
+                      {member.role === 'manager' ? 'Command' : 'Engineer'}
+                    </span>
                   </div>
-                  <div style={{ fontSize: '11px', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    {member.role === 'manager' ? 'Command Officer' : 'Fleet Engineer'}
+                </td>
+                <td className="px-6 py-4">
+                  <div className="flex flex-col gap-1">
+                    <div className="flex justify-between items-center text-[10px]" style={{ color: 'var(--text-dim)' }}>
+                      <span>Neutralized Tasks</span>
+                      <span>{member.items_fixed}</span>
+                    </div>
+                    <div className="w-24 h-1 rounded-full bg-white/5 overflow-hidden">
+                      <div className="h-full bg-purple-500" style={{ width: `${Math.min(100, (member.items_fixed / 20) * 100)}%` }} />
+                    </div>
                   </div>
-                </div>
-              </div>
-              <div className={`w-1.5 h-1.5 rounded-full ${member.online ? 'bg-green-500' : 'bg-zinc-700'}`} />
-            </div>
-
-            <div className="grid grid-cols-2 gap-2 mb-4">
-              <div style={{ background: 'var(--bg-tertiary)', padding: '10px', borderRadius: '6px' }}>
-                <div style={{ fontSize: '10px', color: 'var(--text-dim)', marginBottom: '2px', textTransform: 'uppercase' }}>Items Fixed</div>
-                <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--purple)' }}>{member.items_fixed}</div>
-              </div>
-              <div style={{ background: 'var(--bg-tertiary)', padding: '10px', borderRadius: '6px' }}>
-                <div style={{ fontSize: '10px', color: 'var(--text-dim)', marginBottom: '2px', textTransform: 'uppercase' }}>Fleet ID</div>
-                <div style={{ fontSize: '11px', fontFamily: 'JetBrains Mono, monospace', color: 'var(--text-muted)', marginTop: '4px' }}>{member.user_code}</div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <button className="btn-ghost flex-1 py-1.5 text-[11px] font-semibold">
-                <Mail size={12} /> Contact
-              </button>
-              <button className="btn-ghost p-1.5">
-                <Shield size={12} className="text-zinc-500" />
-              </button>
-            </div>
-          </div>
-        ))}
+                </td>
+                <td className="px-6 py-4 font-mono text-[10px]" style={{ color: 'var(--text-dim)' }}>
+                  {member.user_code}
+                </td>
+                <td className="px-6 py-4 text-right">
+                  <button className="p-2 rounded-lg hover:bg-white/5 transition-colors" style={{ color: 'var(--text-dim)' }}>
+                    <Mail size={14} />
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
 
       {/* Transmissions */}

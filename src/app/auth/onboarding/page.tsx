@@ -107,10 +107,20 @@ export default function OnboardingPage() {
 
   return (
     <div style={{
-      minHeight: '100vh', background: 'var(--bg)', display: 'flex',
-      alignItems: 'center', justifyContent: 'center', padding: '24px'
+      minHeight: '100vh', 
+      background: 'radial-gradient(circle at top left, #0a192f 0%, #020609 100%)', 
+      display: 'flex',
+      alignItems: 'center', 
+      justifyContent: 'center', 
+      padding: '24px',
+      position: 'relative',
+      overflow: 'hidden'
     }}>
-      <div style={{ width: '100%', maxWidth: '560px' }}>
+      {/* Background Glows */}
+      <div style={{ position: 'absolute', top: '-10%', left: '-10%', width: '500px', height: '500px', background: 'radial-gradient(circle, rgba(0, 242, 255, 0.03) 0%, transparent 70%)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', bottom: '-10%', right: '-10%', width: '500px', height: '500px', background: 'radial-gradient(circle, rgba(124, 58, 237, 0.03) 0%, transparent 70%)', pointerEvents: 'none' }} />
+
+      <div className="glass border border-white/5 rounded-[32px] p-10 shadow-2xl relative z-10" style={{ width: '100%', maxWidth: '640px' }}>
 
         {/* Logo */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '40px' }}>
@@ -122,11 +132,15 @@ export default function OnboardingPage() {
         </div>
 
         {/* Progress */}
-        <div style={{ display: 'flex', gap: '6px', marginBottom: '36px' }}>
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '48px' }}>
           {steps.map((s, i) => (
             <div key={s} style={{
-              flex: 1, height: '3px', borderRadius: '2px', transition: 'background 0.3s',
-              background: i <= stepIdx ? 'var(--blue)' : 'var(--border)'
+              flex: 1, 
+              height: '4px', 
+              borderRadius: '2px', 
+              transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+              background: i <= stepIdx ? 'var(--blue)' : 'var(--border)',
+              boxShadow: i <= stepIdx ? '0 0 10px rgba(0,112,243,0.3)' : 'none'
             }} />
           ))}
         </div>
@@ -140,7 +154,7 @@ export default function OnboardingPage() {
             <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '24px' }}>
               Select your engineering roles (You can pick multiple).
             </p>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '10px' }}>
               {ROLES.map(role => {
                 const active = selected.roles.includes(role)
                 return (
@@ -148,14 +162,14 @@ export default function OnboardingPage() {
                     key={role}
                     onClick={() => toggleMulti('roles', role)}
                     style={{
-                      padding: '11px 14px', borderRadius: '7px', fontSize: '13px', fontWeight: 500,
-                      textAlign: 'left', cursor: 'pointer', transition: 'all 0.15s',
-                      background: active ? 'rgba(0,112,243,0.1)' : 'var(--bg-secondary)',
-                      border: `1px solid ${active ? 'var(--blue)' : 'var(--border)'}`,
+                      padding: '12px 16px', borderRadius: '12px', fontSize: '13px', fontWeight: 600,
+                      textAlign: 'left', cursor: 'pointer', transition: 'all 0.2s',
+                      background: active ? 'rgba(0,112,243,0.1)' : 'white/[0.02]',
+                      border: `1px solid ${active ? 'var(--blue)' : 'rgba(255,255,255,0.05)'}`,
                       color: active ? 'var(--blue)' : 'var(--text-muted)',
                     }}
                   >
-                    {active && <span style={{ marginRight: '6px' }}>✓</span>}
+                    {active && <span style={{ marginRight: '8px' }}>✓</span>}
                     {role}
                   </button>
                 )

@@ -5,7 +5,7 @@ import {
   Terminal as TerminalIcon, FileCode, Play, Save, Share2,
   Bot, Clock, Activity, Search, ChevronRight, ChevronDown,
   Layout, PanelLeft, PanelRight, MessageSquare, Shield,
-  Eye, Zap, Globe, GitBranch
+  Eye, Zap, Globe, GitBranch, X
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useStore } from '@/store/useStore'
@@ -13,32 +13,33 @@ import { useStore } from '@/store/useStore'
 export default function EditorPage() {
   const { currentUser, isAdmin } = useStore()
   const [activeFile, setActiveFile] = useState('src/app/page.tsx')
-  const [code, setCode] = useState('// ── ANTIGRAVITY NEURAL ENGINE ──────────────────────────────────────\n// Protocol: v4.0.2-stable\n// Sequence: 8Xf-99-A\n\nimport { useEffect } from \'react\'\n\nexport default function NeuralCore() {\n  useEffect(() => {\n    console.log("Antigravity pulse active.");\n  }, []);\n\n  return (\n    <div className="neural-grid">\n      <h1 className="text-gradient">Core Optimized</h1>\n    </div>\n  );\n}')
+  const [openFiles, setOpenFiles] = useState(['src/app/page.tsx', 'src/lib/supabase.ts'])
+  const [code, setCode] = useState('import { createClient } from \'@supabase/supabase-js\'\n\nconst supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL\nconst supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY\n\nexport const supabase = createClient(supabaseUrl!, supabaseAnonKey!)\n\nexport async function getDebtItems(repoId: string) {\n  const { data, error } = await supabase\n    .from(\'debt_items\')\n    .select(\'*\')\n    .eq(\'repo_id\', repoId)\n    .order(\'created_at\', { ascending: false })\n\n  if (error) throw error\n  return data\n}')
   const [sessionActive, setSessionActive] = useState(false)
   const [aiChat, setAiChat] = useState<{ role: 'user' | 'agent'; text: string }[]>([
-    { role: 'agent', text: 'Neural Intelligence Agent online. Advanced code structural analysis active. How can I assist your session?' }
+    { role: 'agent', text: 'Assistant online. Analysis active for workspace. How can I help?' }
   ])
   const [prompt, setPrompt] = useState('')
 
   const isPro = currentUser?.plan === 'pro' || currentUser?.plan === 'team' || isAdmin()
 
   const files = [
-    { name: 'src/app/page.tsx', lang: 'typescript' },
-    { name: 'src/lib/supabase.ts', lang: 'typescript' },
-    { name: 'src/store/useStore.ts', lang: 'typescript' },
-    { name: 'public/globals.css', lang: 'css' },
-    { name: 'next.config.js', lang: 'javascript' },
+    { name: 'src/app/page.tsx', lang: 'typescript', status: 'modified' },
+    { name: 'src/lib/supabase.ts', lang: 'typescript', status: 'unmodified' },
+    { name: 'src/store/useStore.ts', lang: 'typescript', status: 'added' },
+    { name: 'public/globals.css', lang: 'css', status: 'unmodified' },
+    { name: 'next.config.js', lang: 'javascript', status: 'unmodified' },
   ]
 
   const handlePrompt = (e: React.FormEvent) => {
     e.preventDefault()
     if (!prompt.trim()) return
     if (!isPro) {
-      setAiChat(prev => [...prev, { role: 'user', text: prompt }, { role: 'agent', text: 'AI Neural Mapping is a Premium protocol. Synchronize subscription to unlock.' }])
+      setAiChat(prev => [...prev, { role: 'user', text: prompt }, { role: 'agent', text: 'Advanced code analysis is a Pro feature. Please upgrade your workspace to unlock AI-assisted refactoring.' }])
       setPrompt('')
       return
     }
-    setAiChat(prev => [...prev, { role: 'user', text: prompt }, { role: 'agent', text: 'Neural scan complete. Found 2 structural vulnerabilities. Recommendation: Abstract the data fetching logic into a custom hook.' }])
+    setAiChat(prev => [...prev, { role: 'user', text: prompt }, { role: 'agent', text: 'Analysis complete. I recommend abstracting the database connection into a singleton pattern to avoid connection pooling issues in serverless environments. Would you like me to generate the refactor?' }])
     setPrompt('')
   }
 
@@ -106,19 +107,23 @@ export default function EditorPage() {
               <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">Explorer</span>
               <Activity size={12} className="text-emerald-400/50" />
            </div>
-           <nav className="flex-1 overflow-y-auto px-2 space-y-1">
+            <nav className="flex-1 overflow-y-auto px-2 space-y-0.5">
               {files.map(f => (
                 <div 
                   key={f.name}
-                  onClick={() => setActiveFile(f.name)}
-                  className={`flex items-center gap-2.5 px-3 py-2 rounded-lg cursor-pointer transition-all ${activeFile === f.name ? 'bg-white/5 text-blue-400 border border-white/5 shadow-xl' : 'text-slate-500 hover:text-slate-300'}`}
+                  onClick={() => {
+                    setActiveFile(f.name)
+                    if (!openFiles.includes(f.name)) setOpenFiles([...openFiles, f.name])
+                  }}
+                  className={`flex items-center gap-2.5 px-3 py-1.5 rounded cursor-pointer transition-all ${activeFile === f.name ? 'bg-white/5 text-blue-400' : 'text-slate-400 hover:text-slate-200'}`}
                 >
-                   <FileCode size={14} className={activeFile === f.name ? 'text-blue-400' : 'text-slate-600'} />
-                   <span className="text-xs font-bold truncate">{f.name.split('/').pop()}</span>
-                   {activeFile === f.name && <div className="ml-auto w-1 h-3 rounded-full bg-blue-400" />}
+                   <FileCode size={14} className={activeFile === f.name ? 'text-blue-400' : 'text-slate-500'} />
+                   <span className="text-xs font-medium truncate">{f.name.split('/').pop()}</span>
+                   {f.status === 'modified' && <span className="ml-auto text-[10px] text-yellow-500/80 font-bold">M</span>}
+                   {f.status === 'added' && <span className="ml-auto text-[10px] text-green-500/80 font-bold">A</span>}
                 </div>
               ))}
-           </nav>
+            </nav>
            <div className="p-4 border-t border-white/5">
               <div className="glass-card p-3 space-y-2">
                  <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-widest text-slate-500">
@@ -132,12 +137,28 @@ export default function EditorPage() {
            </div>
         </aside>
 
-        {/* Neural Editor Area */}
-        <main className="flex-1 flex flex-col relative">
-           <div className="flex-1 flex">
+         {/* Editor Area with Tabs */}
+         <main className="flex-1 flex flex-col relative bg-[#050a0f]">
+            {/* Tabs Bar */}
+            <div className="flex bg-black/20 border-b border-white/5">
+              {openFiles.map(f => (
+                <div key={f} 
+                  onClick={() => setActiveFile(f)}
+                  className={`px-4 py-2 text-[11px] font-medium border-r border-white/5 flex items-center gap-2 cursor-pointer transition-all ${activeFile === f ? 'bg-[#050a0f] text-white' : 'text-slate-500 hover:bg-white/5'}`}>
+                  <FileCode size={12} className={activeFile === f ? 'text-blue-400' : 'text-slate-500'} />
+                  {f.split('/').pop()}
+                  <X size={10} className="ml-2 hover:text-white" onClick={(e) => {
+                    e.stopPropagation()
+                    setOpenFiles(openFiles.filter(o => o !== f))
+                  }} />
+                </div>
+              ))}
+            </div>
+
+            <div className="flex-1 flex">
               {/* Line Numbers Simulation */}
-              <div className="w-12 bg-black/20 border-r border-white/5 flex flex-col items-center pt-8 text-[10px] font-mono text-slate-700 select-none">
-                 {[...Array(20)].map((_, i) => (
+              <div className="w-12 border-r border-white/5 flex flex-col items-center pt-6 text-[11px] font-mono text-slate-700 select-none">
+                 {[...Array(30)].map((_, i) => (
                    <div key={i} className="h-6">{i + 1}</div>
                  ))}
               </div>
@@ -145,10 +166,10 @@ export default function EditorPage() {
                 value={code}
                 onChange={e => setCode(e.target.value)}
                 spellCheck={false}
-                className="flex-1 bg-transparent p-8 font-mono text-[13px] leading-[1.8] text-slate-300 outline-none resize-none custom-scrollbar"
+                className="flex-1 bg-transparent p-6 font-mono text-[13px] leading-[1.8] text-slate-300 outline-none resize-none custom-scrollbar"
                 style={{ caretColor: 'var(--blue)' }}
               />
-           </div>
+            </div>
 
            {/* Integrated Command Terminal */}
            <div className="h-40 glass border-t border-white/5 flex flex-col">

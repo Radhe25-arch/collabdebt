@@ -147,6 +147,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <div className="text-[10px] truncate" style={{ color: 'var(--text-dim)' }}>
               {currentUser?.email || 'No session'}
             </div>
+            {currentUser?.created_at && (
+              <div className="text-[9px] mt-0.5" style={{ color: 'var(--text-dim)', opacity: 0.6 }}>
+                Member since {new Date(currentUser.created_at).toLocaleDateString()}
+              </div>
+            )}
           </div>
           <ChevronDown size={12} style={{ color: 'var(--text-dim)' }} />
         </button>
@@ -236,10 +241,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full" style={{ background: 'var(--red)' }} />
                 )}
               </button>
-              <Link href="/dashboard/debt-board" className="btn-primary py-1.5 px-3 text-xs">
-                <Plus size={13} />
-                New Item
-              </Link>
             </div>
           </header>
 

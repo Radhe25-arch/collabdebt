@@ -191,11 +191,11 @@ export default function ReposPage() {
               </div>
               
               <div className="text-center mb-8">
-                <div className="w-16 h-16 rounded-[24px] glass border-emerald-500/20 flex items-center justify-center mx-auto text-emerald-400 mb-4 shadow-xl">
-                   <Zap size={32} />
+                <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center mx-auto text-emerald-400 mb-4 border border-emerald-500/20">
+                   <GitBranch size={24} />
                 </div>
-                <h2 className="text-xl font-display font-black text-white uppercase tracking-tight">Core Integration</h2>
-                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">Select External Uplink Protocol</p>
+                <h2 className="text-lg font-semibold text-white">Connect Repository</h2>
+                <p className="text-xs text-slate-500 mt-1">Select a provider to link your codebase</p>
               </div>
 
               <div className="grid grid-cols-3 gap-3 mb-8">
@@ -211,20 +211,20 @@ export default function ReposPage() {
               </div>
 
               <div className="space-y-6">
-                <div className="glass-card p-4 text-center border-dashed border-white/10">
-                   <p className="text-[10px] text-slate-400 font-medium leading-relaxed mb-6 px-4">
-                     Authorize the CollabDebt Neural Engine to access and scan your designated codebases for structural anomalies.
+                <div className="p-4 text-center rounded-2xl bg-white/[0.02] border border-white/5">
+                   <p className="text-xs text-slate-400 leading-relaxed mb-6">
+                     You will be redirected to authorize CollabDebt to access your repositories. We only request read access to code and pull requests.
                    </p>
                    <motion.button 
-                     whileHover={{ scale: 1.02 }}
-                     whileTap={{ scale: 0.98 }}
+                     whileHover={{ scale: 1.01 }}
+                     whileTap={{ scale: 0.99 }}
                      onClick={() => {
                         setConnectOpen(false);
-                        toast.success('Neural Handshake Successful. Core linked.');
+                        toast.success('Repository linked successfully');
                      }}
-                     className="btn-primary-emerald w-full py-4 font-black uppercase tracking-[0.2em] text-xs shadow-xl shadow-emerald-500/20"
+                     className="btn-primary w-full py-3 text-sm font-semibold"
                    >
-                     Initiate Handshake
+                     Continue to Provider
                    </motion.button>
                 </div>
               </div>
