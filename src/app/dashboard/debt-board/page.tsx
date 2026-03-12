@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react'
 import { ThumbsUp, Plus, X, ExternalLink, Loader2, Search, ChevronDown } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useStore } from '@/store/useStore'
-import type { DebtItem, DebtSeverity, DebtStatus } from '@/types'
+import type { DebtItem, DebtSeverity, DebtStatus, DebtType } from '@/types'
 
 const COLUMNS: { id: DebtStatus; label: string }[] = [
   { id: 'identified', label: 'Identified' },
