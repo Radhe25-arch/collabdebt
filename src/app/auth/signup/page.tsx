@@ -34,7 +34,7 @@ export default function AuthPage() {
       const { data } = await supabase.from('users').select('username').eq('username', raw).single()
       setUsernameStatus(data ? 'taken' : 'available')
     }, 500)
-  }, [form.username, tab])
+  }, [form.username, tab, supabase])
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()

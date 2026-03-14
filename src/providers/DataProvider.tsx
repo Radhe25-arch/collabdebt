@@ -88,7 +88,17 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       mounted = false
       supabase.removeChannel(channel)
     }
-  }, []) // using empty deps to prevent over-firing, store methods are stable.
+  }, [
+    supabase, 
+    setCurrentUser, 
+    setDebtItems, 
+    setRepos, 
+    setSprints, 
+    setTeam, 
+    addDebtItem, 
+    updateDebtItem, 
+    deleteDebtItem
+  ])
 
   if (loading) {
     return (

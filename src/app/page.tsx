@@ -246,7 +246,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-24">
             <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-6">TRANSPARENT PRICING.</h2>
-            <p className="text-zinc-500 text-lg font-medium">Clean code shouldn't break the bank.</p>
+            <p className="text-zinc-500 text-lg font-medium">Clean code shouldn&apos;t break the bank.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
