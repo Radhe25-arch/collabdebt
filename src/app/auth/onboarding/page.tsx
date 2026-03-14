@@ -48,7 +48,7 @@ type Step = 1 | 2 | 3 | 4 | 5 | 6 | 7
 
 export default function OnboardingPage() {
   const supabase = createClient()
-  const { user, setUser } = useStore()
+  const { currentUser: user, setCurrentUser: setUser } = useStore()
   const [step, setStep] = useState<Step>(1)
   const [loading, setLoading] = useState(false)
   const [scanStatus, setScanStatus] = useState(0)
