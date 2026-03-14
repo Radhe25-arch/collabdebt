@@ -36,7 +36,7 @@ export default function SettingsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-black tracking-tight text-white mb-1 uppercase text-gradient-indigo">System Configuration</h2>
-          <p className="text-zinc-500 font-medium text-sm">Manage your neural identity and team authorizations.</p>
+          <p className="text-zinc-500 font-medium text-sm">Manage your account identity and team authorizations.</p>
         </div>
         <button className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-indigo-500 text-white font-black text-sm hover:bg-indigo-600 transition-all shadow-xl">
           <Save size={18} />
@@ -50,7 +50,7 @@ export default function SettingsPage() {
           {[
             { id: 'profile', label: 'Identity', icon: User },
             { id: 'team', label: 'Fleet / Team', icon: Users },
-            { id: 'api', label: 'Neural Keys', icon: Key },
+            { id: 'api', label: 'Access Keys', icon: Key },
             { id: 'notifications', label: 'Telemetry', icon: Bell },
             { id: 'security', label: 'Shielding', icon: Shield },
           ].map(tab => (
@@ -82,7 +82,7 @@ export default function SettingsPage() {
                     </button>
                   </div>
                   <div>
-                    <h3 className="text-lg font-black text-white">Neural Uplink Initialized</h3>
+                    <h3 className="text-lg font-black text-white">System Uplink Initialized</h3>
                     <p className="text-xs text-zinc-500 font-medium uppercase tracking-widest mt-1">Status: Active Service Unit</p>
                   </div>
                 </div>
@@ -97,7 +97,7 @@ export default function SettingsPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest pl-1">Neural ID (Email)</label>
+                    <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest pl-1">Account ID (Email)</label>
                     <input 
                       type="email" 
                       defaultValue="alex@collabdebt.dev"
@@ -109,7 +109,7 @@ export default function SettingsPage() {
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest pl-1">Bio / Unit Description</label>
                   <textarea 
-                    defaultValue="Senior Systems Architect specializing in zero-debt infrastructure and neural code scanning."
+                    defaultValue="Senior Systems Architect specializing in zero-debt infrastructure and automated code scanning."
                     className="w-full bg-black/40 border border-white/5 rounded-2xl py-3 px-4 text-white font-bold text-sm focus:border-indigo-500/50 outline-none transition-all h-24"
                   />
                 </div>
@@ -133,7 +133,7 @@ export default function SettingsPage() {
               <div className="p-8 rounded-[40px] bg-zinc-900/40 border border-white/5 space-y-6">
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <h3 className="text-lg font-black text-white">Neural Uplink Keys</h3>
+                    <h3 className="text-lg font-black text-white">Access Uplink Keys</h3>
                     <p className="text-xs text-zinc-500 font-medium">Used for programmatic access to the Intelligence API.</p>
                   </div>
                   <button className="px-4 py-2 rounded-xl bg-zinc-800 text-white font-black text-[10px] uppercase tracking-widest hover:bg-zinc-700 transition-all">Generate New Key</button>

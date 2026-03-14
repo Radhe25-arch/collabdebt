@@ -7,7 +7,7 @@ import { MessageSquare, X, Send, Sparkles, Cpu, Zap, Terminal } from 'lucide-rea
 export default function AIChat() {
   const [isOpen, setIsOpen] = useState(false)
   const [messages, setMessages] = useState([
-    { role: 'ai', content: "Neural link established. I've analyzed your fleet's current debt load. How can I assist with resolution strategy?" }
+    { role: 'ai', content: "Secure link established. I've analyzed your fleet's current debt load. How can I assist with resolution strategy?" }
   ])
   const [input, setInput] = useState('')
 
@@ -56,7 +56,7 @@ export default function AIChat() {
                   <Sparkles size={20} className="text-white" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-black text-white uppercase tracking-tight">NEURAL ANALYST</h3>
+                  <h3 className="text-sm font-black text-white uppercase tracking-tight">AI ANALYST</h3>
                   <div className="flex items-center gap-1.5">
                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                      <span className="text-[9px] font-black text-emerald-500 uppercase">System Optimal</span>
@@ -108,7 +108,7 @@ export default function AIChat() {
                  </div>
                  <div className="flex items-center gap-1 text-[9px] font-black text-zinc-600 uppercase">
                     <Cpu size={10} />
-                    Neural Engine v4
+                    AI Engine v4
                  </div>
               </div>
             </div>

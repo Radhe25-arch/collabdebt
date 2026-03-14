@@ -28,17 +28,32 @@
   --radius: 0.5rem;
 
   /* Premium Tokens */
-  --bg-primary: #09090b;
-  --bg-secondary: #111113;
-  --bg-card: #18181b;
-  --border-premium: rgba(255, 255, 255, 0.08);
-  --text-primary: #fafafa;
-  --text-secondary: #a1a1aa;
+  --bg-primary: #000000;
+  --bg-secondary: #0a0a0a;
+  --bg-card: #121212;
+  --border-premium: rgba(255, 255, 255, 0.05);
+  --text-primary: #ffffff;
+  --text-secondary: #888888;
   --indigo-accent: #6366f1;
   --indigo-accent-hover: #4f46e5;
-  --success: #22c55e;
+  --success: #10b981;
   --danger: #ef4444;
   --warning: #f59e0b;
+
+  /* Legacy / Auth Compat Variables */
+  --bg: #000000;
+  --bg-tertiary: #161616;
+  --surface: #0a0a0a;
+  --text: #ffffff;
+  --text-muted: #888888;
+  --text-dim: #555555;
+  --border: rgba(255, 255, 255, 0.1);
+  --border-bright: rgba(255, 255, 255, 0.2);
+  --blue: #3b82f6;
+  --green: #10b981;
+  --red: #ef4444;
+  --yellow: #f59e0b;
+  --cyan: #06b6d4;
 }
 
 @layer base {
@@ -50,62 +65,60 @@
   }
 }
 
-/* Animated Mesh Gradient Background */
+/* Animated Mesh Gradient Background - Optimized to prevent blinking */
 .mesh-bg {
   position: fixed;
   inset: 0;
   z-index: -1;
   overflow: hidden;
-  background-color: var(--bg-primary);
+  background-color: #000000;
 }
 
 .mesh-blob {
   position: absolute;
   border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.15;
-  mix-blend-mode: screen;
+  filter: blur(120px);
+  opacity: 0.1;
+  will-change: transform;
 }
 
 .blob-1 {
-  width: 60vw;
-  height: 60vw;
+  width: 70vw;
+  height: 70vw;
   background: var(--indigo-accent);
-  top: -10%;
+  top: -20%;
   left: -10%;
-  animation: mesh-loop 30s infinite alternate cubic-bezier(0.45, 0, 0.55, 1);
+  animation: mesh-loop 40s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .blob-2 {
-  width: 50vw;
-  height: 50vw;
-  background: #7c3aed; /* violet */
-  bottom: -10%;
+  width: 60vw;
+  height: 60vw;
+  background: #4f46e5;
+  bottom: -20%;
   right: -10%;
-  animation: mesh-loop 25s infinite alternate-reverse cubic-bezier(0.45, 0, 0.55, 1);
+  animation: mesh-loop 35s infinite alternate-reverse cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .blob-3 {
-  width: 40vw;
-  height: 40vw;
-  background: #64748b; /* slate */
-  top: 40%;
-  right: 20%;
-  animation: mesh-loop 35s infinite alternate cubic-bezier(0.45, 0, 0.55, 1);
+  width: 50vw;
+  height: 50vw;
+  background: #1e1b4b;
+  top: 30%;
+  right: 15%;
+  animation: mesh-loop 45s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @keyframes mesh-loop {
-  0% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(5%, 10%) scale(1.1); }
-  66% { transform: translate(-5%, 5%) scale(0.9); }
-  100% { transform: translate(2%, -8%) scale(1); }
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(5%, 5%); }
 }
 
 .noise-overlay {
   position: fixed;
   inset: 0;
   z-index: -1;
-  opacity: 0.03;
+  opacity: 0.02;
   pointer-events: none;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
 }

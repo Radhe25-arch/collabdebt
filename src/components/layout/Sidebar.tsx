@@ -39,11 +39,11 @@ export default function Sidebar() {
     <motion.aside 
       initial={false}
       animate={{ width: collapsed ? 80 : 280 }}
-      className="relative flex flex-col h-screen bg-black border-r border-white/5 z-40 transition-all duration-300 ease-in-out"
+      className="relative flex flex-col h-screen bg-[#000000] border-r border-white/5 z-40"
     >
-      {/* Mesh background element for Sidebar */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
-         <div className="absolute top-0 -left-20 w-40 h-40 bg-indigo-500/20 blur-[100px] rounded-full" />
+      {/* Mesh background element for Sidebar - Simplified to prevent blinking */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-10">
+         <div className="absolute top-0 -left-20 w-40 h-40 bg-indigo-500/10 blur-[80px] rounded-full" />
       </div>
 
       <div className="flex items-center gap-3 p-6 mb-4 relative z-10">

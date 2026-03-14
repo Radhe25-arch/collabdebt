@@ -124,7 +124,7 @@ ${topROI.map((d, i) => `${i + 1}. **${d.title}** — Estimated savings: $${(d.co
           </div>
           <div>
             <h1 className="font-display text-2xl font-bold">Manager View</h1>
-            <p className="text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>Team intelligence dashboard</p>
+            <p className="text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>System intelligence dashboard</p>
           </div>
         </div>
         <div className="flex gap-3">

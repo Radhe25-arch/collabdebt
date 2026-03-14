@@ -71,7 +71,7 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-black tracking-tight flex items-center gap-2">
               <Terminal size={18} className="text-indigo-500" />
-              NEURAL SCAN REPORT
+              SMART SCAN REPORT
             </h2>
             <Link href="/dashboard/debt-board" className="text-xs font-bold text-zinc-500 hover:text-white transition-colors flex items-center gap-1">
               View All <ChevronRight size={14} />
@@ -110,7 +110,7 @@ export default function DashboardPage() {
                     <td className="px-8 py-6">
                       <div className="flex items-center gap-2">
                         <div className={`w-1.5 h-1.5 rounded-full ${
-                          item.status === 'Detected' ? 'bg-indigo-500 animate-pulse' : 'bg-emerald-500'
+                          item.status === 'Detected' ? 'bg-indigo-500' : 'bg-emerald-500'
                         }`} />
                         <span className="text-xs font-bold text-zinc-400">{item.status}</span>
                       </div>
@@ -159,7 +159,7 @@ export default function DashboardPage() {
           <div className="p-6 rounded-[32px] bg-gradient-to-b from-indigo-500 to-indigo-700 relative overflow-hidden group shadow-2xl">
              <div className="relative z-10">
                <div className="text-white font-black text-xl mb-2">PRO PLAN</div>
-               <p className="text-indigo-100 text-xs font-bold mb-4">Unlock advanced neural scans and team health scoring.</p>
+               <p className="text-indigo-100 text-xs font-bold mb-4">Unlock advanced automated scans and team health scoring.</p>
                <button className="w-full py-2.5 rounded-xl bg-white text-indigo-600 font-black text-sm hover:scale-105 active:scale-95 transition-all">
                  UPGRADE NOW
                </button>

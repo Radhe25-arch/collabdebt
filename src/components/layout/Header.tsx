@@ -14,7 +14,7 @@ export default function Header({ title }: HeaderProps) {
         <h1 className="text-xl font-black tracking-tight text-white uppercase">{title}</h1>
         <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-zinc-900 border border-white/5 text-[10px] font-black text-zinc-500">
            <Zap size={10} className="text-indigo-500" />
-           NEURAL SCAN ACTIVE
+           SMART SCAN ACTIVE
         </div>
       </div>
 

@@ -176,7 +176,7 @@ export default function EditorPage() {
               <div className="h-8 px-4 flex items-center justify-between border-b border-white/5 bg-black/20">
                  <div className="flex items-center gap-2">
                     <TerminalIcon size={12} className="text-slate-500" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Neural Log Output</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">System Log Output</span>
                  </div>
                  <div className="flex gap-4">
                     <div className="flex items-center gap-1.5 text-[9px] font-bold text-emerald-400">
@@ -225,7 +225,7 @@ export default function EditorPage() {
            {/* AI Chat Logic */}
            <div className="flex-1 flex flex-col p-4 overflow-hidden">
               <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-4">
-                 <Bot size={13} /> Neural Interaction
+                 <Bot size={13} /> AI Interaction
               </div>
               <div className="flex-1 overflow-y-auto space-y-4 custom-scrollbar pr-2 mb-4">
                  {aiChat.map((m, i) => (
@@ -241,7 +241,7 @@ export default function EditorPage() {
                    value={prompt}
                    onChange={e => setPrompt(e.target.value)}
                    className="w-full h-11 bg-white/5 border border-white/10 rounded-xl px-4 pr-12 text-xs focus:ring-2 focus:ring-blue-500/50 outline-none transition-all placeholder:text-slate-600"
-                   placeholder="Neural request..."
+                   placeholder="AI request..."
                  />
                  <button type="submit" className="absolute right-2 top-2 w-7 h-7 bg-blue-500 hover:bg-blue-600 rounded-lg flex items-center justify-center text-white transition-all">
                     <ChevronRight size={16} />

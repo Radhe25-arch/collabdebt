@@ -34,7 +34,7 @@ export async function POST(req: Request) {
       <div style="display:inline-block;padding:12px 24px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05);border-radius:20px;">
         <span style="font-size:22px;font-weight:900;color:#ffffff;letter-spacing:-1px;text-transform:uppercase;">Collab<span style="color:#00f2ff;">Debt</span></span>
       </div>
-      <div style="margin-top:12px;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:4px;color:#475569;">Neural Interface Active</div>
+      <div style="margin-top:12px;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:4px;color:#475569;">System Interface Active</div>
     </div>
 
     <!-- Main Content Card -->
@@ -55,7 +55,7 @@ export async function POST(req: Request) {
           <div style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:2px;color:#475569;margin-bottom:20px;">Deployment Protocols:</div>
           
           ${[
-            ['01', '#00f2ff', 'Sync Core Repos', 'Enlist your GitHub or GitLab repositories into the neural grid.'],
+            ['01', '#00f2ff', 'Sync Core Repos', 'Enlist your GitHub or GitLab repositories into the system grid.'],
             ['02', '#ffd600', 'Anomaly Scan', 'Initiate high-fidelity analysis to calculate real-world debt gravity.'],
             ['03', '#00ff88', 'Fleet Collaboration', 'Assign fixed cycles and track stabilization in real-time.'],
           ].map(([n, c, t, d]) => `
@@ -91,7 +91,7 @@ export async function POST(req: Request) {
     <!-- Footer Information -->
     <div style="text-align:center;margin-top:40px;">
       <p style="font-size:11px;color:#475569;margin:0 0 12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">
-        Neural Link Transmission &copy; 2024 CollabDebt
+        Secure Link Transmission &copy; 2024 CollabDebt
       </p>
       <div style="display:flex;justify-content:center;gap:20px;">
         <a href="#" style="color:#00f2ff;text-decoration:none;font-size:11px;font-weight:700;text-transform:uppercase;">Protocol Settings</a>

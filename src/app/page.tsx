@@ -156,7 +156,7 @@ export default function LandingPage() {
             className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-xs font-semibold text-indigo-400 mb-10 shadow-[0_0_20px_rgba(99,102,241,0.1)]"
           >
             <div className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
-            V4.0 — Now with Neural Code Health Analysis
+            V4.0 — Now with Smart Code Health Analysis
           </motion.div>
 
           <motion.h1
@@ -298,8 +298,7 @@ export default function LandingPage() {
               <Zap size={24} className="text-indigo-500" />
               <span className="font-bold text-xl tracking-tight">CollabDebt</span>
             </div>
-            <p className="text-zinc-500 max-w-sm font-medium">
-              The neural engineering intelligence platform for high-velocity teams.
+              The engineering intelligence platform for high-velocity teams.
             </p>
           </div>
           <div>

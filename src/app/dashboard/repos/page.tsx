@@ -128,7 +128,7 @@ export default function ReposPage() {
                   </div>
                   <div className="text-xs font-bold">
                     <div className="text-white">Active</div>
-                    <div className="text-zinc-600 uppercase text-[9px]">Neural Pulse</div>
+                    <div className="text-zinc-600 uppercase text-[9px]">Activity Pulse</div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -178,7 +178,7 @@ export default function ReposPage() {
                   <GitBranch size={32} className="text-white" />
                 </div>
                 <h3 className="text-2xl font-black text-white mb-2 uppercase tracking-tight">Connect Repository</h3>
-                <p className="text-zinc-500 font-medium">Link your repository for neural analysis.</p>
+                <p className="text-zinc-500 font-medium">Link your repository for automated analysis.</p>
               </div>
 
               <div className="space-y-4">

@@ -57,7 +57,7 @@ export default function SprintsPage() {
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-black tracking-tight text-white mb-1 uppercase text-gradient-indigo">Neural Cycles</h2>
+          <h2 className="text-2xl font-black tracking-tight text-white mb-1 uppercase text-gradient-indigo">Execution Cycles</h2>
           <p className="text-zinc-500 font-medium text-sm">Managing operational sprints for debt resolution.</p>
         </div>
         <button className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-indigo-500 text-white font-black text-sm hover:bg-indigo-600 transition-all shadow-xl">

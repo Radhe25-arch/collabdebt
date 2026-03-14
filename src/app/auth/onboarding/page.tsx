@@ -39,7 +39,7 @@ const GOALS = [
   { id: 'fix_debt', label: 'Resolve Tech Debt', desc: 'Prioritize and fix existing codebase issues' },
   { id: 'health', label: 'Monitor Health', desc: 'Track repository health and velocity metrics' },
   { id: 'team', label: 'Team Velocity', desc: 'Improve ship speed across the organization' },
-  { id: 'scan', label: 'Automated Scanning', desc: 'Neural scans for proactive issue detection' },
+  { id: 'scan', label: 'Automated Scanning', desc: 'Smart scans for proactive issue detection' },
 ]
 
 const TEAM_SIZES = ['Solo', '2-10 devs', '11-50 devs', '51-200 devs', '200+ devs']
@@ -63,7 +63,7 @@ export default function OnboardingPage() {
     bio: '',
   })
 
-  // Simulated Neural Scan
+  // Simulated System Scan
   useEffect(() => {
     if (step === 6) {
       const interval = setInterval(() => {
@@ -282,7 +282,7 @@ export default function OnboardingPage() {
         )}
 
         {step === 6 && (
-          <StepWrapper key="6" title="Neural Scan in progress..." subtitle="Quantifying tech debt and architectural inconsistencies.">
+          <StepWrapper key="6" title="System Scan in progress..." subtitle="Quantifying tech debt and architectural inconsistencies.">
             <div className="space-y-12 py-10">
               <div className="flex justify-between items-end mb-2">
                 <div className="text-4xl font-black text-indigo-400">{scanStatus}%</div>
