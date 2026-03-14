@@ -298,6 +298,7 @@ export default function LandingPage() {
               <Zap size={24} className="text-indigo-500" />
               <span className="font-bold text-xl tracking-tight">CollabDebt</span>
             </div>
+            <p className="text-zinc-500 max-w-sm font-medium">
               The engineering intelligence platform for high-velocity teams.
             </p>
           </div>
