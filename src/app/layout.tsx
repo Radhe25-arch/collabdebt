@@ -18,6 +18,8 @@ export const metadata: Metadata = {
   description: 'Track shared expenses, simplify debts, and settle up without the awkward chases.',
 }
 
+import { DataProvider } from '@/providers/DataProvider'
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable} dark`}>
@@ -30,9 +32,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </div>
         <div className="noise-overlay" />
 
-        <main className="relative z-10">
-          {children}
-        </main>
+        <DataProvider>
+          <main className="relative z-10">
+            {children}
+          </main>
+        </DataProvider>
 
         <Toaster
           position="bottom-right"

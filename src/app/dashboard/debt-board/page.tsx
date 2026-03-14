@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Plus, 
@@ -9,7 +9,7 @@ import {
   AlertTriangle, 
   CheckCircle2, 
   Search,
-  Filter,
+  Filter, 
   BarChart2,
   GitBranch,
   Terminal,
@@ -17,6 +17,8 @@ import {
   User,
   Layers
 } from 'lucide-react'
+import { useStore } from '@/store/useStore'
+import { toast } from 'react-hot-toast'
 
 const COLUMNS = [
   { id: 'detected', label: 'Detected', color: 'indigo' },
@@ -25,56 +27,23 @@ const COLUMNS = [
   { id: 'resolved', label: 'Resolved', color: 'emerald' },
 ]
 
-const INITIAL_DEBT = [
-  { 
-    id: '1', 
-    title: 'Deprecated JWT Provider', 
-    repo: 'core-api', 
-    severity: 'high', 
-    status: 'detected', 
-    cost: '2d',
-    tags: ['Security', 'Infra']
-  },
-  { 
-    id: '2', 
-    title: 'N+1 Query in Customer GraphQL', 
-    repo: 'web-gateway', 
-    severity: 'critical', 
-    status: 'in_progress', 
-    cost: '3d',
-    tags: ['Performance']
-  },
-  { 
-    id: '3', 
-    title: 'Refactor Legacy Payment Handler', 
-    repo: 'billing-service', 
-    severity: 'medium', 
-    status: 'triaged', 
-    cost: '5d',
-    tags: ['Refactor']
-  },
-  { 
-    id: '4', 
-    title: 'Redundant Redux Action Types', 
-    repo: 'frontend-main', 
-    severity: 'low', 
-    status: 'resolved', 
-    cost: '1d',
-    tags: ['DX']
-  },
-  { 
-    id: '5', 
-    title: 'Missing Error Boundary in Dashboard', 
-    repo: 'frontend-main', 
-    severity: 'medium', 
-    status: 'detected', 
-    cost: '4h',
-    tags: ['UI/UX']
-  },
-]
-
 export default function DebtBoardPage() {
-  const [items, setItems] = useState(INITIAL_DEBT)
+  const { debtItems, updateDebtItem } = useStore()
+  const [search, setSearch] = useState('')
+
+  const handleStatusChange = async (id: string, newStatus: string) => {
+    try {
+      await updateDebtItem(id, { status: newStatus as any })
+      toast.success(`Moved to ${newStatus}`)
+    } catch (err) {
+      toast.error('Failed to update status')
+    }
+  }
+
+  const filteredItems = debtItems.filter(item => 
+    item.title?.toLowerCase().includes(search.toLowerCase()) ||
+    item.repo?.name?.toLowerCase().includes(search.toLowerCase())
+  )
 
   return (
     <div className="h-[calc(100vh-160px)] flex flex-col space-y-6">
@@ -86,6 +55,8 @@ export default function DebtBoardPage() {
             <input 
               type="text" 
               placeholder="Search debt items..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
               className="bg-zinc-900/50 border border-white/5 rounded-xl py-2 pl-9 pr-4 text-xs font-medium focus:border-indigo-500/50 outline-none w-64 transition-all"
             />
           </div>
@@ -116,7 +87,7 @@ export default function DebtBoardPage() {
                 }`} />
                 <h3 className="text-sm font-black text-white uppercase tracking-widest">{col.label}</h3>
                 <span className="text-[10px] font-black text-zinc-600 bg-zinc-800/50 px-2 py-0.5 rounded-full border border-white/5">
-                  {items.filter(i => i.status === col.id).length}
+                  {filteredItems.filter(i => i.status === col.id).length}
                 </span>
               </div>
               <button className="text-zinc-600 hover:text-white">
@@ -126,7 +97,7 @@ export default function DebtBoardPage() {
 
             <div className="flex-1 p-4 space-y-4 overflow-y-auto no-scrollbar">
               <AnimatePresence>
-                {items
+                {filteredItems
                   .filter(i => i.status === col.id)
                   .map((item) => (
                     <motion.div
@@ -143,14 +114,12 @@ export default function DebtBoardPage() {
                       </div>
                       
                       <div className="flex gap-2 mb-3">
-                        {item.tags.map(tag => (
-                          <span key={tag} className="text-[9px] font-black text-indigo-400 bg-indigo-500/5 border border-indigo-500/10 px-2 py-0.5 rounded-md">
-                            {tag}
-                          </span>
-                        ))}
+                        <span className="text-[9px] font-black text-indigo-400 bg-indigo-500/5 border border-indigo-500/10 px-2 py-0.5 rounded-md uppercase">
+                          {item.type}
+                        </span>
                       </div>
 
-                      <h4 className="text-sm font-bold text-white mb-4 leading-snug group-hover:text-indigo-400 transition-colors">
+                      <h4 className="text-sm font-bold text-white mb-4 leading-snug group-hover:text-indigo-400 transition-colors uppercase tracking-tight">
                         {item.title}
                       </h4>
 
@@ -158,7 +127,7 @@ export default function DebtBoardPage() {
                         <div className="flex items-center gap-3">
                           <div className="flex items-center gap-1.5 text-zinc-600">
                              <GitBranch size={12} />
-                             <span className="text-[10px] font-bold uppercase">{item.repo}</span>
+                             <span className="text-[10px] font-bold uppercase">{item.repo?.name || 'repo'}</span>
                           </div>
                           <div className={`flex items-center gap-1 text-[10px] font-black uppercase ${
                              item.severity === 'critical' ? 'text-rose-500' : 
@@ -170,8 +139,12 @@ export default function DebtBoardPage() {
                         </div>
                         
                         <div className="flex -space-x-2">
-                           <div className="w-6 h-6 rounded-full bg-zinc-800 border-2 border-zinc-900 flex items-center justify-center">
-                              <User size={12} className="text-zinc-500" />
+                           <div className="w-6 h-6 rounded-full bg-zinc-800 border-2 border-zinc-900 flex items-center justify-center overflow-hidden">
+                              {item.assignee?.avatar_url ? (
+                                <img src={item.assignee.avatar_url} className="w-full h-full object-cover" alt="" />
+                              ) : (
+                                <User size={12} className="text-zinc-500" />
+                              )}
                            </div>
                         </div>
                       </div>
@@ -179,12 +152,25 @@ export default function DebtBoardPage() {
                       <div className="mt-3 flex items-center justify-between text-[10px] font-bold text-zinc-600">
                          <div className="flex items-center gap-1">
                             <Clock size={10} />
-                            EST: {item.cost}
+                            EST: {item.fix_days}d
                          </div>
                          <div className="flex items-center gap-1 text-emerald-500/50">
                             <Zap size={10} />
-                            ROI: 2.4x
+                            ROI: {((item.cost_usd || 0) / 1000).toFixed(1)}x
                          </div>
+                      </div>
+                      
+                      {/* Simple status mover for demo since drag-drop isn't fully wired */}
+                      <div className="mt-4 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                         {COLUMNS.filter(c => c.id !== item.status).map(c => (
+                            <button 
+                              key={c.id}
+                              onClick={() => handleStatusChange(item.id, c.id)}
+                              className="text-[8px] font-black px-2 py-1 rounded bg-white/5 hover:bg-white/10 text-zinc-500 hover:text-white uppercase"
+                            >
+                              Move to {c.label}
+                            </button>
+                         ))}
                       </div>
                     </motion.div>
                   ))}

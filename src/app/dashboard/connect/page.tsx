@@ -9,20 +9,8 @@ import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 
 // ── Types ─────────────────────────────────────────────────────────────────
-interface TechProfile {
-  id: string
-  name: string
-  username?: string
-  user_code: string
-  bio?: string
-  avatar_url?: string
-  plan: string
-  tech_roles?: string[]
-  experience_level?: string
-  skills?: string[]
-  collab_goals?: string[]
-  online?: boolean
-}
+import { useStore } from '@/store/useStore'
+import { TeamMember, UserWithProfile } from '@/types'
 
 // ── Filter options ────────────────────────────────────────────────────────
 const ROLE_FILTERS = [
@@ -53,59 +41,13 @@ const GOAL_FILTERS = [
   { id: 'opensource', label: 'Open Source' },
 ]
 
-// Mock data — replace with real Supabase query
-const MOCK_PROFILES: TechProfile[] = [
-  {
-    id: '1', name: 'Priya Sharma', username: 'priya_s', user_code: 'CD#1241',
-    bio: 'Senior React dev. Love clean code and great UX.',
-    plan: 'pro', tech_roles: ['frontend', 'fullstack'], experience_level: 'senior',
-    skills: ['React', 'TypeScript', 'Next.js', 'Figma'], collab_goals: ['find_collab', 'opensource'],
-    online: true,
-  },
-  {
-    id: '2', name: 'Rahul Mehta', username: 'rahul_m', user_code: 'CD#5522',
-    bio: 'Backend engineer. Go + Postgres expert. API design nerd.',
-    plan: 'team', tech_roles: ['backend', 'devops'], experience_level: 'mid',
-    skills: ['Go', 'PostgreSQL', 'Docker', 'Kubernetes', 'Redis'], collab_goals: ['find_collab', 'freelance'],
-    online: true,
-  },
-  {
-    id: '3', name: 'Sneha Kapoor', username: 'sneha_k', user_code: 'CD#3381',
-    bio: 'ML engineer building LLM-powered products.',
-    plan: 'pro', tech_roles: ['ml_engineer', 'data_scientist'], experience_level: 'senior',
-    skills: ['Python', 'PyTorch', 'LangChain', 'FastAPI'], collab_goals: ['find_collab', 'mentor'],
-    online: false,
-  },
-  {
-    id: '4', name: 'Amit Desai', username: 'adesai', user_code: 'CD#7710',
-    bio: 'DevOps specialist. Making infra invisible so devs can focus.',
-    plan: 'pro', tech_roles: ['devops'], experience_level: 'staff',
-    skills: ['Kubernetes', 'Terraform', 'AWS', 'GitHub Actions'], collab_goals: ['find_collab', 'mentor'],
-    online: true,
-  },
-  {
-    id: '5', name: 'Nisha Joshi', username: 'nisha_j', user_code: 'CD#9934',
-    bio: 'React Native + Flutter mobile dev. 5 shipped apps.',
-    plan: 'pro', tech_roles: ['mobile', 'frontend'], experience_level: 'mid',
-    skills: ['React Native', 'Flutter', 'Swift', 'TypeScript'], collab_goals: ['freelance', 'opensource'],
-    online: false,
-  },
-  {
-    id: '6', name: 'Karan Singh', username: 'karan_s', user_code: 'CD#2209',
-    bio: 'Security researcher. AppSec & cloud pentesting.',
-    plan: 'team', tech_roles: ['security'], experience_level: 'senior',
-    skills: ['Python', 'Rust', 'AWS', 'Linux'], collab_goals: ['find_collab'],
-    online: true,
-  },
-]
-
 const EXP_LABEL: Record<string, string> = {
   student: 'Student', junior: '1–3 yrs', mid: '3–6 yrs',
   senior: '6–10 yrs', staff: 'Staff+', founder: 'Founder',
 }
 
 function ProfileCard({ profile, isPremium, onConnect }: {
-  profile: TechProfile
+  profile: TeamMember & UserWithProfile
   isPremium: boolean
   onConnect: (id: string) => void
 }) {
@@ -228,27 +170,14 @@ function ProfileCard({ profile, isPremium, onConnect }: {
 }
 
 export default function ConnectPage() {
-  const supabase = createClient()
-  const [isPremium, setIsPremium] = useState(false)
-  const [loadingPlan, setLoadingPlan] = useState(true)
-  const [profiles] = useState<TechProfile[]>(MOCK_PROFILES)
+  const { currentUser, team } = useStore()
+  const isPremium = currentUser?.plan === 'pro' || currentUser?.plan === 'team' || currentUser?.plan === 'enterprise'
+  
   const [search, setSearch] = useState('')
   const [roleFilters, setRoleFilters] = useState<string[]>([])
   const [expFilters, setExpFilters] = useState<string[]>([])
   const [goalFilters, setGoalFilters] = useState<string[]>([])
   const [showFilters, setShowFilters] = useState(false)
-
-  // Check user plan
-  useEffect(() => {
-    const checkPlan = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { setLoadingPlan(false); return }
-      const { data } = await supabase.from('users').select('plan').eq('id', user.id).single()
-      setIsPremium(data?.plan === 'pro' || data?.plan === 'team' || data?.plan === 'enterprise')
-      setLoadingPlan(false)
-    }
-    checkPlan()
-  }, [supabase])
 
   const handleConnect = useCallback((id: string) => {
     console.log('Connect request to', id)
@@ -259,25 +188,24 @@ export default function ConnectPage() {
     setList(list.includes(val) ? list.filter(x => x !== val) : [...list, val])
   }
 
-  const filtered = profiles.filter(p => {
+  const activeFilterCount = roleFilters.length + expFilters.length + goalFilters.length
+  const filtered = (team as (TeamMember & UserWithProfile)[]).filter(p => {
     const matchSearch = !search ||
-      p.name.toLowerCase().includes(search.toLowerCase()) ||
+      p.name?.toLowerCase().includes(search.toLowerCase()) ||
       p.username?.toLowerCase().includes(search.toLowerCase()) ||
       (p.skills || []).some(s => s.toLowerCase().includes(search.toLowerCase()))
 
     const matchRole = roleFilters.length === 0 ||
-      roleFilters.some(r => (p.tech_roles || []).includes(r))
+      roleFilters.some(r => (p.tech_roles || []).includes(r as any))
 
     const matchExp = expFilters.length === 0 ||
       expFilters.includes(p.experience_level || '')
 
     const matchGoal = goalFilters.length === 0 ||
-      goalFilters.some(g => (p.collab_goals || []).includes(g))
+      goalFilters.some(g => (p.collab_goals || []).includes(g as any))
 
     return matchSearch && matchRole && matchExp && matchGoal
   })
-
-  const activeFilterCount = roleFilters.length + expFilters.length + goalFilters.length
 
   return (
     <div className="space-y-6 max-w-6xl">
@@ -302,7 +230,7 @@ export default function ConnectPage() {
       </div>
 
       {/* Upgrade banner for free users */}
-      {!loadingPlan && !isPremium && (
+      {!isPremium && (
         <div className="rounded-xl p-4 flex items-center gap-4"
           style={{ background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.25)' }}>
           <div className="p-2 rounded-lg" style={{ background: 'rgba(168,85,247,0.15)' }}>
@@ -430,11 +358,7 @@ export default function ConnectPage() {
       )}
 
       {/* Results */}
-      {loadingPlan ? (
-        <div className="flex justify-center py-16">
-          <Loader2 size={24} className="animate-spin" style={{ color: 'var(--cyan)' }} />
-        </div>
-      ) : filtered.length === 0 ? (
+      {filtered.length === 0 ? (
         <div className="text-center py-16" style={{ color: 'var(--text-muted)' }}>
           <Users size={32} className="mx-auto mb-3 opacity-30" />
           <p className="text-sm">No developers match your filters.</p>

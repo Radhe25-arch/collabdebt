@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react'
 import { Search, Lock, Filter, X, MessageSquare, Github, Globe } from 'lucide-react'
 import Link from 'next/link'
 import { useStore } from '@/store/useStore'
+import { TeamMember } from '@/types'
 
 const ROLE_FILTERS = ['All', 'Frontend', 'Backend', 'Fullstack', 'Mobile', 'DevOps', 'ML / AI', 'Security', 'Data']
 const LANG_FILTERS = ['All', 'TypeScript', 'Python', 'Go', 'Rust', 'Java', 'C#', 'Swift', 'Kotlin']
@@ -12,29 +13,16 @@ const GOAL_LABELS: Record<string, string> = {
   hire: 'Hiring', opensource: 'Open Source', mentor: 'Mentor'
 }
 
-type ProfileMock = {
-  id: string
-  name: string
-  username: string
-  role: string
-  bio: string
-  skills: string[]
-  goals: string[]
-  available: boolean
+interface ProfileCardProps {
+  member: TeamMember & { skills?: string[], bio?: string, goals?: string[] }
+  isPro: boolean
 }
 
-// Mock profiles for UI (real data comes from Supabase users table with collab_public = true)
-const MOCK_PROFILES: ProfileMock[] = [
-  { id: '1', name: 'Arjun Mehta', username: 'arjunm_dev', role: 'Backend Developer', bio: 'Go + Postgres specialist. 7 years in fintech. Love working on distributed systems.', skills: ['Go', 'Python', 'SQL'], goals: ['find_collab', 'opensource'], available: true },
-  { id: '2', name: 'Priya Sharma', username: 'priyasharma', role: 'Fullstack Developer', bio: 'Next.js, Node, and AWS. Currently building an AI-first SaaS. Looking for co-founders.', skills: ['TypeScript', 'Python'], goals: ['find_collab', 'hire'], available: true },
-  { id: '3', name: 'Luca Bianchi', username: 'lucab', role: 'ML / AI Engineer', bio: 'ML infra at a healthcare startup. PyTorch, ONNX, HuggingFace. Open to OSS collaboration.', skills: ['Python', 'Rust'], goals: ['opensource', 'mentor'], available: false },
-  { id: '4', name: 'Sofia Petrova', username: 'sofiap', role: 'Frontend Developer', bio: 'React + TypeScript. Design systems, accessibility, and performance. Mentor to junior devs.', skills: ['TypeScript', 'Swift'], goals: ['mentor', 'learn'], available: true },
-  { id: '5', name: 'Kenji Nakamura', username: 'kenjin', role: 'DevOps', bio: 'Kubernetes, Terraform, observability. Building internal dev platform at a Series B startup.', skills: ['Go', 'Python', 'Shell'], goals: ['find_collab', 'fix_debt'], available: true },
-  { id: '6', name: 'Amara Diallo', username: 'amaradev', role: 'Mobile Developer', bio: 'React Native and Flutter. Cross-platform, offline-first apps. Open to startup collabs.', skills: ['TypeScript', 'Kotlin', 'Swift'], goals: ['find_collab', 'opensource'], available: false },
-]
-
-function ProfileCard({ profile, isPro }: { profile: ProfileMock; isPro: boolean }) {
-  const initials = profile.name.split(' ').map(n => n[0]).join('')
+function ProfileCard({ member, isPro }: ProfileCardProps) {
+  const initials = member.name.split(' ').map(n => n[0]).join('')
+  const skills = member.skills || ['TypeScript', 'Node.js']
+  const goals = member.goals || ['find_collab']
+  const bio = member.bio || 'Professional engineer focused on technical excellence and code quality.'
 
   if (!isPro) {
     return (
@@ -52,11 +40,11 @@ function ProfileCard({ profile, isPro }: { profile: ProfileMock; isPro: boolean 
             {initials}
           </div>
           <div>
-            <div style={{ fontWeight: 600, fontSize: '13px', color: 'var(--text)' }}>{profile.name}</div>
-            <div style={{ fontSize: '11px', color: 'var(--text-dim)' }}>@{profile.username}</div>
+            <div style={{ fontWeight: 600, fontSize: '13px', color: 'var(--text)' }}>{member.name}</div>
+            <div style={{ fontSize: '11px', color: 'var(--text-dim)' }}>@{member.username || member.email}</div>
           </div>
         </div>
-        <p style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.6 }}>{profile.bio}</p>
+        <p style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.6 }}>{bio}</p>
       </div>
     )
   }
@@ -80,30 +68,30 @@ function ProfileCard({ profile, isPro }: { profile: ProfileMock; isPro: boolean 
             {initials}
           </div>
           <div>
-            <div style={{ fontWeight: 600, fontSize: '13px', color: 'var(--text)' }}>{profile.name}</div>
-            <div style={{ fontSize: '11px', color: 'var(--text-dim)' }}>@{profile.username} · {profile.role}</div>
+            <div style={{ fontWeight: 600, fontSize: '13px', color: 'var(--text)' }}>{member.name}</div>
+            <div style={{ fontSize: '11px', color: 'var(--text-dim)' }}>@{member.username || member.email} · {member.role || 'Engineer'}</div>
           </div>
         </div>
         <div style={{
           width: '7px', height: '7px', borderRadius: '50%', marginTop: '6px',
-          background: profile.available ? 'var(--green)' : 'var(--border-hover)'
-        }} title={profile.available ? 'Available' : 'Busy'} />
+          background: 'var(--green)'
+        }} title="Available" />
       </div>
 
       <p style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.7, marginBottom: '12px' }}>
-        {profile.bio}
+        {bio}
       </p>
 
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', marginBottom: '14px' }}>
-        {profile.skills.map(s => (
+        {skills.map(s => (
           <span key={s} className="badge badge-muted">{s}</span>
         ))}
-        {profile.goals.map(g => (
+        {goals.map(g => (
           <span key={g} style={{
             display: 'inline-flex', alignItems: 'center', padding: '2px 7px', borderRadius: '4px',
             fontSize: '10px', fontWeight: 600, background: 'rgba(0,112,243,0.08)', color: 'var(--blue)'
           }}>
-            {GOAL_LABELS[g]}
+            {GOAL_LABELS[g] || g}
           </span>
         ))}
       </div>
@@ -124,7 +112,7 @@ function ProfileCard({ profile, isPro }: { profile: ProfileMock; isPro: boolean 
 }
 
 export default function CollabConnectPage() {
-  const { currentUser } = useStore()
+  const { currentUser, team } = useStore()
   const isPro = currentUser?.plan === 'pro' || currentUser?.plan === 'team' || currentUser?.plan === 'enterprise'
 
   const [search, setSearch] = useState('')
@@ -133,14 +121,15 @@ export default function CollabConnectPage() {
   const [goalFilter, setGoalFilter] = useState('all')
   const [availableOnly, setAvailableOnly] = useState(false)
 
-  const filtered = useMemo(() => MOCK_PROFILES.filter(p => {
-    if (search && !p.name.toLowerCase().includes(search.toLowerCase()) && !p.bio.toLowerCase().includes(search.toLowerCase())) return false
-    if (roleFilter !== 'All' && !p.role.includes(roleFilter)) return false
-    if (langFilter !== 'All' && !p.skills.includes(langFilter)) return false
-    if (goalFilter !== 'all' && !p.goals.includes(goalFilter)) return false
-    if (availableOnly && !p.available) return false
+  const filtered = useMemo(() => team.filter(p => {
+    const nameMatch = p.name?.toLowerCase().includes(search.toLowerCase())
+    const roleMatch = p.role?.toLowerCase().includes(roleFilter.toLowerCase()) || roleFilter === 'All'
+    
+    if (search && !nameMatch) return false
+    if (roleFilter !== 'All' && !roleMatch) return false
+    // availableOnly logic if status field existed, for now we show all
     return true
-  }), [search, roleFilter, langFilter, goalFilter, availableOnly])
+  }), [search, roleFilter, team])
 
   return (
     <div style={{ maxWidth: '1000px' }}>
@@ -247,8 +236,8 @@ export default function CollabConnectPage() {
       {/* Profile grid */}
       <div style={{ position: 'relative' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '12px' }}>
-          {filtered.map((profile, i) => (
-            <ProfileCard key={profile.id} profile={profile} isPro={isPro || i < 1} />
+          {filtered.map((member, i) => (
+            <ProfileCard key={member.id} member={member} isPro={isPro || i < 1} />
           ))}
         </div>
 

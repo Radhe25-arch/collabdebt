@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { MessageSquare, X, Send, Sparkles, Cpu, Zap, Terminal } from 'lucide-react'
+import { MessageSquare, X, Send, Sparkles, Cpu, Zap, Terminal, Loader2 } from 'lucide-react'
 
 export default function AIChat() {
   const [isOpen, setIsOpen] = useState(false)
@@ -11,19 +11,33 @@ export default function AIChat() {
   ])
   const [input, setInput] = useState('')
 
-  const handleSend = () => {
-    if (!input.trim()) return
-    const newMessages = [...messages, { role: 'user', content: input }]
+  const [isLoading, setIsLoading] = useState(false)
+
+  const handleSend = async () => {
+    if (!input.trim() || isLoading) return
+    const userMsg = { role: 'user', content: input }
+    const newMessages = [...messages, userMsg]
     setMessages(newMessages)
     setInput('')
+    setIsLoading(true)
     
-    // Simulate AI response
-    setTimeout(() => {
-      setMessages(prev => [...prev, { 
-        role: 'ai', 
-        content: "Processing request... Analysis suggests prioritizing the 'Deprecated JWT Handler' in core-api. This will reduce architectural friction by 14%." 
-      }])
-    }, 1000)
+    try {
+      const res = await fetch('/api/ai/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: newMessages })
+      })
+      const data = await res.json()
+      if (data.content) {
+        setMessages(prev => [...prev, { role: 'ai', content: data.content }])
+      } else {
+        throw new Error('No content')
+      }
+    } catch (err) {
+      setMessages(prev => [...prev, { role: 'ai', content: "Uplink disrupted. Please check your system configuration (ANTHROPIC_API_KEY)." }])
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -88,17 +102,19 @@ export default function AIChat() {
               <div className="relative">
                 <input
                   type="text"
-                  placeholder="Ask about architectural health..."
+                  placeholder={isLoading ? "Analyzing..." : "Ask about architectural health..."}
                   value={input}
+                  disabled={isLoading}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                  className="w-full bg-zinc-900/50 border border-white/5 rounded-2xl py-3 pl-4 pr-12 text-white text-xs font-medium outline-none focus:border-indigo-500/50 transition-all"
+                  className="w-full bg-zinc-900/50 border border-white/5 rounded-2xl py-3 pl-4 pr-12 text-white text-xs font-medium outline-none focus:border-indigo-500/50 transition-all disabled:opacity-50"
                 />
                 <button 
                   onClick={handleSend}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-xl bg-indigo-500 text-white hover:bg-indigo-600 transition-all"
+                  disabled={isLoading}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-xl bg-indigo-500 text-white hover:bg-indigo-600 transition-all disabled:bg-zinc-800"
                 >
-                  <Send size={16} />
+                  {isLoading ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
                 </button>
               </div>
               <div className="flex items-center gap-4 mt-4 justify-center">
