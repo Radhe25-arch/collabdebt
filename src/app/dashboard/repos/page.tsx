@@ -1,232 +1,206 @@
 'use client'
 
-import { useState, useMemo } from 'react'
-import { GitBranch, Plus, RefreshCw, Settings, X, Github, Database, Shield, Zap, Search, LayoutGrid, List } from 'lucide-react'
+import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import toast from 'react-hot-toast'
-import { useStore } from '@/store/useStore'
+import { 
+  Plus, 
+  GitBranch, 
+  Box, 
+  Shield, 
+  Activity, 
+  Zap, 
+  Code2, 
+  Terminal,
+  ExternalLink,
+  ChevronRight,
+  Search,
+  AlertCircle
+} from 'lucide-react'
 
-const HEALTH_COLOR = (s: number) => s > 70 ? '#00f2ff' : s > 40 ? '#ffd600' : '#ff3b5c'
-const HEALTH_LABEL = (s: number) => s > 70 ? 'STABLE' : s > 40 ? 'CAUTION' : 'CRITICAL'
-
-const PROVIDER_ICONS: Record<string, React.FC<{ size: number; className?: string }>> = {
-  github: ({ size, className }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>,
-  gitlab: ({ size, className }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="#FC6D26" className={className}><path d="M22.65 14.39L12 22.13 1.35 14.39a.84.84 0 0 1-.3-.94l1.22-3.78 2.44-7.51A.42.42 0 0 1 4.82 2a.43.43 0 0 1 .58 0 .42.42 0 0 1 .11.18l2.44 7.49h8.1l2.44-7.51A.42.42 0 0 1 18.6 2a.43.43 0 0 1 .58 0 .42.42 0 0 1 .11.18l2.44 7.51L23 13.45a.84.84 0 0 1-.35.94z"/></svg>,
-  bitbucket: ({ size, className }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="#2684FF" className={className}><path d="M.778 1.211a.768.768 0 0 0-.768.892l3.263 19.81a1.044 1.044 0 0 0 1.021.86H19.77a.769.769 0 0 0 .77-.646l3.266-20.02a.769.769 0 0 0-.77-.896zM14.52 15.53H9.522L8.17 8.466h7.561z"/></svg>,
-}
+const REPOS = [
+  {
+    id: '1',
+    name: 'collabdebt-core',
+    url: 'https://github.com/collabdebt/core',
+    health: 92,
+    stack: ['TypeScript', 'Next.js', 'Prisma', 'PostgreSQL'],
+    debtCount: 4,
+    lastScan: '2m ago'
+  },
+  {
+    id: '2',
+    name: 'analytics-engine',
+    url: 'https://github.com/collabdebt/analytics',
+    health: 64,
+    stack: ['Rust', 'Python', 'AWS Lambda'],
+    debtCount: 18,
+    lastScan: '1h ago'
+  },
+  {
+    id: '3',
+    name: 'cli-tooling',
+    url: 'https://github.com/collabdebt/cli',
+    health: 81,
+    stack: ['Go', 'Cobra'],
+    debtCount: 7,
+    lastScan: '4h ago'
+  }
+]
 
 export default function ReposPage() {
-  const { repos, debtItems } = useStore()
-  const [connectOpen, setConnectOpen] = useState(false)
-  const [scanning, setScanning] = useState<string | null>(null)
-
-  const triggerScan = (id: string) => {
-    setScanning(id)
-    setTimeout(() => setScanning(null), 3000)
-  }
+  const [showConnect, setShowConnect] = useState(false)
 
   return (
-    <div className="space-y-8 animate-fadeIn">
-      
-      {/* Header Area */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 text-emerald-400 font-bold text-xs uppercase tracking-[0.2em]">
-            <Database size={14} /> Neural Repository Shield
-          </div>
-          <h1 className="text-4xl font-display font-black text-white tracking-tighter">Data <span className="text-gradient-emerald">Vault.</span></h1>
+    <div className="space-y-8 animate-in fade-in duration-500">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-black tracking-tight text-white mb-1 uppercase">Repository Fleet</h2>
+          <p className="text-zinc-500 font-medium text-sm">Managing {REPOS.length} active service units.</p>
         </div>
-        <div className="flex items-center gap-4">
-           <div className="glass-card px-4 py-2 flex items-center gap-4">
-              <div className="flex -space-x-2">
-                 {[...Array(3)].map((_, i) => (
-                   <div key={i} className="w-6 h-6 rounded-full border-2 border-[#020609] bg-slate-800 flex items-center justify-center">
-                      <Shield size={10} className="text-emerald-400" />
-                   </div>
-                 ))}
-              </div>
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{repos.length} Protected Cores</span>
-           </div>
-        </div>
-      </div>
-
-      {/* Control Module */}
-      <div className="glass shadow-2xl p-4 rounded-[24px] flex flex-wrap items-center gap-4 relative overflow-hidden">
-        <div className="absolute inset-0 bg-emerald-400/[0.02] pointer-events-none" />
-        <div className="w-10 h-10 rounded-xl glass border-white/5 flex items-center justify-center text-slate-500">
-           <Search size={18} />
-        </div>
-        <input 
-          className="bg-transparent flex-1 min-w-[200px] px-2 text-sm font-bold text-white outline-none placeholder:text-slate-600 uppercase tracking-widest" 
-          placeholder="Lookup core data by designation..."
-        />
-        <div className="flex gap-2">
-           <button className="glass p-2 text-emerald-400 transition-all"><LayoutGrid size={16} /></button>
-           <button className="glass p-2 text-slate-500 hover:text-white transition-all"><List size={16} /></button>
-        </div>
-      </div>
-
-      <div className="grid md:grid-cols-2 gap-6">
-        <AnimatePresence mode="popLayout" initial={false}>
-          {repos.map(repo => {
-            const ProviderIcon = PROVIDER_ICONS[repo.provider] || Github
-            const hc = HEALTH_COLOR(repo.health_score)
-            const hl = HEALTH_LABEL(repo.health_score)
-            
-            const openDebtCount = debtItems.filter(d => d.repo_id === repo.id && d.status !== 'fixed').length
-            const fixedDebtCount = debtItems.filter(d => d.repo_id === repo.id && d.status === 'fixed').length
-
-            return (
-              <motion.div 
-                key={repo.id} 
-                layout
-                initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                className="glass-card group p-6 relative overflow-hidden transition-all duration-500 hover:border-emerald-500/30"
-              >
-                {/* Scanner Glow */}
-                {scanning === repo.id && (
-                  <motion.div 
-                    initial={{ top: '0%' }}
-                    animate={{ top: '100%' }}
-                    transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
-                    className="absolute inset-x-0 h-1 bg-gradient-to-r from-transparent via-emerald-400/50 to-transparent blur-[2px] z-10"
-                  />
-                )}
-
-                <div className="flex items-start justify-between mb-8">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl glass border-white/10 flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform">
-                      <ProviderIcon size={24} className="text-white" />
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-black text-white uppercase tracking-tight">{repo.name}</h3>
-                      <p className="font-mono text-[9px] text-slate-500 mt-1">{repo.full_name}</p>
-                    </div>
-                  </div>
-                  <div className="flex flex-col items-end">
-                     <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: hc }}>{hl}</span>
-                     <span className="text-2xl font-display font-black text-white">{repo.health_score}<span className="text-[10px] text-slate-500">%</span></span>
-                  </div>
-                </div>
-
-                <div className="relative h-2 w-full bg-white/5 rounded-full overflow-hidden mb-8">
-                   <motion.div 
-                     initial={{ width: 0 }}
-                     animate={{ width: `${repo.health_score}%` }}
-                     transition={{ duration: 1, ease: 'easeOut' }}
-                     className="h-full rounded-full"
-                     style={{ 
-                        background: `linear-gradient(90deg, ${hc}, ${hc}88)`,
-                        boxShadow: `0 0 15px ${hc}60`
-                     }}
-                   />
-                </div>
-
-                <div className="grid grid-cols-3 gap-3 mb-8">
-                  {[
-                    { label: 'Anomalies', value: openDebtCount, color: '#ff3b5c' },
-                    { label: 'Resolved', value: fixedDebtCount, color: '#00ff88' },
-                    { label: 'Neural Link', value: 'Active', color: '#00f2ff' },
-                  ].map(s => (
-                    <div key={s.label} className="glass p-3 rounded-xl text-center space-y-1">
-                      <div className="text-lg font-black" style={{ color: s.color }}>{s.value}</div>
-                      <div className="text-[8px] font-black text-slate-500 uppercase tracking-widest">{s.label}</div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="flex gap-3">
-                  <motion.button 
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => triggerScan(repo.id)} 
-                    disabled={scanning === repo.id}
-                    className="flex-1 glass py-3 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] text-emerald-400 hover:bg-emerald-400/5 transition-all flex items-center justify-center gap-3"
-                  >
-                    {scanning === repo.id ? (
-                      <><RefreshCw size={14} className="animate-spin" /> Analyzing Cores...</>
-                    ) : (
-                      <><RefreshCw size={14} /> Synchronize Hub</>
-                    )}
-                  </motion.button>
-                  <button className="glass w-12 h-12 flex items-center justify-center rounded-2xl text-slate-500 hover:text-white transition-all">
-                    <Settings size={18} />
-                  </button>
-                </div>
-              </motion.div>
-            )
-          })}
-        </AnimatePresence>
-
-        {/* Connect Core Card */}
-        <motion.button 
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={() => setConnectOpen(true)}
-          className="glass-card group flex flex-col items-center justify-center gap-4 min-h-[320px] relative overflow-hidden"
+        <button 
+          onClick={() => setShowConnect(true)}
+          className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-indigo-500 text-white font-black text-sm hover:bg-indigo-600 transition-all shadow-[0_0_20px_rgba(99,102,241,0.3)]"
         >
-          <div className="absolute inset-0 bg-emerald-400/[0.01] pointer-events-none" />
-          <div className="w-16 h-16 rounded-[24px] glass border-emerald-500/20 flex items-center justify-center text-slate-600 group-hover:text-emerald-400 group-hover:bg-emerald-400/5 transition-all shadow-2xl">
-            <Plus size={32} />
-          </div>
-          <div className="text-center">
-             <p className="text-xs font-black text-white uppercase tracking-[0.2em]">Enlist New Core</p>
-             <p className="text-[9px] font-bold text-slate-600 uppercase tracking-widest mt-2">v4.0 Protocol Compatibility</p>
-          </div>
-        </motion.button>
+          <Plus size={18} />
+          CONNECT REPOSITORY
+        </button>
       </div>
 
-      {/* Connect Modal */}
-      <AnimatePresence>
-        {connectOpen && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm" onClick={e => { if (e.target === e.currentTarget) setConnectOpen(false) }}>
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9, y: 30 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 30 }}
-              className="glass border-white/10 max-w-lg w-full rounded-[32px] p-8 shadow-2xl relative overflow-hidden"
-            >
-              <div className="absolute top-0 right-0 p-4">
-                 <X size={20} className="text-slate-600 cursor-pointer hover:text-white transition-colors" onClick={() => setConnectOpen(false)} />
+      <div className="grid grid-cols-1 gap-6">
+        {REPOS.map((repo, i) => (
+          <motion.div
+            key={repo.id}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: i * 0.1 }}
+            className="group relative bg-zinc-900/40 border border-white/5 rounded-[32px] p-8 flex flex-col lg:flex-row lg:items-center gap-8 card-hover"
+          >
+            {/* Health Radial (Simplified) */}
+            <div className="relative flex-shrink-0">
+               <div className="w-24 h-24 rounded-full border-[6px] border-zinc-800 flex items-center justify-center relative">
+                  <div className="text-2xl font-black text-white">{repo.health}</div>
+                  <div className="text-[10px] font-black text-zinc-500 absolute -bottom-4 bg-zinc-900 px-2 rounded-full border border-white/5 uppercase">HEALTH</div>
+                  {/* Dynamic Ring */}
+                  <svg className="absolute inset-0 -rotate-90 w-full h-full">
+                    <circle 
+                      cx="48" cy="48" r="45" 
+                      fill="transparent" 
+                      stroke={repo.health > 80 ? '#6366f1' : repo.health > 50 ? '#f59e0b' : '#ef4444'} 
+                      strokeWidth="6" 
+                      strokeDasharray="283" 
+                      strokeDashoffset={283 - (283 * repo.health) / 100}
+                      strokeLinecap="round"
+                      className="transition-all duration-1000"
+                    />
+                  </svg>
+               </div>
+            </div>
+
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-3 mb-2">
+                <h3 className="text-xl font-black text-white group-hover:text-indigo-400 transition-colors">{repo.name}</h3>
+                <a href={repo.url} target="_blank" rel="noreferrer" className="text-zinc-600 hover:text-white transition-colors">
+                  <ExternalLink size={16} />
+                </a>
               </div>
               
-              <div className="text-center mb-8">
-                <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center mx-auto text-emerald-400 mb-4 border border-emerald-500/20">
-                   <GitBranch size={24} />
-                </div>
-                <h2 className="text-lg font-semibold text-white">Connect Repository</h2>
-                <p className="text-xs text-slate-500 mt-1">Select a provider to link your codebase</p>
+              <div className="flex flex-wrap gap-2 mb-6">
+                {repo.stack.map(tech => (
+                  <span key={tech} className="px-3 py-1 rounded-lg bg-white/5 border border-white/5 text-[10px] font-black text-zinc-400 uppercase tracking-widest group-hover:bg-indigo-500/10 group-hover:border-indigo-500/20 group-hover:text-indigo-400 transition-all">
+                    {tech}
+                  </span>
+                ))}
               </div>
 
-              <div className="grid grid-cols-3 gap-3 mb-8">
-                {['GitHub', 'GitLab', 'Bitbucket'].map((t, i) => {
-                  const Icon = PROVIDER_ICONS[t.toLowerCase()] || Github
-                  return (
-                    <button key={t} className={`flex flex-col items-center gap-3 p-4 glass rounded-2xl border-white/5 transition-all ${i === 0 ? 'bg-emerald-400/10 border-emerald-400/30 text-emerald-400' : 'text-slate-500 hover:text-white'}`}>
-                      <Icon size={24} className={i === 0 ? 'text-emerald-400' : 'text-slate-500'} />
-                      <span className="text-[9px] font-black uppercase tracking-widest">{t}</span>
-                    </button>
-                  )
-                })}
+              <div className="flex items-center gap-8">
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 rounded-lg bg-zinc-800 text-indigo-400">
+                    <Shield size={14} />
+                  </div>
+                  <div className="text-xs font-bold">
+                    <div className="text-white">{repo.debtCount} Items</div>
+                    <div className="text-zinc-600 uppercase text-[9px]">Debt Detected</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 rounded-lg bg-zinc-800 text-emerald-400">
+                    <Activity size={14} />
+                  </div>
+                  <div className="text-xs font-bold">
+                    <div className="text-white">Active</div>
+                    <div className="text-zinc-600 uppercase text-[9px]">Neural Pulse</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 rounded-lg bg-zinc-800 text-amber-400">
+                    <Zap size={14} />
+                  </div>
+                  <div className="text-xs font-bold">
+                    <div className="text-white">{repo.lastScan}</div>
+                    <div className="text-zinc-600 uppercase text-[9px]">Last Intelligence Scan</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex lg:flex-col gap-3">
+               <button className="flex-1 lg:flex-initial px-6 py-3 rounded-xl bg-zinc-800 text-white font-black text-xs hover:bg-zinc-700 transition-all">
+                  VIEW REPORT
+               </button>
+               <button className="flex-1 lg:flex-initial px-6 py-3 rounded-xl bg-white text-black font-black text-xs hover:bg-zinc-200 transition-all shadow-xl">
+                  SCAN NOW
+               </button>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
+      <AnimatePresence>
+        {showConnect && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowConnect(false)}
+              className="absolute inset-0 bg-black/80 backdrop-blur-2xl" 
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative w-full max-w-lg bg-zinc-900 border border-white/10 rounded-[48px] p-12 overflow-hidden shadow-2xl"
+            >
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-indigo-500 to-transparent" />
+              
+              <div className="text-center mb-10">
+                <div className="w-16 h-16 bg-indigo-500 rounded-3xl mx-auto flex items-center justify-center shadow-2xl mb-6 -rotate-6">
+                  <GitBranch size={32} className="text-white" />
+                </div>
+                <h3 className="text-2xl font-black text-white mb-2 uppercase tracking-tight">Connect Repository</h3>
+                <p className="text-zinc-500 font-medium">Link your repository for neural analysis.</p>
               </div>
 
-              <div className="space-y-6">
-                <div className="p-4 text-center rounded-2xl bg-white/[0.02] border border-white/5">
-                   <p className="text-xs text-slate-400 leading-relaxed mb-6">
-                     You will be redirected to authorize CollabDebt to access your repositories. We only request read access to code and pull requests.
-                   </p>
-                   <motion.button 
-                     whileHover={{ scale: 1.01 }}
-                     whileTap={{ scale: 0.99 }}
-                     onClick={() => {
-                        setConnectOpen(false);
-                        toast.success('Repository linked successfully');
-                     }}
-                     className="btn-primary w-full py-3 text-sm font-semibold"
-                   >
-                     Continue to Provider
-                   </motion.button>
-                </div>
+              <div className="space-y-4">
+                 <div className="relative">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600" size={18} />
+                    <input 
+                      type="text" 
+                      placeholder="github.com/org/repo-name"
+                      className="w-full bg-black/50 border border-white/5 rounded-2xl py-4 pl-12 pr-4 text-white font-mono text-sm outline-none focus:border-indigo-500/50 transition-all"
+                    />
+                 </div>
+                 <div className="flex gap-3">
+                   <button className="flex-1 py-4 rounded-2xl bg-zinc-800 text-zinc-400 font-black text-sm uppercase tracking-widest hover:text-white transition-all">Cancel</button>
+                   <button className="flex-[2] py-4 rounded-2xl bg-indigo-500 text-white font-black text-sm uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-xl">Initialize Uplink</button>
+                 </div>
+              </div>
+
+              <div className="mt-8 p-4 rounded-2xl bg-indigo-500/5 border border-indigo-500/10 flex items-center gap-3">
+                 <AlertCircle className="text-indigo-400" size={18} />
+                 <p className="text-[10px] font-black text-indigo-400/80 uppercase tracking-wider leading-relaxed">
+                   CollabDebt requires read access to your codebase to quantify debt markers and architectural drift.
+                 </p>
               </div>
             </motion.div>
           </div>

@@ -1,241 +1,207 @@
 'use client'
 
-import { useState, useMemo } from 'react'
-import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from 'recharts'
-import { Award, Clock, Download, TrendingUp } from 'lucide-react'
-import { useStore } from '@/store/useStore'
+import { motion } from 'framer-motion'
+import { 
+  BarChart, 
+  Bar, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  PieChart,
+  Pie,
+  Cell
+} from 'recharts'
+import { 
+  TrendingUp, 
+  TrendingDown, 
+  DollarSign, 
+  Clock, 
+  Zap, 
+  ShieldAlert, 
+  Target,
+  ArrowUpRight,
+  ArrowDownRight
+} from 'lucide-react'
 
-const DEBT_BY_TYPE = [
-  { name: 'TODO/FIXME', value: 12, color: '#ffd600' },
-  { name: 'Deprecated', value: 7, color: '#ff9600' },
-  { name: 'Complexity', value: 5, color: '#7c3aed' },
-  { name: 'Duplicate', value: 4, color: '#00e5ff' },
-  { name: 'Dead Code', value: 3, color: '#6b8fa8' },
-  { name: 'Security', value: 2, color: '#ff3b5c' },
+const DATA_TREND = [
+  { name: 'Mon', debt: 45, velocity: 85 },
+  { name: 'Tue', debt: 52, velocity: 78 },
+  { name: 'Wed', debt: 48, velocity: 82 },
+  { name: 'Thu', debt: 61, velocity: 65 },
+  { name: 'Fri', debt: 55, velocity: 72 },
+  { name: 'Sat', debt: 42, velocity: 88 },
+  { name: 'Sun', debt: 38, velocity: 94 },
 ]
 
-const DEBT_BY_MODULE = [
-  { module: 'src/auth/', items: 8, cost: 4800 },
-  { module: 'src/payments/', items: 6, cost: 3200 },
-  { module: 'src/api/', items: 5, cost: 2100 },
-  { module: 'src/hooks/', items: 4, cost: 900 },
-  { module: 'src/components/', items: 3, cost: 600 },
-]
-
-const TREND_DATA = [
-  { week: 'W1', total: 32, fixed: 5 },
-  { week: 'W2', total: 38, fixed: 12 },
-  { week: 'W3', total: 35, fixed: 18 },
-  { week: 'W4', total: 40, fixed: 24 },
-  { week: 'W5', total: 36, fixed: 30 },
-  { week: 'W6', total: 33, fixed: 36 },
-  { week: 'W7', total: 28, fixed: 40 },
-]
-
-const VELOCITY = [
-  { sprint: 'S10', velocity: 6 },
-  { sprint: 'S11', velocity: 7 },
-  { sprint: 'S12', velocity: 5 },
-  { sprint: 'S13', velocity: 9 },
-  { sprint: 'S14', velocity: 8 },
+const DATA_DISTRIBUTION = [
+  { name: 'Security', value: 400, color: '#6366f1' },
+  { name: 'Performance', value: 300, color: '#f59e0b' },
+  { name: 'Maintenance', value: 300, color: '#10b981' },
+  { name: 'Refactor', value: 200, color: '#ef4444' },
 ]
 
 export default function AnalyticsPage() {
-  const { debtItems, team, sprints } = useStore()
-  const leaderboard = useMemo(() => [...team].sort((a, b) => (b.items_fixed || 0) - (a.items_fixed || 0)), [team])
-
-  const openItems = useMemo(() => debtItems.filter(d => d.status !== 'fixed'), [debtItems])
-  const fixedItems = useMemo(() => debtItems.filter(d => d.status === 'fixed'), [debtItems])
-  
-  const debtByType = useMemo(() => {
-    const types = ['todo', 'deprecated', 'complexity', 'duplicate', 'dead_code', 'security', 'performance']
-    const colors = ['#ffd600', '#ff9600', '#7c3aed', '#00e5ff', '#6b8fa8', '#ff3b5c', '#00ff88']
-    return types.map((t, i) => ({
-      name: t.toUpperCase(),
-      value: debtItems.filter(d => d.type === t).length,
-      color: colors[i]
-    })).filter(t => t.value > 0)
-  }, [debtItems])
-
-  const debtByModule = useMemo(() => {
-    const modules: Record<string, { items: number, cost: number }> = {}
-    debtItems.forEach(d => {
-      const parts = d.file_path.split('/')
-      const mod = parts.length > 1 ? parts.slice(0, 2).join('/') + '/' : 'root/'
-      if (!modules[mod]) modules[mod] = { items: 0, cost: 0 }
-      modules[mod].items++
-      modules[mod].cost += d.cost_usd || 0
-    })
-    return Object.entries(modules).map(([name, data]) => ({ module: name, ...data }))
-      .sort((a, b) => b.cost - a.cost)
-      .slice(0, 5)
-  }, [debtItems])
-
-  const weeklyStats = useMemo(() => {
-    const weeks = ['W1', 'W2', 'W3', 'W4', 'W5', 'W6', 'W7']
-    return weeks.map((w, i) => {
-      const weekStart = new Date()
-      weekStart.setDate(weekStart.getDate() - (7 * (6 - i)))
-      const weekEnd = new Date(weekStart)
-      weekEnd.setDate(weekEnd.getDate() + 7)
-
-      const total = debtItems.filter(d => {
-        const dDate = new Date(d.created_at)
-        return dDate < weekEnd
-      }).length
-
-      const fixedCount = debtItems.filter(d => {
-        if (!d.fixed_at) return false
-        const fDate = new Date(d.fixed_at)
-        return fDate < weekEnd
-      }).length
-
-      return { week: w, total, fixed: fixedCount }
-    })
-  }, [debtItems])
-
-  const avgFixTime = useMemo(() => {
-    const times = fixedItems.map(d => {
-      const start = new Date(d.created_at).getTime()
-      const end = new Date(d.fixed_at!).getTime()
-      return (end - start) / (1000 * 60 * 60 * 24)
-    })
-    return times.length ? (times.reduce((a, b) => a + b, 0) / times.length).toFixed(1) : '0'
-  }, [fixedItems])
-
   return (
-    <div className="space-y-6 max-w-7xl">
+    <div className="space-y-8 animate-in fade-in duration-500 pb-10">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-display text-2xl font-bold">Analytics</h1>
-          <p className="text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>Last 12 weeks · All repositories</p>
+          <h2 className="text-2xl font-black tracking-tight text-white mb-1 uppercase">Advanced Intelligence</h2>
+          <p className="text-zinc-500 font-medium text-sm">Real-time quantification of architectural friction.</p>
         </div>
-        <button className="btn-ghost text-sm">
-          <Download size={15} /> Export PDF
-        </button>
+        <div className="flex gap-2">
+           {['7D', '30D', '90D', 'ALL'].map(t => (
+             <button key={t} className={`px-4 py-2 rounded-xl text-xs font-black border transition-all ${
+               t === '30D' ? 'bg-indigo-500 text-white border-indigo-400' : 'bg-zinc-900 border-white/5 text-zinc-600 hover:text-white'
+             }`}>
+               {t}
+             </button>
+           ))}
+        </div>
       </div>
 
-      {/* Metrics row */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* ROI & Cost Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {[
-          { label: 'Total Open Debt', value: openItems.length, icon: TrendingUp, color: '#ff3b5c', sub: 'Active anomalies' },
-          { label: 'Resolved Cores', value: fixedItems.length, icon: TrendingUp, color: '#00ff88', sub: 'Neuturalized depth' },
-          { label: 'Avg Fix Time', value: `${avgFixTime}d`, icon: Clock, color: '#ffd600', sub: 'Mean time to stable' },
-          { label: 'Fleet Champion', value: leaderboard[0]?.name.split(' ')[0] || 'N/A', icon: Award, color: '#7c3aed', sub: `${leaderboard[0]?.items_fixed || 0} items fixed` },
-        ].map((m, i) => (
-          <div key={i} className="metric-card">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="metric-label">{m.label}</p>
-                <p className="text-xl font-bold font-display mt-1" style={{ color: m.color }}>{m.value}</p>
-              </div>
-              <div className="p-2.5 rounded-lg" style={{ background: `${m.color}15` }}>
-                <m.icon size={18} style={{ color: m.color }} />
-              </div>
-            </div>
-            <p className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>{m.sub}</p>
+          { label: 'Market Velocity Impact', value: '14.2', unit: '%', trend: 'down', icon: Zap, color: 'indigo' },
+          { label: 'Annualized Debt Cost', value: '42.8', unit: 'k', trend: 'up', icon: DollarSign, color: 'rose' },
+          { label: 'Refactor Efficiency', value: '98.4', unit: '%', trend: 'up', icon: Target, color: 'emerald' },
+        ].map((stat, i) => (
+          <div key={i} className="p-8 rounded-[32px] bg-zinc-900/40 border border-white/5 relative overflow-hidden group shadow-xl">
+             <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                <stat.icon size={80} className={`text-${stat.color}-500`} />
+             </div>
+             <div className="relative z-10">
+                <div className="text-xs font-black text-zinc-500 uppercase tracking-widest mb-4">{stat.label}</div>
+                <div className="flex items-baseline gap-2 mb-4">
+                   <div className="text-4xl font-black text-white">{stat.value}</div>
+                   <div className="text-sm font-bold text-zinc-600">{stat.unit}</div>
+                </div>
+                <div className={`flex items-center gap-1.5 text-xs font-black uppercase ${
+                  stat.trend === 'up' ? 'text-emerald-500' : 'text-rose-500'
+                }`}>
+                  {stat.trend === 'up' ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
+                  {stat.trend === 'up' ? 'Improving' : 'Attention Required'}
+                </div>
+             </div>
           </div>
         ))}
       </div>
 
-      {/* Debt by module + Team leaderboard */}
-      <div className="grid lg:grid-cols-2 gap-4">
-        <div className="card">
-          <h2 className="font-semibold mb-4">Debt by Module</h2>
-          <div className="space-y-3">
-            {debtByModule.map((m, i) => (
-              <div key={i} className="flex items-center gap-3">
-                <code className="font-mono text-xs w-36 truncate" style={{ color: 'var(--text-muted)' }}>{m.module}</code>
-                <div className="flex-1 progress-bar h-2">
-                  <div className="h-full rounded-full" style={{ width: `${Math.min(100, (m.items / 10) * 100)}%`, background: 'linear-gradient(90deg, var(--cyan), #7c3aed)' }} />
+      {/* Velocity vs Debt Chart */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 p-8 rounded-[40px] bg-zinc-900/40 border border-white/5 shadow-2xl overflow-hidden relative">
+           <div className="flex items-center justify-between mb-8">
+             <h3 className="text-lg font-black tracking-tight text-white uppercase">Velocity Correlation</h3>
+             <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                   <div className="w-2 h-2 rounded-full bg-indigo-500" />
+                   <span className="text-[10px] font-black text-zinc-500">DEBT LOAD</span>
                 </div>
-                <span className="text-xs font-mono w-6 text-right" style={{ color: 'var(--text)' }}>{m.items}</span>
-                <span className="text-xs font-mono w-16 text-right" style={{ color: 'var(--yellow)' }}>${m.cost.toLocaleString()}</span>
-              </div>
-            ))}
-          </div>
+                <div className="flex items-center gap-2">
+                   <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                   <span className="text-[10px] font-black text-zinc-500">SHIP VELOCITY</span>
+                </div>
+             </div>
+           </div>
+           
+           <div className="h-[300px] w-full">
+             <ResponsiveContainer width="100%" height="100%">
+               <AreaChart data={DATA_TREND}>
+                 <defs>
+                   <linearGradient id="colorDebt" x1="0" y1="0" x2="0" y2="1">
+                     <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/>
+                     <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
+                   </linearGradient>
+                   <linearGradient id="colorVelocity" x1="0" y1="0" x2="0" y2="1">
+                     <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                     <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                   </linearGradient>
+                 </defs>
+                 <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
+                 <XAxis 
+                   dataKey="name" 
+                   axisLine={false} 
+                   tickLine={false} 
+                   tick={{ fill: '#52525b', fontSize: 10, fontWeight: 700 }} 
+                   dy={10}
+                 />
+                 <YAxis 
+                   hide
+                 />
+                 <Tooltip 
+                   contentStyle={{ background: '#09090b', border: '1px solid #ffffff10', borderRadius: '16px', boxShadow: '0 20px 40px -10px rgba(0,0,0,0.5)' }}
+                   itemStyle={{ fontSize: '10px', fontWeight: 900, textTransform: 'uppercase' }}
+                 />
+                 <Area type="monotone" dataKey="debt" stroke="#6366f1" strokeWidth={3} fillOpacity={1} fill="url(#colorDebt)" />
+                 <Area type="monotone" dataKey="velocity" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorVelocity)" />
+               </AreaChart>
+             </ResponsiveContainer>
+           </div>
         </div>
 
-        <div className="card">
-          <h2 className="font-semibold mb-4">Team Leaderboard</h2>
-          <div className="space-y-3">
-            {leaderboard.map((member, i) => (
-              <div key={member.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 transition-colors">
-                <span className="w-6 text-center text-sm font-bold font-display"
-                  style={{ color: i === 0 ? '#ffd600' : i === 1 ? '#aab8c2' : i === 2 ? '#cd7f32' : 'var(--text-dim)' }}>
-                  #{i + 1}
-                </span>
-                <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold"
-                  style={{ background: 'rgba(0,229,255,0.1)', color: 'var(--cyan)' }}>
-                  {member.name.split(' ').map(n => n[0]).join('')}
+        {/* Categories Distribution */}
+        <div className="p-8 rounded-[40px] bg-zinc-900/40 border border-white/5 shadow-2xl relative overflow-hidden">
+           <h3 className="text-lg font-black tracking-tight text-white uppercase mb-8">Source Distribution</h3>
+           
+           <div className="h-[250px] w-full">
+             <ResponsiveContainer width="100%" height="100%">
+               <PieChart>
+                 <Pie
+                   data={DATA_DISTRIBUTION}
+                   innerRadius={60}
+                   outerRadius={80}
+                   paddingAngle={5}
+                   dataKey="value"
+                 >
+                   {DATA_DISTRIBUTION.map((entry, index) => (
+                     <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
+                   ))}
+                 </Pie>
+                 <Tooltip />
+               </PieChart>
+             </ResponsiveContainer>
+           </div>
+
+           <div className="mt-6 space-y-3">
+              {DATA_DISTRIBUTION.map((item) => (
+                <div key={item.name} className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }} />
+                    <span className="text-zinc-500">{item.name}</span>
+                  </div>
+                  <span className="text-white">{(item.value / 1200 * 100).toFixed(0)}%</span>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{member.name}</p>
-                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{member.role}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-bold font-display" style={{ color: 'var(--green)' }}>{member.items_fixed}</p>
-                  <p className="text-[10px]" style={{ color: 'var(--text-dim)' }}>items fixed</p>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+           </div>
         </div>
       </div>
 
-      {/* Trend + Type charts */}
-      <div className="grid lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2 card">
-          <h2 className="font-semibold mb-4">Debt Trend — 12 Weeks</h2>
-          <ResponsiveContainer width="100%" height={220}>
-            <LineChart data={weeklyStats}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-              <XAxis dataKey="week" tick={{ fill: 'var(--text-muted)', fontSize: 11 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: 'var(--text-muted)', fontSize: 11 }} axisLine={false} tickLine={false} />
-              <Tooltip contentStyle={{ background: 'var(--card)', border: '1px solid var(--border-bright)', borderRadius: '8px', fontSize: 12 }}
-                labelStyle={{ color: 'var(--text)' }} />
-              <Legend wrapperStyle={{ fontSize: 12, paddingTop: 8 }} />
-              <Line type="monotone" dataKey="total" name="Total Debt" stroke="var(--red)" strokeWidth={2} dot={false} />
-              <Line type="monotone" dataKey="fixed" name="Fixed Cumulative" stroke="var(--green)" strokeWidth={2} dot={false} />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-
-        <div className="card">
-          <h2 className="font-semibold mb-4">Debt by Type</h2>
-          <ResponsiveContainer width="100%" height={160}>
-            <PieChart>
-              <Pie data={debtByType} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={70} innerRadius={40}>
-                {debtByType.map((entry, i) => <Cell key={i} fill={entry.color} />)}
-              </Pie>
-              <Tooltip contentStyle={{ background: 'var(--card)', border: '1px solid var(--border-bright)', borderRadius: '8px', fontSize: 12 }}
-                labelStyle={{ color: 'var(--text)' }} />
-            </PieChart>
-          </ResponsiveContainer>
-          <div className="grid grid-cols-2 gap-1 mt-2">
-            {debtByType.map(t => (
-              <div key={t.name} className="flex items-center gap-1.5 text-xs">
-                <div className="w-2 h-2 rounded-full shrink-0" style={{ background: t.color }} />
-                <span className="truncate" style={{ color: 'var(--text-muted)' }}>{t.name}</span>
+      {/* Table of Impactful Debt */}
+      <div className="p-8 rounded-[40px] bg-zinc-900/40 border border-white/5 shadow-2xl">
+         <h3 className="text-lg font-black tracking-tight text-white uppercase mb-8">High Impact Targets</h3>
+         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              { title: 'Auth Logic Sink', impact: 'High', roi: '14x', effort: '2d' },
+              { title: 'Legacy DB Schema', impact: 'Medium', roi: '8x', effort: '5d' },
+              { title: 'N+1 Query Hotfix', impact: 'Critical', roi: '22x', effort: '4h' },
+              { title: 'CSS Redundancy', impact: 'Low', roi: '3x', effort: '1d' },
+            ].map((item) => (
+              <div key={item.title} className="p-6 rounded-3xl bg-black/40 border border-white/5 hover:border-indigo-500/30 transition-all card-hover group">
+                 <div className="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-1">{item.roi} ROI</div>
+                 <h4 className="font-bold text-white mb-4 group-hover:text-indigo-400 transition-colors">{item.title}</h4>
+                 <div className="flex items-center justify-between mt-auto pt-4 border-t border-white/5">
+                    <div className="text-[10px] font-black text-zinc-600 uppercase">Impact: {item.impact}</div>
+                    <div className="text-[10px] font-black text-zinc-400 uppercase">{item.effort}</div>
+                 </div>
               </div>
             ))}
-          </div>
-        </div>
+         </div>
       </div>
 
-      {/* Sprint velocity */}
-      <div className="card">
-        <h2 className="font-semibold mb-4">Sprint Velocity Over Time</h2>
-        <ResponsiveContainer width="100%" height={160}>
-          <BarChart data={VELOCITY}>
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-            <XAxis dataKey="sprint" tick={{ fill: 'var(--text-muted)', fontSize: 11 }} axisLine={false} tickLine={false} />
-            <YAxis tick={{ fill: 'var(--text-muted)', fontSize: 11 }} axisLine={false} tickLine={false} />
-            <Tooltip contentStyle={{ background: 'var(--card)', border: '1px solid var(--border-bright)', borderRadius: '8px', fontSize: 12 }} />
-            <Bar dataKey="velocity" name="Items Fixed" fill="rgba(0,229,255,0.7)" radius={[4, 4, 0, 0]} />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
     </div>
   )
 }

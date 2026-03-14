@@ -1,188 +1,173 @@
 'use client'
 
-import { useState, useMemo } from 'react'
-import { Zap, Plus, X, Calendar, Target, BrainCircuit, History, Loader2, RefreshCw } from 'lucide-react'
-import { useStore } from '@/store/useStore'
+import { motion } from 'framer-motion'
+import { 
+  Activity, 
+  Calendar, 
+  ChevronRight, 
+  Clock, 
+  Plus, 
+  Target, 
+  Zap,
+  TrendingDown,
+  Layers,
+  ArrowRight,
+  CheckCircle2,
+  AlertTriangle
+} from 'lucide-react'
+
+const SPRINTS = [
+  {
+    id: '1',
+    name: 'Velocity Surge Q2-W3',
+    status: 'Active',
+    start: 'Mar 10',
+    end: 'Mar 24',
+    progress: 68,
+    resolved: 14,
+    remaining: 6,
+    health: 'Stable'
+  },
+  {
+    id: '2',
+    name: 'Core Refactor Cycle',
+    status: 'Upcoming',
+    start: 'Mar 26',
+    end: 'Apr 08',
+    progress: 0,
+    resolved: 0,
+    remaining: 12,
+    health: 'Planned'
+  },
+  {
+    id: '3',
+    name: 'Security Shield Audit',
+    status: 'Historical',
+    start: 'Feb 24',
+    end: 'Mar 09',
+    progress: 100,
+    resolved: 22,
+    remaining: 0,
+    health: 'Resolved'
+  }
+]
 
 export default function SprintsPage() {
-  const { sprints, debtItems } = useStore()
-  const [showNew, setShowNew] = useState(false)
-  const [aiLoading, setAiLoading] = useState(false)
-
-  const activeSprint = useMemo(() => sprints.find(s => s.status === 'active'), [sprints])
-  const pastSprints = useMemo(() => sprints.filter(s => s.status === 'completed'), [sprints])
-
-  const sprintProgress = useMemo(() => {
-    if (!activeSprint) return { progress: 0, daysRemaining: 0 }
-    const start = new Date(activeSprint.start_date).getTime()
-    const end = new Date(activeSprint.end_date).getTime()
-    const now = Date.now()
-    const progress = Math.min(100, Math.max(0, ((now - start) / (end - start)) * 100))
-    const daysRemaining = Math.max(0, Math.ceil((end - now) / 86400000))
-    return { progress, daysRemaining }
-  }, [activeSprint])
-
   return (
-    <div className="max-w-6xl">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+    <div className="space-y-8 animate-in fade-in duration-500">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text)' }}>Temporal Cycles</h1>
-          <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Track debt resolution phases and velocity.</p>
+          <h2 className="text-2xl font-black tracking-tight text-white mb-1 uppercase text-gradient-indigo">Neural Cycles</h2>
+          <p className="text-zinc-500 font-medium text-sm">Managing operational sprints for debt resolution.</p>
         </div>
-        <button onClick={() => setShowNew(true)} className="btn-primary py-1.5 px-4 text-xs">
-          <Plus size={14} /> Initiate Cycle
+        <button className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-indigo-500 text-white font-black text-sm hover:bg-indigo-600 transition-all shadow-xl">
+          <Plus size={18} />
+          INITIALIZE CYCLE
         </button>
       </div>
 
-      {/* Active Phase */}
-      {activeSprint ? (
-        <div className="card mb-8">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-8">
-            <div className="flex items-center gap-4">
-              <div style={{
-                width: '48px', height: '48px', borderRadius: '10px', background: 'rgba(234,179,8,0.1)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--yellow)', border: '1px solid rgba(234,179,8,0.2)'
-              }}>
-                < Zap size={24} />
+      <div className="grid grid-cols-1 gap-6">
+        {SPRINTS.map((sprint, i) => (
+          <motion.div
+            key={sprint.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.1 }}
+            className={`p-8 rounded-[40px] border transition-all card-hover group relative overflow-hidden ${
+              sprint.status === 'Active' 
+                ? 'bg-zinc-900/60 border-indigo-500/30 shadow-[0_0_50px_rgba(99,102,241,0.1)]' 
+                : 'bg-zinc-900/20 border-white/5'
+            }`}
+          >
+            {sprint.status === 'Active' && (
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-indigo-500 to-transparent" />
+            )}
+
+            <div className="flex flex-col lg:flex-row lg:items-center gap-8">
+              {/* Progress Circle Visual */}
+              <div className="relative flex-shrink-0">
+                <div className="w-20 h-20 rounded-full border-[4px] border-zinc-800 flex items-center justify-center relative">
+                  <span className="text-lg font-black text-white">{sprint.progress}%</span>
+                  <svg className="absolute inset-0 -rotate-90 w-full h-full">
+                    <circle 
+                      cx="40" cy="40" r="38" 
+                      fill="transparent" 
+                      stroke={sprint.status === 'Active' ? '#6366f1' : '#27272a'} 
+                      strokeWidth="4" 
+                      strokeDasharray="238" 
+                      strokeDashoffset={238 - (238 * sprint.progress) / 100}
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                </div>
               </div>
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <h2 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text)' }}>{activeSprint.name}</h2>
-                  <span className="badge badge-yellow">ACTIVE</span>
+
+              <div className="flex-1">
+                <div className="flex flex-wrap items-center gap-3 mb-2">
+                  <h3 className="text-xl font-black text-white group-hover:text-indigo-400 transition-colors uppercase tracking-tight">{sprint.name}</h3>
+                  <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest border ${
+                    sprint.status === 'Active' ? 'bg-indigo-500/10 border-indigo-500 text-indigo-400' :
+                    sprint.status === 'Upcoming' ? 'bg-amber-500/10 border-amber-500 text-amber-500' :
+                    'bg-zinc-800 border-white/5 text-zinc-500'
+                  }`}>
+                    {sprint.status}
+                  </span>
                 </div>
-                <div style={{ fontSize: '12px', color: 'var(--text-dim)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Calendar size={12} />
-                  {new Date(activeSprint.start_date).toLocaleDateString()} — {new Date(activeSprint.end_date).toLocaleDateString()}
-                  <span>·</span>
-                  {sprintProgress.daysRemaining} days remaining
+
+                <div className="flex items-center gap-6 text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-6">
+                   <div className="flex items-center gap-1.5">
+                      <Calendar size={12} />
+                      {sprint.start} — {sprint.end}
+                   </div>
+                   <div className="flex items-center gap-1.5">
+                      <Target size={12} className="text-indigo-500" />
+                      {sprint.resolved} NEUTRALIZED
+                   </div>
+                   <div className="flex items-center gap-1.5">
+                      <Activity size={12} className="text-rose-500" />
+                      {sprint.remaining} REMAINING
+                   </div>
+                </div>
+
+                <div className="relative h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                   <motion.div 
+                     initial={{ width: 0 }}
+                     animate={{ width: `${sprint.progress}%` }}
+                     className={`h-full rounded-full transition-all ${
+                       sprint.status === 'Active' ? 'bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,1)]' : 'bg-zinc-700'
+                     }`}
+                   />
                 </div>
               </div>
-            </div>
 
-            <div className="flex gap-2">
-              {[
-                { label: 'Load', value: debtItems.filter(d => d.sprint_id === activeSprint.id).length },
-                { label: 'Fixed', value: debtItems.filter(d => d.sprint_id === activeSprint.id && d.status === 'fixed').length },
-                { label: 'Open', value: debtItems.filter(d => d.sprint_id === activeSprint.id && d.status !== 'fixed').length },
-              ].map(s => (
-                <div key={s.label} style={{ minWidth: '80px', padding: '8px 12px', background: 'var(--bg-tertiary)', borderRadius: '6px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text)' }}>{s.value}</div>
-                  <div style={{ fontSize: '10px', color: 'var(--text-dim)', textTransform: 'uppercase' }}>{s.label}</div>
-                </div>
-              ))}
+              <div className="flex lg:flex-col gap-3">
+                 <button className="flex-1 lg:flex-initial px-6 py-3 rounded-xl bg-zinc-800 text-white font-black text-xs hover:bg-zinc-700 transition-all uppercase tracking-widest">
+                    SYNC STATUS
+                 </button>
+                 <button className={`flex-1 lg:flex-initial px-6 py-3 rounded-xl font-black text-xs transition-all uppercase tracking-widest ${
+                   sprint.status === 'Active' ? 'bg-white text-black hover:bg-zinc-200 shadow-xl' : 'bg-zinc-900 border border-white/5 text-zinc-500'
+                 }`}>
+                    VIEW DETAILS
+                 </button>
+              </div>
             </div>
-          </div>
-
-          <div className="space-y-3">
-            <div className="flex justify-between items-end">
-              <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)' }}>Cycle Progress</span>
-              <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--yellow)' }}>{Math.round(sprintProgress.progress)}%</span>
-            </div>
-            <div style={{ height: '6px', background: 'var(--bg-tertiary)', borderRadius: '3px', overflow: 'hidden' }}>
-              <div style={{ width: `${sprintProgress.progress}%`, height: '100%', background: 'var(--yellow)', borderRadius: '3px' }} />
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className="card mb-8 py-12 text-center">
-          <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>No active cycle. Initiate a new one to start tracking.</p>
-        </div>
-      )}
-
-      {/* AI Insights */}
-      {activeSprint?.ai_recommendation && (
-        <div className="card mb-8" style={{ borderLeft: '3px solid var(--yellow)' }}>
-          <div className="flex gap-4">
-            <div style={{ color: 'var(--yellow)', flexShrink: 0 }}><BrainCircuit size={20} /></div>
-            <div>
-              <h3 style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)', marginBottom: '8px' }}>Neural Insight</h3>
-              <p style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.6, fontStyle: 'italic', marginBottom: '16px' }}>
-                "{activeSprint.ai_recommendation}"
-              </p>
-              <button
-                className="btn-primary py-1.5 px-3 text-[11px]"
-                onClick={() => { setAiLoading(true); setTimeout(() => setAiLoading(false), 2000) }}
-                disabled={aiLoading}
-              >
-                {aiLoading ? <RefreshCw size={12} className="animate-spin" /> : <Target size={12} />}
-                Execute Directive
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Grid for Past Sprints */}
-      <div className="card p-0 overflow-hidden">
-        <div className="px-5 py-4 border-b" style={{ borderColor: 'var(--border)' }}>
-          <h2 style={{ fontSize: '13px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <History size={15} style={{ color: 'var(--text-dim)' }} /> Cycle Archives
-          </h2>
-        </div>
-        <table className="w-full text-left" style={{ borderCollapse: 'collapse' }}>
-          <thead>
-            <tr style={{ background: 'var(--bg-secondary)' }}>
-              {['Designation', 'Range', 'Resolved', 'Stability'].map(h => (
-                <th key={h} style={{ fontSize: '10px', fontWeight: 600, color: 'var(--text-dim)', padding: '12px 20px', textTransform: 'uppercase' }}>{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {pastSprints.map(s => (
-              <tr key={s.id} className="table-row-no-gap" style={{ borderTop: '1px solid var(--border)' }}>
-                <td style={{ padding: '14px 20px', fontSize: '12px', fontWeight: 600, color: 'var(--text)' }}>{s.name}</td>
-                <td style={{ padding: '14px 20px', fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'JetBrains Mono, monospace' }}>
-                  {new Date(s.start_date).toLocaleDateString()} – {new Date(s.end_date).toLocaleDateString()}
-                </td>
-                <td style={{ padding: '14px 20px', fontSize: '12px', color: 'var(--green)', fontWeight: 600 }}>
-                  {debtItems.filter(d => d.sprint_id === s.id && d.status === 'fixed').length} items
-                </td>
-                <td style={{ padding: '14px 20px' }}><span className="badge badge-green">STABLE</span></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+          </motion.div>
+        ))}
       </div>
 
-      {/* New Sprint Modal */}
-      {showNew && (
-        <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setShowNew(false)}>
-          <div className="modal-box" style={{ maxWidth: '400px' }}>
-            <div className="flex items-center justify-between mb-6">
-              <h2 style={{ fontSize: '16px', fontWeight: 700 }}>Initiate Cycle</h2>
-              <X size={16} style={{ cursor: 'pointer', color: 'var(--text-dim)' }} onClick={() => setShowNew(false)} />
-            </div>
-            <form className="space-y-4">
-              <div>
-                <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '6px', textTransform: 'uppercase' }}>
-                  Designation
-                </label>
-                <input className="input" placeholder="e.g. CYCLE_DELTA_14" />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '6px', textTransform: 'uppercase' }}>
-                    Start Date
-                  </label>
-                  <input className="input" type="date" />
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '6px', textTransform: 'uppercase' }}>
-                    End Date
-                  </label>
-                  <input className="input" type="date" />
-                </div>
-              </div>
-              <div className="pt-4">
-                <button type="submit" className="btn-primary w-full py-2.5 justify-center">
-                  Deploy Temporal Phase
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <div className="p-10 rounded-[48px] bg-indigo-500/5 border border-indigo-500/10 relative overflow-hidden group">
+         <div className="relative z-10 max-w-2xl">
+            <h3 className="text-2xl font-black text-white mb-4 uppercase tracking-tight">Intelligence Suggestion</h3>
+            <p className="text-zinc-500 font-medium mb-8 leading-relaxed">
+              Based on your current velocity and debt load in <span className="text-indigo-400 font-bold">core-api</span>, we suggest initializing a 10-day sprint focusing on <span className="text-white font-bold">authentication bottlenecks</span>. This could resolve 24% of your total debt cost.
+            </p>
+            <button className="px-8 py-4 rounded-2xl bg-indigo-500 text-white font-black text-sm hover:bg-indigo-600 transition-all shadow-2xl flex items-center gap-3">
+               INITIALIZE RECOMMENDED CYCLE
+               <ArrowRight size={18} />
+            </button>
+         </div>
+         <TrendingDown className="absolute -bottom-10 -right-10 text-indigo-500/10" size={300} />
+      </div>
     </div>
   )
 }

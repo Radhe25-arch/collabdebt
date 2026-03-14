@@ -1,259 +1,171 @@
 'use client'
 
-import { useMemo } from 'react'
+import { motion } from 'framer-motion'
+import { 
+  Activity, 
+  BarChart3, 
+  ChevronRight, 
+  Code2, 
+  Cpu, 
+  GitBranch, 
+  Plus, 
+  ShieldAlert, 
+  Terminal, 
+  Zap,
+  TrendingUp,
+  Clock,
+  AlertTriangle
+} from 'lucide-react'
 import Link from 'next/link'
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
-import { AlertTriangle, CheckCircle, DollarSign, TrendingDown, ArrowRight, GitBranch } from 'lucide-react'
-import { useStore } from '@/store/useStore'
 
-const SEVERITY_COLORS: Record<string, string> = {
-  critical: 'var(--red)',
-  high: 'var(--orange)',
-  medium: 'var(--yellow)',
-  low: 'var(--green)',
-}
+const STATS = [
+  { label: 'Overall Health', value: '84', unit: '%', trend: '+2.4%', icon: Activity, color: 'emerald' },
+  { label: 'Debt Items', value: '12', unit: '', trend: '-3 this week', icon: ShieldAlert, color: 'indigo' },
+  { label: 'Recovery ROI', value: '2.4', unit: 'x', trend: 'Efficient', icon: TrendingUp, color: 'blue' },
+  { label: 'Ship Velocity', value: '0.9', unit: 'ms/pr', trend: '+12%', icon: Zap, color: 'amber' },
+]
 
-const STATUS_LABELS: Record<string, string> = {
-  identified: 'Identified',
-  planned: 'Planned',
-  in_progress: 'In Progress',
-  fixed: 'Fixed',
-}
+const RECENT_DEBT = [
+  { title: 'Deprecated JWT Handler', repo: 'core-api', severity: 'High', status: 'Detected', cost: '2d' },
+  { title: 'N+1 in Billing Cycle', repo: 'payments-v2', severity: 'Critical', status: 'Fixing', cost: '4d' },
+  { title: 'TODO: Refactor Auth Middleware', repo: 'gateway', severity: 'Medium', status: 'Triaged', cost: '1d' },
+  { title: 'Redundant SQL Joins', repo: 'data-lake', severity: 'Low', status: 'Detected', cost: '5h' },
+]
 
 export default function DashboardPage() {
-  const { debtItems, sprints, repos } = useStore()
-  const activeSprint = sprints.find(s => s.status === 'active') || sprints[0]
-
-  const openItems = useMemo(() => debtItems.filter(d => d.status !== 'fixed'), [debtItems])
-  const criticalItems = useMemo(() => openItems.filter(d => d.severity === 'critical'), [openItems])
-  const totalCost = useMemo(() => openItems.reduce((s, d) => s + (d.cost_usd || 0), 0), [openItems])
-  const fixedItems = useMemo(() => debtItems.filter(d => d.status === 'fixed'), [debtItems])
-
-  const weeklyData = useMemo(() => {
-    const weeks: Record<string, { week: string; detected: number; resolved: number }> = {}
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date()
-      d.setDate(d.getDate() - i * 7)
-      const k = `W${7 - i}`
-      weeks[k] = { week: k, detected: 0, resolved: 0 }
-    }
-    debtItems.forEach(item => {
-      const w = Math.abs(Math.ceil((Date.now() - new Date(item.created_at).getTime()) / (7 * 86400000)))
-      const key = `W${7 - Math.min(w, 6)}`
-      if (weeks[key]) weeks[key].detected++
-    })
-    fixedItems.forEach(item => {
-      if (!item.fixed_at) return
-      const w = Math.abs(Math.ceil((Date.now() - new Date(item.fixed_at).getTime()) / (7 * 86400000)))
-      const key = `W${7 - Math.min(w, 6)}`
-      if (weeks[key]) weeks[key].resolved++
-    })
-    return Object.values(weeks)
-  }, [debtItems, fixedItems])
-
-  const recentItems = useMemo(() =>
-    [...debtItems]
-      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-      .slice(0, 6),
-    [debtItems]
-  )
-
-  const healthScore = repos.length > 0
-    ? Math.round(repos.reduce((s, r) => s + r.health_score, 0) / repos.length)
-    : 0
-
-  const metrics = [
-    { label: 'Open Issues', value: openItems.length, icon: AlertTriangle, color: 'var(--red)', sub: `${criticalItems.length} critical` },
-    { label: 'Resolved', value: fixedItems.length, icon: CheckCircle, color: 'var(--green)', sub: 'All time' },
-    { label: 'Monthly Cost', value: `$${(totalCost / 1000).toFixed(1)}k`, icon: DollarSign, color: 'var(--yellow)', sub: 'Estimated impact' },
-    { label: 'Avg Health', value: `${healthScore}%`, icon: TrendingDown, color: 'var(--blue)', sub: `${repos.length} repos` },
-  ]
-
   return (
-    <div className="space-y-6 max-w-6xl">
-
-      {/* Metric cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {metrics.map((m, i) => (
-          <div key={i} className="card">
-            <div className="flex items-center justify-between mb-3">
-              <span style={{ color: 'var(--text-muted)', fontSize: '12px', fontWeight: 500 }}>{m.label}</span>
-              <m.icon size={14} style={{ color: m.color }} />
+    <div className="space-y-10 animate-in fade-in duration-700">
+      {/* Hero Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {STATS.map((stat, i) => (
+          <motion.div
+            key={stat.label}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.1 }}
+            className="p-6 rounded-3xl bg-zinc-900/40 border border-white/5 card-hover relative overflow-hidden group"
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="flex justify-between items-start mb-4 relative z-10">
+              <div className={`p-2.5 rounded-xl bg-zinc-800 text-indigo-400 shadow-lg group-hover:scale-110 transition-transform`}>
+                <stat.icon size={20} />
+              </div>
+              <span className="text-[10px] font-black text-indigo-500/80 bg-indigo-500/5 px-2 py-0.5 rounded-full border border-indigo-500/10">
+                {stat.trend}
+              </span>
             </div>
-            <div style={{ fontSize: '24px', fontWeight: 700, letterSpacing: '-0.5px', color: 'var(--text)' }}>
-              {m.value}
+            <div className="relative z-10">
+              <div className="flex items-baseline gap-1">
+                <span className="text-3xl font-black text-white">{stat.value}</span>
+                <span className="text-sm font-bold text-zinc-600 uppercase">{stat.unit}</span>
+              </div>
+              <div className="text-xs font-bold text-zinc-500 mt-1 uppercase tracking-widest">{stat.label}</div>
             </div>
-            <div style={{ fontSize: '11px', color: 'var(--text-dim)', marginTop: '4px' }}>{m.sub}</div>
-          </div>
+          </motion.div>
         ))}
       </div>
 
-      {/* Chart + Activity */}
-      <div className="grid lg:grid-cols-3 gap-4">
-
-        {/* Trend chart */}
-        <div className="card lg:col-span-2">
-          <div className="flex items-center justify-between mb-4">
-            <h2 style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>Weekly Trend</h2>
-            <span style={{ fontSize: '11px', color: 'var(--text-dim)' }}>Last 7 weeks</span>
-          </div>
-          <ResponsiveContainer width="100%" height={180}>
-            <AreaChart data={weeklyData} margin={{ top: 0, right: 2, left: -20, bottom: 0 }}>
-              <defs>
-                <linearGradient id="colorDetected" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="var(--red)" stopOpacity={0.15} />
-                  <stop offset="95%" stopColor="var(--red)" stopOpacity={0} />
-                </linearGradient>
-                <linearGradient id="colorResolved" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="var(--green)" stopOpacity={0.15} />
-                  <stop offset="95%" stopColor="var(--green)" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-              <XAxis dataKey="week" tick={{ fill: 'var(--text-dim)', fontSize: 11 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: 'var(--text-dim)', fontSize: 11 }} axisLine={false} tickLine={false} />
-              <Tooltip
-                contentStyle={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: '6px', fontSize: 12, color: 'var(--text)' }}
-                cursor={{ stroke: 'var(--border)', strokeWidth: 1 }}
-              />
-              <Area type="monotone" dataKey="detected" stroke="var(--red)" strokeWidth={1.5} fill="url(#colorDetected)" name="Detected" />
-              <Area type="monotone" dataKey="resolved" stroke="var(--green)" strokeWidth={1.5} fill="url(#colorResolved)" name="Resolved" />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* Active sprint */}
-        <div className="card">
-          <div className="flex items-center justify-between mb-4">
-            <h2 style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>Active Sprint</h2>
-            <Link href="/dashboard/sprints" style={{ fontSize: '11px', color: 'var(--blue)', display: 'flex', alignItems: 'center', gap: 4 }}>
-              View <ArrowRight size={11} />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Main Debt Activity */}
+        <div className="lg:col-span-2 space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-black tracking-tight flex items-center gap-2">
+              <Terminal size={18} className="text-indigo-500" />
+              NEURAL SCAN REPORT
+            </h2>
+            <Link href="/dashboard/debt-board" className="text-xs font-bold text-zinc-500 hover:text-white transition-colors flex items-center gap-1">
+              View All <ChevronRight size={14} />
             </Link>
           </div>
-          {activeSprint ? (
-            <div className="space-y-4">
-              <div>
-                <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>{activeSprint.name}</div>
-                <div style={{ fontSize: '11px', color: 'var(--text-dim)', marginTop: 2 }}>
-                  {new Date(activeSprint.start_date).toLocaleDateString()} — {new Date(activeSprint.end_date).toLocaleDateString()}
+
+          <div className="bg-zinc-900/40 border border-white/5 rounded-[32px] overflow-hidden">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="border-b border-white/5 text-[10px] font-black text-zinc-600 uppercase tracking-widest bg-white/[0.02]">
+                  <th className="px-8 py-5">Issue / Repository</th>
+                  <th className="px-8 py-5">Severity</th>
+                  <th className="px-8 py-5">Status</th>
+                  <th className="px-8 py-5 text-right">Cost Impact</th>
+                </tr>
+              </thead>
+              <tbody className="text-sm">
+                {RECENT_DEBT.map((item, i) => (
+                  <tr key={i} className="group hover:bg-white/[0.02] transition-colors border-b border-white/[0.02] last:border-0 cursor-pointer">
+                    <td className="px-8 py-6">
+                      <div className="font-bold text-white group-hover:text-indigo-400 transition-colors">{item.title}</div>
+                      <div className="text-xs text-zinc-600 font-medium flex items-center gap-1.5 mt-1">
+                        <GitBranch size={10} />
+                        {item.repo}
+                      </div>
+                    </td>
+                    <td className="px-8 py-6">
+                      <span className={`px-2 py-1 rounded-md text-[10px] font-black border ${
+                        item.severity === 'Critical' ? 'bg-rose-500/10 border-rose-500 text-rose-500' :
+                        item.severity === 'High' ? 'bg-amber-500/10 border-amber-500 text-amber-500' :
+                        'bg-zinc-800 border-white/5 text-zinc-400'
+                      }`}>
+                        {item.severity}
+                      </span>
+                    </td>
+                    <td className="px-8 py-6">
+                      <div className="flex items-center gap-2">
+                        <div className={`w-1.5 h-1.5 rounded-full ${
+                          item.status === 'Detected' ? 'bg-indigo-500 animate-pulse' : 'bg-emerald-500'
+                        }`} />
+                        <span className="text-xs font-bold text-zinc-400">{item.status}</span>
+                      </div>
+                    </td>
+                    <td className="px-8 py-6 text-right font-mono font-bold text-indigo-400">
+                      {item.cost}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Info / Team Sidebar inside dashboard */}
+        <div className="space-y-6">
+          <h2 className="text-lg font-black tracking-tight flex items-center gap-2">
+            <Cpu size={18} className="text-indigo-500" />
+            FLEET CORE
+          </h2>
+          
+          <div className="space-y-4">
+            {[
+              { name: 'Alex Rivera', role: 'Fixing Core API', status: 'online' },
+              { name: 'Sarah Chen', role: 'Code Reviewing', status: 'busy' },
+              { name: 'Mike Ross', role: 'In Meeting', status: 'offline' },
+            ].map((member) => (
+              <div key={member.name} className="p-4 rounded-2xl bg-zinc-900/40 border border-white/5 flex items-center gap-4 transition-all hover:border-white/10 group">
+                <div className="relative">
+                  <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-zinc-800 to-zinc-700 shadow-xl" />
+                  <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-black ${
+                    member.status === 'online' ? 'bg-emerald-500' : member.status === 'busy' ? 'bg-amber-500' : 'bg-zinc-600'
+                  }`} />
                 </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-bold text-white group-hover:text-indigo-400 transition-colors">{member.name}</div>
+                  <div className="text-[10px] font-bold text-zinc-600 uppercase tracking-tighter">{member.role}</div>
+                </div>
+                <button className="p-2 rounded-lg bg-white/5 text-zinc-500 hover:text-white transition-all opacity-0 group-hover:opacity-100">
+                  <Plus size={14} />
+                </button>
               </div>
-
-              {/* Progress bar */}
-              {(() => {
-                const now = Date.now()
-                const start = new Date(activeSprint.start_date).getTime()
-                const end = new Date(activeSprint.end_date).getTime()
-                const pct = Math.min(100, Math.max(0, Math.round(((now - start) / (end - start)) * 100)))
-                const daysLeft = Math.max(0, Math.round((end - now) / 86400000))
-                return (
-                  <div>
-                    <div className="flex justify-between mb-1.5" style={{ fontSize: '11px', color: 'var(--text-dim)' }}>
-                      <span>{pct}% elapsed</span>
-                      <span>{daysLeft}d remaining</span>
-                    </div>
-                    <div style={{ height: '4px', background: 'var(--bg-tertiary)', borderRadius: '2px', overflow: 'hidden' }}>
-                      <div style={{ width: `${pct}%`, height: '100%', background: 'var(--blue)', borderRadius: '2px' }} />
-                    </div>
-                  </div>
-                )
-              })()}
-
-              <div className="grid grid-cols-2 gap-2">
-                <div style={{ background: 'var(--bg-tertiary)', borderRadius: '6px', padding: '10px' }}>
-                  <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text)' }}>
-                    {debtItems.filter(d => d.sprint_id === activeSprint.id && d.status === 'fixed').length}
-                  </div>
-                  <div style={{ fontSize: '10px', color: 'var(--text-dim)', marginTop: 2 }}>Fixed</div>
-                </div>
-                <div style={{ background: 'var(--bg-tertiary)', borderRadius: '6px', padding: '10px' }}>
-                  <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text)' }}>
-                    {debtItems.filter(d => d.sprint_id === activeSprint.id && d.status !== 'fixed').length}
-                  </div>
-                  <div style={{ fontSize: '10px', color: 'var(--text-dim)', marginTop: 2 }}>Remaining</div>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div style={{ fontSize: '13px', color: 'var(--text-dim)', paddingTop: 8 }}>
-              No active sprint. <Link href="/dashboard/sprints" style={{ color: 'var(--blue)' }}>Create one →</Link>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Recent debt items + repos */}
-      <div className="grid lg:grid-cols-3 gap-4">
-
-        {/* Recent issues */}
-        <div className="card lg:col-span-2">
-          <div className="flex items-center justify-between mb-4">
-            <h2 style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>Recent Issues</h2>
-            <Link href="/dashboard/debt-board" style={{ fontSize: '11px', color: 'var(--blue)', display: 'flex', alignItems: 'center', gap: 4 }}>
-              View all <ArrowRight size={11} />
-            </Link>
+            ))}
           </div>
-          {recentItems.length === 0 ? (
-            <p style={{ fontSize: '13px', color: 'var(--text-dim)' }}>No debt items yet.</p>
-          ) : (
-            <div>
-              {recentItems.map((item, i) => (
-                <div
-                  key={item.id}
-                  className="table-row"
-                  style={{ gap: '10px' }}
-                >
-                  <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: SEVERITY_COLORS[item.severity] }} />
-                  <div className="flex-1 min-w-0">
-                    <div style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {item.title}
-                    </div>
-                    <div style={{ fontSize: '11px', color: 'var(--text-dim)', fontFamily: 'JetBrains Mono, monospace' }}>
-                      {item.file_path?.split('/').slice(-2).join('/')}
-                    </div>
-                  </div>
-                  <span className={`badge badge-${item.severity === 'critical' ? 'critical' : item.severity === 'high' ? 'high' : item.severity === 'medium' ? 'medium' : 'low'}`}>
-                    {item.severity}
-                  </span>
-                  <span className="badge badge-muted">{STATUS_LABELS[item.status] || item.status}</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
 
-        {/* Repositories */}
-        <div className="card">
-          <div className="flex items-center justify-between mb-4">
-            <h2 style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>Repositories</h2>
-            <Link href="/dashboard/repos" style={{ fontSize: '11px', color: 'var(--blue)', display: 'flex', alignItems: 'center', gap: 4 }}>
-              All <ArrowRight size={11} />
-            </Link>
+          <div className="p-6 rounded-[32px] bg-gradient-to-b from-indigo-500 to-indigo-700 relative overflow-hidden group shadow-2xl">
+             <div className="relative z-10">
+               <div className="text-white font-black text-xl mb-2">PRO PLAN</div>
+               <p className="text-indigo-100 text-xs font-bold mb-4">Unlock advanced neural scans and team health scoring.</p>
+               <button className="w-full py-2.5 rounded-xl bg-white text-indigo-600 font-black text-sm hover:scale-105 active:scale-95 transition-all">
+                 UPGRADE NOW
+               </button>
+             </div>
+             <ShieldAlert className="absolute -bottom-4 -right-4 text-white/10" size={120} />
           </div>
-          {repos.length === 0 ? (
-            <p style={{ fontSize: '13px', color: 'var(--text-dim)' }}>No repos connected.</p>
-          ) : (
-            <div className="space-y-1">
-              {repos.slice(0, 6).map(repo => {
-                const repoOpen = debtItems.filter(d => d.repo_id === repo.id && d.status !== 'fixed').length
-                const color = repo.health_score > 70 ? 'var(--green)' : repo.health_score > 40 ? 'var(--yellow)' : 'var(--red)'
-                return (
-                  <div key={repo.id} className="table-row" style={{ gap: '10px' }}>
-                    <GitBranch size={13} style={{ color: 'var(--text-dim)', flexShrink: 0 }} />
-                    <span style={{ flex: 1, fontSize: '12px', fontWeight: 500, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {repo.name}
-                    </span>
-                    {repoOpen > 0 && (
-                      <span style={{ fontSize: '11px', color: 'var(--text-dim)' }}>{repoOpen} open</span>
-                    )}
-                    <span style={{ fontSize: '12px', fontWeight: 600, color }}>
-                      {repo.health_score}
-                    </span>
-                  </div>
-                )
-              })}
-            </div>
-          )}
         </div>
       </div>
     </div>

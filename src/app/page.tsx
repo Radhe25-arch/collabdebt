@@ -1,38 +1,66 @@
 'use client'
 
+import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { 
+  BarChart3, 
+  GitBranch, 
+  Users, 
+  Zap, 
+  Shield, 
+  Terminal, 
+  Activity,
+  Code2,
+  Cpu,
+  Globe,
+  Layers,
+  Lock,
+  ChevronRight,
+  ArrowRight,
+  Check,
+  Search,
+  Sparkles,
+  Layout
+} from 'lucide-react'
+import { useRef } from 'react'
 import Link from 'next/link'
-import { ArrowRight, GitBranch, BarChart3, Users, Zap, Shield, Check, Terminal } from 'lucide-react'
 
 const FEATURES = [
   {
     icon: Terminal,
     title: 'Debt Scanner',
     desc: 'Automatically detect TODOs, deprecated APIs, N+1 queries, and security vulnerabilities across all your repos.',
+    color: 'emerald'
   },
   {
     icon: BarChart3,
     title: 'Analytics',
     desc: 'Track velocity, cost impact, and resolution trends. Know exactly how much technical debt is costing your team.',
+    color: 'blue'
   },
   {
     icon: GitBranch,
     title: 'Sprint Integration',
     desc: 'Assign debt items to sprints and track resolution alongside your regular feature work.',
+    color: 'indigo'
   },
   {
     icon: Users,
     title: 'Team Collaboration',
     desc: 'Every engineer sees the same board. Vote, assign, comment, and prioritize as a team.',
+    color: 'violet'
   },
   {
     icon: Zap,
     title: 'Real-time Updates',
     desc: 'Changes reflect instantly for everyone. No refresh needed, no data drift.',
+    color: 'amber'
   },
   {
     icon: Shield,
     title: 'CollabConnect',
     desc: 'Discover engineers who want to help. Filter by language, role, and availability. (Pro)',
+    color: 'rose'
   },
 ]
 
@@ -65,255 +93,232 @@ const PLANS = [
 ]
 
 export default function LandingPage() {
+  const containerRef = useRef<HTMLDivElement>(null)
+  
   return (
-    <div style={{ background: 'var(--bg)', color: 'var(--text)', fontFamily: 'Inter, sans-serif', minHeight: '100vh' }}>
+    <div ref={containerRef} className="relative min-h-screen bg-[#09090b] text-white selection:bg-indigo-500/30 overflow-x-hidden">
+      {/* Animated Mesh Background */}
+      <div className="mesh-bg">
+        <div className="mesh-blob blob-1" />
+        <div className="mesh-blob blob-2" />
+        <div className="mesh-blob blob-3" />
+      </div>
+      <div className="noise-overlay" />
 
       {/* Nav */}
-      <nav style={{
-        display: 'flex', alignItems: 'center', padding: '16px 40px',
-        borderBottom: '1px solid var(--border)', position: 'sticky', top: 0, background: 'var(--bg)', zIndex: 50
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginRight: 'auto' }}>
-          <div style={{
-            width: '28px', height: '28px', borderRadius: '6px', background: 'var(--blue)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '12px', fontWeight: 700, color: '#fff'
-          }}>CD</div>
-          <span style={{ fontWeight: 700, fontSize: '15px' }}>CollabDebt</span>
-        </div>
+      <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-white/5 px-6 py-4">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <motion.div 
+              whileHover={{ rotate: 180 }}
+              transition={{ duration: 0.5 }}
+              className="w-8 h-8 rounded-lg bg-indigo-500 flex items-center justify-center shadow-[0_0_20px_rgba(99,102,241,0.4)]"
+            >
+              <Zap size={18} className="text-white" />
+            </motion.div>
+            <span className="font-bold text-lg tracking-tight text-white">CollabDebt</span>
+          </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-          <Link href="#features" style={{ fontSize: '13px', color: 'var(--text-muted)', textDecoration: 'none' }}>Features</Link>
-          <Link href="#pricing" style={{ fontSize: '13px', color: 'var(--text-muted)', textDecoration: 'none' }}>Pricing</Link>
-          <Link href="/auth/signup" style={{ fontSize: '13px', color: 'var(--text-muted)', textDecoration: 'none' }}>Sign in</Link>
-          <Link href="/auth/signup" style={{
-            fontSize: '13px', fontWeight: 600, padding: '7px 16px',
-            background: 'var(--text)', color: 'var(--bg)', borderRadius: '6px', textDecoration: 'none'
-          }}>
-            Get started
-          </Link>
+          <div className="hidden md:flex items-center gap-8">
+            {['Features', 'Pricing', 'Documentation'].map((item) => (
+              <Link 
+                key={item} 
+                href={`#${item.toLowerCase()}`} 
+                className="text-sm font-medium text-zinc-400 hover:text-white transition-colors"
+              >
+                {item}
+              </Link>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-4">
+            <Link href="/auth/login" className="text-sm font-medium text-zinc-400 hover:text-white transition-colors">
+              Sign in
+            </Link>
+            <Link 
+              href="/auth/signup" 
+              className="group relative px-6 py-2.5 bg-white text-black rounded-full text-sm font-bold overflow-hidden transition-all hover:pr-10"
+            >
+              <span>Get started</span>
+              <ArrowRight className="absolute right-3 top-1/2 -translate-y-1/2 opacity-0 -translate-x-2 transition-all group-hover:opacity-100 group-hover:translate-x-0" size={16} />
+            </Link>
+          </div>
         </div>
       </nav>
 
-      {/* Hero */}
-      <section style={{ padding: '100px 40px 80px', maxWidth: '760px', margin: '0 auto', textAlign: 'center' }}>
-        <div style={{
-          display: 'inline-flex', alignItems: 'center', gap: '6px',
-          fontSize: '12px', fontWeight: 500, color: 'var(--blue)',
-          background: 'rgba(0,112,243,0.1)', padding: '4px 12px', borderRadius: '100px',
-          marginBottom: '28px', border: '1px solid rgba(0,112,243,0.2)'
-        }}>
-          <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--blue)', display: 'inline-block' }} />
-          Now with real-time collaboration
-        </div>
+      {/* Hero Section */}
+      <section className="relative pt-48 pb-32 px-6 overflow-hidden">
+        <div className="max-w-7xl mx-auto text-center relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-xs font-semibold text-indigo-400 mb-10 shadow-[0_0_20px_rgba(99,102,241,0.1)]"
+          >
+            <div className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
+            V4.0 — Now with Neural Code Health Analysis
+          </motion.div>
 
-        <h1 style={{
-          fontSize: '52px', fontWeight: 800, lineHeight: 1.15,
-          letterSpacing: '-1.5px', marginBottom: '20px', color: 'var(--text)'
-        }}>
-          Manage technical debt<br />
-          <span style={{ color: 'var(--text-muted)' }}>like a product team.</span>
-        </h1>
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="text-6xl md:text-8xl font-black tracking-tighter text-white mb-8 leading-[0.95]"
+          >
+            SHIP QUALITY <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-b from-zinc-200 to-zinc-500">WITHOUT DEBT.</span>
+          </motion.h1>
 
-        <p style={{
-          fontSize: '17px', color: 'var(--text-muted)', lineHeight: 1.7,
-          marginBottom: '36px', maxWidth: '560px', margin: '0 auto 36px'
-        }}>
-          CollabDebt gives engineering teams a shared workspace to detect, track, and resolve technical debt — 
-          with real-time updates, sprint integration, and cost impact analysis.
-        </p>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="text-zinc-400 text-lg md:text-xl max-w-2xl mx-auto mb-12 leading-relaxed font-medium"
+          >
+            The engineering intelligence platform that automatically detects, <br className="hidden md:block" />
+            quantifies, and helps resolve technical debt in real-time.
+          </motion.p>
 
-        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-          <Link href="/auth/signup" style={{
-            display: 'inline-flex', alignItems: 'center', gap: '8px',
-            fontSize: '14px', fontWeight: 600, padding: '11px 24px',
-            background: 'var(--text)', color: 'var(--bg)', borderRadius: '7px', textDecoration: 'none'
-          }}>
-            Start for free <ArrowRight size={14} />
-          </Link>
-          <Link href="#features" style={{
-            display: 'inline-flex', alignItems: 'center', gap: '8px',
-            fontSize: '14px', fontWeight: 500, padding: '11px 24px',
-            border: '1px solid var(--border)', borderRadius: '7px', textDecoration: 'none',
-            color: 'var(--text-muted)'
-          }}>
-            See how it works
-          </Link>
-        </div>
-      </section>
-
-      {/* Code block preview */}
-      <section style={{ padding: '0 40px 80px', maxWidth: '860px', margin: '0 auto' }}>
-        <div style={{
-          background: 'var(--bg-secondary)', border: '1px solid var(--border)',
-          borderRadius: '10px', overflow: 'hidden'
-        }}>
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: '6px',
-            padding: '12px 16px', borderBottom: '1px solid var(--border)'
-          }}>
-            {['#ff5f57', '#febc2e', '#28c840'].map(c => (
-              <div key={c} style={{ width: '10px', height: '10px', borderRadius: '50%', background: c }} />
-            ))}
-            <span style={{ marginLeft: '8px', fontSize: '12px', color: 'var(--text-dim)', fontFamily: 'JetBrains Mono, monospace' }}>
-              debt-scanner.ts
-            </span>
-          </div>
-          <div style={{ padding: '24px 24px', fontFamily: 'JetBrains Mono, monospace', fontSize: '13px', lineHeight: '1.8' }}>
-            {[
-              { indent: 0, text: <><span style={{ color: '#888' }}>// </span><span style={{ color: 'var(--yellow)' }}>TODO: refactor auth to use JWT refresh tokens — est 2d</span></> },
-              { indent: 0, text: <><span style={{ color: 'var(--red)' }}>const</span> <span style={{ color: 'var(--blue)' }}>data</span> = await fetchUser(id)  <span style={{ color: '#888' }}>// N+1 query detected ⚠</span></> },
-              { indent: 0, text: <><span style={{ color: '#888' }}>// </span><span style={{ color: 'var(--orange)' }}>DEPRECATED: remove legacy payment handler</span></> },
-              { indent: 0, text: <><span style={{ color: 'var(--green)' }}>// ✓ debt resolved — PR #247 merged</span></> },
-            ].map((l, i) => (
-              <div key={i} style={{ display: 'flex', gap: '12px' }}>
-                <span style={{ color: 'var(--text-dim)', userSelect: 'none', minWidth: '20px' }}>{i + 1}</span>
-                <span>{l.text}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Product Intelligence Showcase (Video Guide) */}
-      <section style={{ padding: '80px 40px', background: 'linear-gradient(180deg, var(--bg) 0%, var(--bg-secondary) 100%)' }}>
-        <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '60px' }}>
-            <h2 style={{ fontSize: '36px', fontWeight: 800, letterSpacing: '-1px', marginBottom: '16px' }} className="text-gradient">
-              Experience the Future of Code Health
-            </h2>
-            <p style={{ fontSize: '16px', color: 'var(--text-muted)', maxWidth: '600px', margin: '0 auto' }}>
-              A cinematic walkthrough of the CollabDebt ecosystem. Learn how to scan, track, and resolve technical debt with AI-powered intelligence.
-            </p>
-          </div>
-
-          <div style={{ position: 'relative', borderRadius: '24px', overflow: 'hidden', border: '1px solid var(--border)', boxShadow: '0 0 80px rgba(0, 242, 255, 0.1)' }} className="glass">
-             {/* Fallback to image if video is not provided, making it interactive */}
-             <div style={{ width: '100%', aspectRatio: '16/9', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#000' }}>
-                <div style={{ position: 'relative', zIndex: 10, textAlign: 'center' }}>
-                   <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'var(--blue)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', cursor: 'pointer', boxShadow: '0 0 30px var(--blue)' }}>
-                      <svg width="32" height="32" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg>
-                   </div>
-                   <p style={{ fontWeight: 700, fontSize: '14px', color: '#fff', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Watch Guide Session</p>
-                </div>
-                {/* Visual highlight overlay */}
-                <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 50% 50%, rgba(0, 242, 255, 0.1) 0%, transparent 70%)' }}></div>
-                <img 
-                  src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=2070" 
-                  alt="Interface Guide" 
-                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.4 }} 
-                />
-             </div>
-             
-             {/* Feature floating badges */}
-             <div style={{ position: 'absolute', bottom: '24px', left: '24px', display: 'flex', gap: '12px' }}>
-                <span className="badge badge-cyan" style={{ padding: '6px 12px', borderRadius: '100px' }}>Neural Scan active</span>
-                <span className="badge badge-muted" style={{ padding: '6px 12px', borderRadius: '100px' }}>v4.0 Protocol</span>
-             </div>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16">
-             {[
-               { title: 'Data Vault', desc: 'Secure repository uplink with health monitoring' },
-               { title: 'Debt Board', desc: 'Collaborative kanban for debt lifecycle' },
-               { title: 'AI Workspace', desc: 'Advanced code analysis and refactoring' }
-             ].map(item => (
-                <div key={item.title} className="glass-card p-6 border-l-2 border-emerald-500/30">
-                   <h4 style={{ fontWeight: 700, marginBottom: '8px', fontSize: '15px' }}>{item.title}</h4>
-                   <p style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.6 }}>{item.desc}</p>
-                </div>
-             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Features */}
-      <section id="features" style={{ padding: '60px 40px', maxWidth: '1100px', margin: '0 auto' }}>
-        <h2 style={{ fontSize: '28px', fontWeight: 700, letterSpacing: '-0.5px', marginBottom: '8px' }}>
-          Everything your team needs
-        </h2>
-        <p style={{ fontSize: '15px', color: 'var(--text-muted)', marginBottom: '48px' }}>
-          A complete platform for engineering teams serious about code health.
-        </p>
-
-        <div style={{
-          display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1px',
-          background: 'var(--border)', border: '1px solid var(--border)', borderRadius: '10px', overflow: 'hidden'
-        }}>
-          {FEATURES.map((f, i) => (
-            <div key={i} style={{ padding: '28px 24px', background: 'var(--bg-secondary)' }}>
-              <f.icon size={18} style={{ color: 'var(--blue)', marginBottom: '14px' }} />
-              <h3 style={{ fontSize: '14px', fontWeight: 600, marginBottom: '8px', color: 'var(--text)' }}>{f.title}</h3>
-              <p style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.7 }}>{f.desc}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Pricing */}
-      <section id="pricing" style={{ padding: '60px 40px', maxWidth: '1000px', margin: '0 auto' }}>
-        <h2 style={{ fontSize: '28px', fontWeight: 700, letterSpacing: '-0.5px', marginBottom: '8px' }}>
-          Simple pricing
-        </h2>
-        <p style={{ fontSize: '15px', color: 'var(--text-muted)', marginBottom: '48px' }}>
-          Start free. Scale when your team grows.
-        </p>
-
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
-          {PLANS.map((plan, i) => (
-            <div
-              key={i}
-              style={{
-                background: plan.highlight ? 'var(--bg-secondary)' : 'var(--bg)',
-                border: `1px solid ${plan.highlight ? 'var(--blue)' : 'var(--border)'}`,
-                borderRadius: '10px', padding: '28px 24px'
-              }}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-5"
+          >
+            <Link 
+              href="/auth/signup" 
+              className="w-full sm:w-auto px-10 py-4 bg-indigo-500 hover:bg-indigo-600 text-white rounded-2xl font-black text-lg transition-all shadow-[0_20px_40px_-10px_rgba(99,102,241,0.5)] hover:-translate-y-1 active:scale-95"
             >
-              <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '12px' }}>
-                {plan.name}
+              Start Building Free
+            </Link>
+            <Link 
+              href="#features" 
+              className="w-full sm:w-auto px-10 py-4 bg-zinc-900/50 border border-zinc-800 hover:border-zinc-600 text-zinc-300 rounded-2xl font-bold text-lg transition-all backdrop-blur-xl hover:bg-zinc-800"
+            >
+              Watch the Demo
+            </Link>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Bento Grid Features */}
+      <section id="features" className="py-32 px-6 max-w-7xl mx-auto">
+        <div className="text-center mb-24">
+          <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-6">ENGINEERING INTELLIGENCE.</h2>
+          <p className="text-zinc-500 text-lg max-w-2xl mx-auto font-medium">
+            Everything your team needs to maintain a healthy codebase and high velocity.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {FEATURES.map((feature, i) => (
+            <motion.div
+              key={feature.title}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: i * 0.1 }}
+              className="group relative p-8 rounded-3xl bg-zinc-900/40 border border-white/5 hover:border-white/10 transition-all card-hover overflow-hidden"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              
+              <div className="relative z-10">
+                <div className={`w-12 h-12 rounded-2xl bg-zinc-800 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-xl`}>
+                  <feature.icon className="text-indigo-400" size={24} />
+                </div>
+                <h3 className="text-xl font-bold mb-4">{feature.title}</h3>
+                <p className="text-zinc-500 leading-relaxed font-medium transition-colors group-hover:text-zinc-400">
+                  {feature.desc}
+                </p>
               </div>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginBottom: '6px' }}>
-                <span style={{ fontSize: '32px', fontWeight: 800, letterSpacing: '-1px' }}>{plan.price}</span>
+
+              {/* Decorative Elements */}
+              <div className="absolute top-4 right-4 text-white/5 font-mono text-8xl pointer-events-none select-none">
+                0{i + 1}
               </div>
-              <div style={{ fontSize: '12px', color: 'var(--text-dim)', marginBottom: '24px' }}>{plan.period}</div>
-              <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 24px' }}>
-                {plan.features.map((f, j) => (
-                  <li key={j} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: 'var(--text-muted)', marginBottom: '8px' }}>
-                    <Check size={13} style={{ color: 'var(--green)', flexShrink: 0 }} /> {f}
-                  </li>
-                ))}
-              </ul>
-              <Link href={plan.href} style={{
-                display: 'block', textAlign: 'center', padding: '9px 16px',
-                background: plan.highlight ? 'var(--blue)' : 'transparent',
-                color: plan.highlight ? '#fff' : 'var(--text)',
-                border: `1px solid ${plan.highlight ? 'var(--blue)' : 'var(--border)'}`,
-                borderRadius: '6px', fontSize: '13px', fontWeight: 600, textDecoration: 'none'
-              }}>
-                {plan.cta}
-              </Link>
-            </div>
+            </motion.div>
           ))}
+        </div>
+      </section>
+
+      {/* Pricing Section */}
+      <section id="pricing" className="py-32 px-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-24">
+            <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-6">TRANSPARENT PRICING.</h2>
+            <p className="text-zinc-500 text-lg font-medium">Clean code shouldn't break the bank.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {PLANS.map((plan) => (
+              <motion.div
+                key={plan.name}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                className={`p-10 rounded-[32px] border transition-all ${
+                  plan.highlight 
+                    ? 'bg-zinc-900 border-indigo-500/50 shadow-[0_0_50px_rgba(99,102,241,0.1)]' 
+                    : 'bg-zinc-950 border-white/5 hover:border-white/10'
+                }`}
+              >
+                <div className="text-sm font-bold text-indigo-400 mb-4 uppercase tracking-widest">{plan.name}</div>
+                <div className="flex items-baseline gap-1 mb-8">
+                  <span className="text-5xl font-black">{plan.price}</span>
+                  <span className="text-zinc-500 font-medium lowercase">/{plan.period.split('/')[1] || plan.period}</span>
+                </div>
+                <ul className="space-y-4 mb-10">
+                  {plan.features.map((f) => (
+                    <li key={f} className="flex items-center gap-3 text-zinc-400 font-medium">
+                      <Check size={18} className="text-indigo-400 flex-shrink-0" />
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+                <Link 
+                  href={plan.href}
+                  className={`block text-center py-4 rounded-2xl font-black text-base transition-all ${
+                    plan.highlight
+                      ? 'bg-indigo-500 hover:bg-indigo-600 text-white shadow-lg'
+                      : 'bg-white text-black hover:bg-zinc-200'
+                  }`}
+                >
+                  {plan.cta}
+                </Link>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer style={{
-        borderTop: '1px solid var(--border)', padding: '32px 40px',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div style={{
-            width: '22px', height: '22px', borderRadius: '4px', background: 'var(--blue)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '10px', fontWeight: 700, color: '#fff'
-          }}>CD</div>
-          <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>© 2025 CollabDebt</span>
+      <footer className="border-t border-white/5 px-6 py-20 bg-black">
+        <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-12">
+          <div className="col-span-2">
+            <div className="flex items-center gap-2 mb-6">
+              <Zap size={24} className="text-indigo-500" />
+              <span className="font-bold text-xl tracking-tight">CollabDebt</span>
+            </div>
+            <p className="text-zinc-500 max-w-sm font-medium">
+              The neural engineering intelligence platform for high-velocity teams.
+            </p>
+          </div>
+          <div>
+            <h4 className="font-bold mb-6 text-sm uppercase tracking-widest text-zinc-400">Product</h4>
+            <ul className="space-y-4 text-zinc-500 font-medium">
+              <li><Link href="#" className="hover:text-white transition-colors">Features</Link></li>
+              <li><Link href="#" className="hover:text-white transition-colors">Pricing</Link></li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="font-bold mb-6 text-sm uppercase tracking-widest text-zinc-400">Company</h4>
+            <ul className="space-y-4 text-zinc-500 font-medium">
+              <li><Link href="#" className="hover:text-white transition-colors">About</Link></li>
+              <li><Link href="#" className="hover:text-white transition-colors">Blog</Link></li>
+            </ul>
+          </div>
         </div>
-        <div style={{ display: 'flex', gap: '20px' }}>
-          {['Privacy', 'Terms', 'GitHub'].map(l => (
-            <Link key={l} href="#" style={{ fontSize: '12px', color: 'var(--text-dim)', textDecoration: 'none' }}>{l}</Link>
-          ))}
+        <div className="max-w-7xl mx-auto mt-20 pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6 text-zinc-600 text-sm font-medium">
+          <p>© 2025 CollabDebt Inc. All rights reserved.</p>
         </div>
       </footer>
     </div>

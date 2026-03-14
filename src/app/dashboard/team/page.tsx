@@ -1,193 +1,155 @@
 'use client'
 
-import { useState, useMemo } from 'react'
-import { UserPlus, Search, Crown, MessageSquare, Mail, X, Shield, Plus, Loader2 } from 'lucide-react'
-import { useStore } from '@/store/useStore'
+import { motion } from 'framer-motion'
+import { 
+  Users, 
+  Search, 
+  Plus, 
+  Shield, 
+  Mail, 
+  MoreHorizontal, 
+  Activity, 
+  Code2, 
+  Zap,
+  CheckCircle2,
+  Clock,
+  UserPlus
+} from 'lucide-react'
+
+const TEAM_MEMBERS = [
+  {
+    id: '1',
+    name: 'Alex Rivera',
+    email: 'alex@collabdebt.dev',
+    role: 'Lead Architect',
+    status: 'online',
+    resolved: 42,
+    activeItems: 3,
+    impact: 'High'
+  },
+  {
+    id: '2',
+    name: 'Sarah Chen',
+    email: 'sarah@collabdebt.dev',
+    role: 'Backend Engineer',
+    status: 'busy',
+    resolved: 28,
+    activeItems: 5,
+    impact: 'Medium'
+  },
+  {
+    id: '3',
+    name: 'Mike Ross',
+    email: 'mike@collabdebt.dev',
+    role: 'Systems Engineer',
+    status: 'offline',
+    resolved: 15,
+    activeItems: 0,
+    impact: 'Low'
+  },
+  {
+    id: '4',
+    name: 'Elena Gilbert',
+    email: 'elena@collabdebt.dev',
+    role: 'Frontend Architect',
+    status: 'online',
+    resolved: 35,
+    activeItems: 2,
+    impact: 'High'
+  }
+]
 
 export default function TeamPage() {
-  const { team, currentUser, isAdmin } = useStore()
-  const [inviteOpen, setInviteOpen] = useState(false)
-  const [search, setSearch] = useState('')
-  const [loading, setLoading] = useState(false)
-
-  const filtered = useMemo(() => {
-    return team.filter(m =>
-      m.name.toLowerCase().includes(search.toLowerCase()) ||
-      m.email?.toLowerCase().includes(search.toLowerCase())
-    )
-  }, [team, search])
-
-  const handleInvite = (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setTimeout(() => {
-      setLoading(false)
-      setInviteOpen(false)
-    }, 1000)
-  }
-
-  const isManager = currentUser?.role === 'manager' || isAdmin()
-
   return (
-    <div className="max-w-6xl">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+    <div className="space-y-8 animate-in fade-in duration-500">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text)' }}>Fleet Command</h1>
-          <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Manage your engineering personnel and roles.</p>
+          <h2 className="text-2xl font-black tracking-tight text-white mb-1 uppercase text-gradient-indigo">Fleet Intelligence</h2>
+          <p className="text-zinc-500 font-medium text-sm">Monitoring {TEAM_MEMBERS.length} active service units in the field.</p>
         </div>
-        {isManager && (
-          <button onClick={() => setInviteOpen(true)} className="btn-primary py-1.5 px-4 text-xs">
-            <UserPlus size={14} /> Enlist Personnel
-          </button>
-        )}
+        <button className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-indigo-500 text-white font-black text-sm hover:bg-indigo-600 transition-all shadow-[0_0_20px_rgba(99,102,241,0.3)]">
+          <UserPlus size={18} />
+          ENLIST SERVICE UNIT
+        </button>
       </div>
 
-      {/* Control bar */}
-      <div className="flex items-center gap-3 mb-6">
-        <div style={{ position: 'relative', flex: 1, maxWidth: '320px' }}>
-          <Search size={13} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-dim)' }} />
-          <input
-            className="input"
-            style={{ paddingLeft: '32px', fontSize: '12px' }}
-            placeholder="Scan by identity or email..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
+      <div className="flex items-center gap-4 p-4 rounded-[24px] bg-zinc-900/40 border border-white/5">
+        <div className="relative flex-1">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" size={18} />
+          <input 
+            type="text" 
+            placeholder="Search service units by designation or role..."
+            className="w-full bg-black/40 border border-white/5 rounded-xl py-3 pl-12 pr-4 text-white font-bold text-sm outline-none focus:border-indigo-500/50 transition-all"
           />
         </div>
-        <div style={{ marginLeft: 'auto', fontSize: '12px', color: 'var(--text-dim)' }}>
-          {filtered.length} personnel active
-        </div>
       </div>
 
-      {/* Team List */}
-      <div className="card overflow-hidden p-0" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)' }}>
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--border)' }}>
-              <th className="px-6 py-4 text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-dim)' }}>Personnel</th>
-              <th className="px-6 py-4 text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-dim)' }}>Status</th>
-              <th className="px-6 py-4 text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-dim)' }}>Role</th>
-              <th className="px-6 py-4 text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-dim)' }}>Activity</th>
-              <th className="px-6 py-4 text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-dim)' }}>Fleet ID</th>
-              <th className="px-6 py-4"></th>
-            </tr>
-          </thead>
-          <tbody className="divide-y" style={{ borderColor: 'var(--border)' }}>
-            {filtered.map((member) => (
-              <tr key={member.id} className="hover:bg-white/[0.02] transition-colors">
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-md flex items-center justify-center font-bold text-xs"
-                      style={{ background: 'var(--bg-tertiary)', color: 'var(--text-muted)', border: '1px solid var(--border)' }}>
-                      {member.name.split(' ').map(n => n[0]).join('')}
-                    </div>
-                    <div>
-                      <div className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{member.name}</div>
-                      <div className="text-[10px]" style={{ color: 'var(--text-dim)' }}>{member.email}</div>
-                    </div>
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-2">
-                    <div className={`w-1.5 h-1.5 rounded-full ${member.online ? 'bg-green-500' : 'bg-zinc-600'}`} />
-                    <span className="text-xs" style={{ color: member.online ? 'var(--green)' : 'var(--text-dim)' }}>
-                      {member.online ? 'Active' : 'Offline'}
-                    </span>
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-1.5">
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-medium ${member.role === 'manager' ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20' : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'}`}>
-                      {member.role === 'manager' ? 'Command' : 'Engineer'}
-                    </span>
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="flex flex-col gap-1">
-                    <div className="flex justify-between items-center text-[10px]" style={{ color: 'var(--text-dim)' }}>
-                      <span>Neutralized Tasks</span>
-                      <span>{member.items_fixed}</span>
-                    </div>
-                    <div className="w-24 h-1 rounded-full bg-white/5 overflow-hidden">
-                      <div className="h-full bg-purple-500" style={{ width: `${Math.min(100, (member.items_fixed / 20) * 100)}%` }} />
-                    </div>
-                  </div>
-                </td>
-                <td className="px-6 py-4 font-mono text-[10px]" style={{ color: 'var(--text-dim)' }}>
-                  {member.user_code}
-                </td>
-                <td className="px-6 py-4 text-right">
-                  <button className="p-2 rounded-lg hover:bg-white/5 transition-colors" style={{ color: 'var(--text-dim)' }}>
-                    <Mail size={14} />
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Transmissions */}
-      <div className="mt-12">
-        <h2 style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Plus size={14} style={{ color: 'var(--text-dim)' }} /> Pending Transmissions
-        </h2>
-        <div className="space-y-2">
-          {[
-            { email: 'commander_alpha@acme.space', rank: 'Captain', status: 'Pending' },
-            { email: 'officer_gamma@labs.io', rank: 'Navigator', status: 'En route' },
-          ].map((inv, i) => (
-            <div key={i} className="table-row">
-              <Mail size={13} style={{ color: 'var(--text-dim)' }} />
-              <div className="flex-1">
-                <div style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text)' }}>{inv.email}</div>
-                <div style={{ fontSize: '11px', color: 'var(--text-dim)' }}>Rank: {inv.rank}</div>
-              </div>
-              <span className="badge badge-muted">{inv.status}</span>
-              <button className="p-1.5 text-zinc-500 hover:text-red-500 transition-colors">
-                <X size={14} />
-              </button>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Modal */}
-      {inviteOpen && (
-        <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setInviteOpen(false)}>
-          <div className="modal-box" style={{ maxWidth: '400px' }}>
-            <div className="flex items-center justify-between mb-6">
-              <h2 style={{ fontSize: '16px', fontWeight: 700 }}>Enlist Personnel</h2>
-              <X size={16} style={{ cursor: 'pointer', color: 'var(--text-dim)' }} onClick={() => setInviteOpen(false)} />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {TEAM_MEMBERS.map((member, i) => (
+          <motion.div
+            key={member.id}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: i * 0.1 }}
+            className="p-8 rounded-[40px] bg-zinc-900/40 border border-white/5 relative overflow-hidden group card-hover shadow-2xl"
+          >
+            <div className="absolute top-0 right-0 p-6 opacity-0 group-hover:opacity-100 transition-opacity">
+               <button className="p-2 rounded-lg bg-white/5 text-zinc-500 hover:text-white">
+                  <MoreHorizontal size={18} />
+               </button>
             </div>
 
-            <form onSubmit={handleInvite} className="space-y-4">
-              <div>
-                <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '6px', textTransform: 'uppercase' }}>
-                  Email Address
-                </label>
-                <input className="input" type="email" placeholder="jane@company.com" required />
+            <div className="flex flex-col items-center text-center mb-8">
+              <div className="relative mb-4">
+                 <div className="w-24 h-24 rounded-[32px] bg-gradient-to-tr from-zinc-800 to-zinc-700 shadow-2xl relative overflow-hidden">
+                    <div className="absolute inset-0 bg-indigo-500/10 animate-pulse" />
+                    <div className="absolute inset-0 flex items-center justify-center font-black text-3xl text-zinc-500">
+                       {member.name.split(' ').map(n => n[0]).join('')}
+                    </div>
+                 </div>
+                 <div className={`absolute -bottom-2 -right-2 w-8 h-8 rounded-2xl border-4 border-black flex items-center justify-center ${
+                   member.status === 'online' ? 'bg-emerald-500' : member.status === 'busy' ? 'bg-amber-500' : 'bg-zinc-600'
+                 }`}>
+                    {member.status === 'online' && <Activity size={14} className="text-white" />}
+                    {member.status === 'busy' && <Clock size={14} className="text-white" />}
+                 </div>
               </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '6px', textTransform: 'uppercase' }}>
-                  Command Rank
-                </label>
-                <select className="input">
-                  <option value="developer">Fleet Engineer</option>
-                  <option value="manager">Command Officer</option>
-                  <option value="viewer">Fleet Observer</option>
-                </select>
-              </div>
-              <div className="pt-4">
-                <button type="submit" disabled={loading} className="btn-primary w-full py-2.5 justify-center">
-                  {loading ? <Loader2 size={16} className="animate-spin" /> : 'Authorize Enlistment'}
+              <h3 className="text-xl font-black text-white mb-1 uppercase tracking-tight group-hover:text-indigo-400 transition-colors">{member.name}</h3>
+              <p className="text-xs font-black text-indigo-500 uppercase tracking-widest">{member.role}</p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 mb-8">
+               <div className="p-4 rounded-2xl bg-black/40 border border-white/5 text-center">
+                  <div className="text-lg font-black text-white">{member.resolved}</div>
+                  <div className="text-[9px] font-black text-zinc-600 uppercase tracking-widest">NEUTRALIZED</div>
+               </div>
+               <div className="p-4 rounded-2xl bg-black/40 border border-white/5 text-center">
+                  <div className="text-lg font-black text-white">{member.activeItems}</div>
+                  <div className="text-[9px] font-black text-zinc-600 uppercase tracking-widest">ENGAGED</div>
+               </div>
+            </div>
+
+            <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-zinc-500 pt-6 border-t border-white/5">
+                <div className="flex items-center gap-1.5">
+                   <Shield size={12} className="text-indigo-500" />
+                   IMPACT: <span className={member.impact === 'High' ? 'text-emerald-500' : 'text-zinc-400'}>{member.impact}</span>
+                </div>
+                <button className="flex items-center gap-1.5 hover:text-white transition-colors">
+                   <Mail size={12} />
+                   UPLINK
                 </button>
-              </div>
-            </form>
-          </div>
+            </div>
+          </motion.div>
+        ))}
+
+        {/* Invite Suggestion */}
+        <div className="p-8 rounded-[40px] border border-white/5 border-dashed flex flex-col items-center justify-center text-center group cursor-pointer hover:bg-zinc-900/20 transition-all min-h-[400px]">
+           <div className="w-16 h-16 rounded-[24px] bg-zinc-900 border border-white/5 flex items-center justify-center text-zinc-600 group-hover:scale-110 group-hover:text-indigo-400 transition-all mb-4 shadow-2xl">
+              <Plus size={32} />
+           </div>
+           <h3 className="text-sm font-black text-zinc-500 uppercase tracking-widest">Extend Fleet</h3>
         </div>
-      )}
+      </div>
     </div>
   )
 }

@@ -1,82 +1,30 @@
 import { create } from 'zustand'
-import { createClient } from '@/lib/supabase/client'
-import type { DebtItem, Repo, Sprint, TeamMember, User } from '@/types'
+import { persist } from 'zustand/middleware'
 
-interface AppState {
-  currentUser: User | null
-  debtItems: DebtItem[]
-  repos: Repo[]
-  sprints: Sprint[]
-  team: TeamMember[]
-  setCurrentUser: (user: User | null) => void
-  setDebtItems: (items: DebtItem[]) => void
-  setRepos: (repos: Repo[]) => void
-  setSprints: (sprints: Sprint[]) => void
-  setTeam: (team: TeamMember[]) => void
-  addDebtItem: (item: DebtItem) => void
-  updateDebtItem: (id: string, updates: Partial<DebtItem>) => void
-  deleteDebtItem: (id: string) => void
-  mutateDebtItemStatus: (id: string, status: string) => Promise<void>
-  mutateAddDebtItem: (item: Partial<DebtItem>) => Promise<void>
-  mutateAddSprint: (sprint: Partial<Sprint>) => Promise<void>
-  isAdmin: () => boolean
+interface User {
+  id: string
+  name: string
+  email: string
+  avatar_url?: string
 }
 
-export const useStore = create<AppState>((set, get) => ({
-  currentUser: null,
-  debtItems: [],
-  repos: [],
-  sprints: [],
-  team: [],
-  setCurrentUser: (user) => set({ currentUser: user }),
-  setDebtItems: (items) => set({ debtItems: items }),
-  setRepos: (repos) => set({ repos }),
-  setSprints: (sprints) => set({ sprints }),
-  setTeam: (team) => set({ team }),
-  addDebtItem: (item) => set((state) => ({ debtItems: [...state.debtItems, item] })),
-  updateDebtItem: (id, updates) =>
-    set((state) => ({
-      debtItems: state.debtItems.map((item) =>
-        item.id === id ? { ...item, ...updates } : item
-      ),
-    })),
-  deleteDebtItem: (id) =>
-    set((state) => ({ debtItems: state.debtItems.filter((i) => i.id !== id) })),
-  
-  // Real Mutations (Supabase)
-  mutateDebtItemStatus: async (id: string, status: string) => {
-    const supabase = createClient()
-    const { error } = await supabase
-      .from('debt_items')
-      .update({ status, fixed_at: status === 'fixed' ? new Date().toISOString() : null })
-      .eq('id', id)
-    if (error) throw error
-  },
+interface AppState {
+  user: User | null
+  setUser: (user: User | null) => void
+  isLoading: boolean
+  setIsLoading: (isLoading: boolean) => void
+}
 
-  mutateAddDebtItem: async (item: Partial<DebtItem>) => {
-    const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) throw new Error('Not authenticated')
-
-    const { error } = await supabase
-      .from('debt_items')
-      .insert([{ ...item, user_id: user.id }])
-    if (error) throw error
-  },
-
-  mutateAddSprint: async (sprint: Partial<Sprint>) => {
-    const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) throw new Error('Not authenticated')
-
-    const { error } = await supabase
-      .from('sprints')
-      .insert([{ ...sprint, user_id: user.id }])
-    if (error) throw error
-  },
-
-  isAdmin: () => {
-    const user = get().currentUser
-    return user?.email === 'admin@collabdebt.com' || user?.role === 'manager'
-  }
-}))
+export const useStore = create<AppState>()(
+  persist(
+    (set) => ({
+      user: null,
+      setUser: (user) => set({ user }),
+      isLoading: false,
+      setIsLoading: (isLoading) => set({ isLoading }),
+    }),
+    {
+      name: 'collabdebt-storage',
+    }
+  )
+)

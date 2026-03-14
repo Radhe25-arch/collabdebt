@@ -1,399 +1,206 @@
 'use client'
 
-import { useState, useMemo } from 'react'
-import { ThumbsUp, Plus, X, ExternalLink, Loader2, Search, ChevronDown } from 'lucide-react'
-import toast from 'react-hot-toast'
-import { useStore } from '@/store/useStore'
-import type { DebtItem, DebtSeverity, DebtStatus, DebtType } from '@/types'
+import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { 
+  Plus, 
+  MoreHorizontal, 
+  Clock, 
+  AlertTriangle, 
+  CheckCircle2, 
+  Search,
+  Filter,
+  BarChart2,
+  GitBranch,
+  Terminal,
+  Zap,
+  User,
+  Layers
+} from 'lucide-react'
 
-const COLUMNS: { id: DebtStatus; label: string }[] = [
-  { id: 'identified', label: 'Identified' },
-  { id: 'planned', label: 'Planned' },
-  { id: 'in_progress', label: 'In Progress' },
-  { id: 'fixed', label: 'Fixed' },
+const COLUMNS = [
+  { id: 'detected', label: 'Detected', color: 'indigo' },
+  { id: 'triaged', label: 'Triaged', color: 'amber' },
+  { id: 'in_progress', label: 'In Progress', color: 'blue' },
+  { id: 'resolved', label: 'Resolved', color: 'emerald' },
 ]
 
-const SEV_COLOR: Record<string, string> = {
-  critical: 'var(--red)',
-  high: 'var(--orange)',
-  medium: 'var(--yellow)',
-  low: 'var(--green)',
-}
-
-function SeverityBadge({ s }: { s: DebtSeverity }) {
-  const cls = s === 'critical' ? 'badge-critical' : s === 'high' ? 'badge-high' : s === 'medium' ? 'badge-medium' : 'badge-low'
-  return <span className={`badge ${cls}`}>{s}</span>
-}
-
-function DebtCard({ item, onClick }: { item: DebtItem; onClick: () => void }) {
-  const { updateDebtItem } = useStore()
-  const [voted, setVoted] = useState(false)
-
-  return (
-    <div
-      onClick={onClick}
-      className="card cursor-pointer hover:border-[var(--border-hover)] mb-2"
-      style={{ padding: '12px' }}
-    >
-      <div className="flex items-start justify-between gap-2 mb-2">
-        <SeverityBadge s={item.severity} />
-        {item.cost_usd > 0 && (
-          <span style={{ fontSize: '11px', color: 'var(--text-dim)', fontFamily: 'JetBrains Mono, monospace' }}>
-            ${item.cost_usd.toLocaleString()}/mo
-          </span>
-        )}
-      </div>
-
-      <h3 style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)', lineHeight: '1.4', marginBottom: '6px' }}>
-        {item.title}
-      </h3>
-
-      {item.file_path && (
-        <p style={{ fontSize: '11px', color: 'var(--text-dim)', fontFamily: 'JetBrains Mono, monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: '8px' }}>
-          {item.file_path}
-        </p>
-      )}
-
-      <div className="flex items-center justify-between" style={{ borderTop: '1px solid var(--border)', paddingTop: '8px', marginTop: '8px' }}>
-        <button
-          onClick={e => { e.stopPropagation(); if (!voted) { updateDebtItem(item.id, { votes: (item.votes || 0) + 1 }); setVoted(true) } }}
-          style={{
-            display: 'flex', alignItems: 'center', gap: '4px',
-            fontSize: '11px', color: voted ? 'var(--blue)' : 'var(--text-dim)',
-            background: 'none', border: 'none', cursor: 'pointer', padding: 0
-          }}
-        >
-          <ThumbsUp size={11} /> {item.votes || 0}
-        </button>
-        <span style={{ fontSize: '11px', color: 'var(--text-dim)' }}>{item.fix_days}d est.</span>
-      </div>
-    </div>
-  )
-}
-
-function DebtModal({ item, onClose }: { item: DebtItem; onClose: () => void }) {
-  const { mutateDebtItemStatus, team } = useStore()
-  const [status, setStatus] = useState<DebtStatus>(item.status)
-  const [loading, setLoading] = useState(false)
-
-  const handleSave = async () => {
-    setLoading(true)
-    try { await mutateDebtItemStatus(item.id, status) } catch (err) { console.error(err) }
-    setLoading(false)
-    onClose()
-  }
-
-  return (
-    <div className="modal-overlay" onClick={e => { if (e.target === e.currentTarget) onClose() }}>
-      <div className="modal-box">
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <SeverityBadge s={item.severity} />
-            <span style={{ fontSize: '11px', fontFamily: 'JetBrains Mono, monospace', color: 'var(--text-dim)' }}>
-              {item.type}
-            </span>
-          </div>
-          <button onClick={onClose} style={{ color: 'var(--text-dim)', background: 'none', border: 'none', cursor: 'pointer' }}>
-            <X size={16} />
-          </button>
-        </div>
-
-        <h2 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text)', marginBottom: '8px', lineHeight: 1.4 }}>
-          {item.title}
-        </h2>
-
-        {item.description && (
-          <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '16px', lineHeight: 1.6 }}>
-            {item.description}
-          </p>
-        )}
-
-        {item.file_path && (
-          <div className="code-block mb-4">
-            {item.file_path}
-            {item.line_start && ` :${item.line_start}–${item.line_end}`}
-          </div>
-        )}
-
-        {/* Meta row */}
-        <div
-          style={{
-            display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px',
-            background: 'var(--bg-tertiary)', borderRadius: '6px', padding: '12px', marginBottom: '16px'
-          }}
-        >
-          {[
-            { label: 'Cost/mo', value: `$${(item.cost_usd || 0).toLocaleString()}` },
-            { label: 'Est. fix', value: `${item.fix_days}d` },
-            { label: 'Votes', value: item.votes || 0 },
-          ].map(m => (
-            <div key={m.label}>
-              <div style={{ fontSize: '10px', color: 'var(--text-dim)', marginBottom: '2px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{m.label}</div>
-              <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text)' }}>{m.value}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* Status */}
-        <div className="mb-4">
-          <label style={{ fontSize: '11px', fontWeight: 500, color: 'var(--text-muted)', display: 'block', marginBottom: '6px' }}>
-            Status
-          </label>
-          <select
-            className="input"
-            value={status}
-            onChange={e => setStatus(e.target.value as DebtStatus)}
-          >
-            {COLUMNS.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
-          </select>
-        </div>
-
-        {item.pr_url && (
-          <a href={item.pr_url} target="_blank" rel="noreferrer"
-            className="btn-ghost mb-4"
-            style={{ display: 'inline-flex', fontSize: '12px' }}
-          >
-            <ExternalLink size={12} /> View PR
-          </a>
-        )}
-
-        <div className="flex items-center justify-end gap-2">
-          <button className="btn-ghost" onClick={onClose}>Cancel</button>
-          <button className="btn-primary" onClick={handleSave} disabled={loading}>
-            {loading ? <Loader2 size={13} className="animate-spin" /> : 'Save changes'}
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function NewDebtModal({ onClose }: { onClose: () => void }) {
-  const { mutateAddDebtItem, repos } = useStore()
-  const [loading, setLoading] = useState(false)
-  const [form, setForm] = useState({
-    title: '',
-    description: '',
-    repo_id: repos[0]?.id || '',
-    severity: 'medium' as DebtSeverity,
-    type: 'todo' as DebtType,
-    cost_usd: 0,
-    fix_days: 1,
-  })
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    try {
-      await mutateAddDebtItem({
-        ...form,
-        status: 'identified',
-        created_by: 'manual',
-        votes: 0,
-      })
-      toast.success('Debt item recorded successfully')
-      onClose()
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to add item')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  return (
-    <div className="modal-overlay" onClick={e => { if (e.target === e.currentTarget) onClose() }}>
-      <div className="modal-box max-w-lg">
-        <div className="flex items-center justify-between mb-6">
-          <h2 style={{ fontSize: '18px', fontWeight: 700 }}>Record Technical Debt</h2>
-          <button onClick={onClose} className="text-slate-500 hover:text-white"><X size={20} /></button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">Designation (Title)</label>
-            <input 
-              required
-              className="input" 
-              placeholder="e.g. Refactor Auth Middleware"
-              value={form.title}
-              onChange={e => setForm({ ...form, title: e.target.value })}
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">Core Repository</label>
-              <select 
-                className="input"
-                value={form.repo_id}
-                onChange={e => setForm({ ...form, repo_id: e.target.value })}
-              >
-                {repos.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">Anomaly Severity</label>
-              <select 
-                className="input"
-                value={form.severity}
-                onChange={e => setForm({ ...form, severity: e.target.value as DebtSeverity })}
-              >
-                <option value="critical">Critical</option>
-                <option value="high">High</option>
-                <option value="medium">Medium</option>
-                <option value="low">Low</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">Cost Impact ($/mo)</label>
-              <input 
-                type="number"
-                className="input" 
-                value={form.cost_usd}
-                onChange={e => setForm({ ...form, cost_usd: Number(e.target.value) })}
-              />
-            </div>
-            <div>
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">Est. Fix Duration (days)</label>
-              <input 
-                type="number"
-                className="input" 
-                value={form.fix_days}
-                onChange={e => setForm({ ...form, fix_days: Number(e.target.value) })}
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">Description</label>
-            <textarea 
-              className="input h-24 pt-2"
-              placeholder="Provide technical details about the anomaly..."
-              value={form.description}
-              onChange={e => setForm({ ...form, description: e.target.value })}
-            />
-          </div>
-
-          <div className="flex justify-end gap-3 pt-4">
-            <button type="button" onClick={onClose} className="btn-ghost">Cancel</button>
-            <button type="submit" className="btn-primary" disabled={loading}>
-              {loading ? <Loader2 size={14} className="animate-spin" /> : 'Synchronize Debt'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  )
-}
+const INITIAL_DEBT = [
+  { 
+    id: '1', 
+    title: 'Deprecated JWT Provider', 
+    repo: 'core-api', 
+    severity: 'high', 
+    status: 'detected', 
+    cost: '2d',
+    tags: ['Security', 'Infra']
+  },
+  { 
+    id: '2', 
+    title: 'N+1 Query in Customer GraphQL', 
+    repo: 'web-gateway', 
+    severity: 'critical', 
+    status: 'in_progress', 
+    cost: '3d',
+    tags: ['Performance']
+  },
+  { 
+    id: '3', 
+    title: 'Refactor Legacy Payment Handler', 
+    repo: 'billing-service', 
+    severity: 'medium', 
+    status: 'triaged', 
+    cost: '5d',
+    tags: ['Refactor']
+  },
+  { 
+    id: '4', 
+    title: 'Redundant Redux Action Types', 
+    repo: 'frontend-main', 
+    severity: 'low', 
+    status: 'resolved', 
+    cost: '1d',
+    tags: ['DX']
+  },
+  { 
+    id: '5', 
+    title: 'Missing Error Boundary in Dashboard', 
+    repo: 'frontend-main', 
+    severity: 'medium', 
+    status: 'detected', 
+    cost: '4h',
+    tags: ['UI/UX']
+  },
+]
 
 export default function DebtBoardPage() {
-  const { debtItems } = useStore()
-  const [selected, setSelected] = useState<DebtItem | null>(null)
-  const [showAdd, setShowAdd] = useState(false)
-  const [search, setSearch] = useState('')
-  const [filterSev, setFilterSev] = useState<string>('all')
-
-  const filtered = useMemo(() =>
-    debtItems
-      .filter(d => filterSev === 'all' || d.severity === filterSev)
-      .filter(d => !search || d.title.toLowerCase().includes(search.toLowerCase()) || d.file_path?.toLowerCase().includes(search.toLowerCase())),
-    [debtItems, search, filterSev]
-  )
+  const [items, setItems] = useState(INITIAL_DEBT)
 
   return (
-    <div style={{ maxWidth: '1400px' }}>
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-5" style={{ flexWrap: 'wrap' }}>
-        <div style={{ flex: 1, position: 'relative', maxWidth: '280px' }}>
-          <Search size={13} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-dim)' }} />
-          <input
-            className="input"
-            style={{ paddingLeft: '30px', fontSize: '12px' }}
-            placeholder="Search issues..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
+    <div className="h-[calc(100vh-160px)] flex flex-col space-y-6">
+      {/* Board Header / Controls */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" size={14} />
+            <input 
+              type="text" 
+              placeholder="Search debt items..."
+              className="bg-zinc-900/50 border border-white/5 rounded-xl py-2 pl-9 pr-4 text-xs font-medium focus:border-indigo-500/50 outline-none w-64 transition-all"
+            />
+          </div>
+          <button className="flex items-center gap-2 px-3 py-2 rounded-xl bg-zinc-900/50 border border-white/5 text-zinc-400 hover:text-white transition-all">
+            <Filter size={14} />
+            <span className="text-xs font-bold">Filters</span>
+          </button>
         </div>
-        <select
-          className="input"
-          style={{ width: 'auto', fontSize: '12px', padding: '6px 10px' }}
-          value={filterSev}
-          onChange={e => setFilterSev(e.target.value)}
-        >
-          <option value="all">All severities</option>
-          <option value="critical">Critical</option>
-          <option value="high">High</option>
-          <option value="medium">Medium</option>
-          <option value="low">Low</option>
-        </select>
-        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ fontSize: '12px', color: 'var(--text-dim)' }}>
-            {filtered.length} of {debtItems.length} issues
-          </span>
-          <button 
-            onClick={() => setShowAdd(true)}
-            className="btn-primary" 
-            style={{ padding: '6px 12px', fontSize: '12px', background: 'var(--emerald)', border: 'none' }}
-          >
-            <Plus size={14} /> New Item
+
+        <div className="flex items-center gap-3">
+          <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-500 text-white font-black text-xs hover:bg-indigo-600 transition-all shadow-[0_0_20px_rgba(99,102,241,0.3)]">
+            <Plus size={16} />
+            REPORT DEBT
           </button>
         </div>
       </div>
 
-      {/* Kanban columns */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', alignItems: 'start' }}>
-        {COLUMNS.map(col => {
-          const colItems = filtered.filter(d => d.status === col.id)
-          return (
-            <div key={col.id}>
-              {/* Column header */}
-              <div
-                style={{
-                  display: 'flex', alignItems: 'center', gap: '8px',
-                  padding: '8px 10px', marginBottom: '8px',
-                  background: 'var(--bg-secondary)', border: '1px solid var(--border)',
-                  borderRadius: '6px'
-                }}
-              >
-                <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text)' }}>{col.label}</span>
-                <span
-                  style={{
-                    marginLeft: 'auto', fontSize: '11px', fontWeight: 600,
-                    background: 'var(--bg-tertiary)', color: 'var(--text-muted)',
-                    padding: '1px 6px', borderRadius: '4px'
-                  }}
-                >
-                  {colItems.length}
+      {/* Kanban Board */}
+      <div className="flex-1 flex gap-6 overflow-x-auto pb-4 custom-scrollbar">
+        {COLUMNS.map((col) => (
+          <div key={col.id} className="min-w-[320px] flex flex-col bg-zinc-900/20 rounded-[32px] border border-white/5 overflow-hidden">
+            <div className="p-5 border-b border-white/5 flex items-center justify-between bg-black/20">
+              <div className="flex items-center gap-2">
+                <div className={`w-2 h-2 rounded-full ${
+                  col.color === 'indigo' ? 'bg-indigo-500' : 
+                  col.color === 'amber' ? 'bg-amber-500' : 
+                  col.color === 'blue' ? 'bg-blue-500' : 'bg-emerald-500'
+                }`} />
+                <h3 className="text-sm font-black text-white uppercase tracking-widest">{col.label}</h3>
+                <span className="text-[10px] font-black text-zinc-600 bg-zinc-800/50 px-2 py-0.5 rounded-full border border-white/5">
+                  {items.filter(i => i.status === col.id).length}
                 </span>
               </div>
-
-              {/* Cards */}
-              <div style={{ minHeight: '120px' }}>
-                {colItems.map(item => (
-                  <DebtCard key={item.id} item={item} onClick={() => setSelected(item)} />
-                ))}
-                {colItems.length === 0 && (
-                  <div
-                    style={{
-                      textAlign: 'center', padding: '24px 12px',
-                      fontSize: '12px', color: 'var(--text-dim)',
-                      border: '1px dashed var(--border)', borderRadius: '6px'
-                    }}
-                  >
-                    No items
-                  </div>
-                )}
-              </div>
+              <button className="text-zinc-600 hover:text-white">
+                <Plus size={16} />
+              </button>
             </div>
-          )
-        })}
-      </div>
 
-      {selected && <DebtModal item={selected} onClose={() => setSelected(null)} />}
-      {showAdd && <NewDebtModal onClose={() => setShowAdd(false)} />}
+            <div className="flex-1 p-4 space-y-4 overflow-y-auto no-scrollbar">
+              <AnimatePresence>
+                {items
+                  .filter(i => i.status === col.id)
+                  .map((item) => (
+                    <motion.div
+                      layout
+                      key={item.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.9 }}
+                      whileHover={{ scale: 1.02 }}
+                      className="group p-5 rounded-2xl bg-zinc-900/60 border border-white/5 hover:border-indigo-500/50 cursor-grab active:cursor-grabbing transition-all shadow-xl relative overflow-hidden"
+                    >
+                      <div className="absolute top-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                         <MoreHorizontal size={14} className="text-zinc-500 hover:text-white" />
+                      </div>
+                      
+                      <div className="flex gap-2 mb-3">
+                        {item.tags.map(tag => (
+                          <span key={tag} className="text-[9px] font-black text-indigo-400 bg-indigo-500/5 border border-indigo-500/10 px-2 py-0.5 rounded-md">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+
+                      <h4 className="text-sm font-bold text-white mb-4 leading-snug group-hover:text-indigo-400 transition-colors">
+                        {item.title}
+                      </h4>
+
+                      <div className="flex items-center justify-between pt-4 border-t border-white/5">
+                        <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-1.5 text-zinc-600">
+                             <GitBranch size={12} />
+                             <span className="text-[10px] font-bold uppercase">{item.repo}</span>
+                          </div>
+                          <div className={`flex items-center gap-1 text-[10px] font-black uppercase ${
+                             item.severity === 'critical' ? 'text-rose-500' : 
+                             item.severity === 'high' ? 'text-amber-500' : 'text-zinc-500'
+                          }`}>
+                             <AlertTriangle size={10} />
+                             {item.severity}
+                          </div>
+                        </div>
+                        
+                        <div className="flex -space-x-2">
+                           <div className="w-6 h-6 rounded-full bg-zinc-800 border-2 border-zinc-900 flex items-center justify-center">
+                              <User size={12} className="text-zinc-500" />
+                           </div>
+                        </div>
+                      </div>
+
+                      <div className="mt-3 flex items-center justify-between text-[10px] font-bold text-zinc-600">
+                         <div className="flex items-center gap-1">
+                            <Clock size={10} />
+                            EST: {item.cost}
+                         </div>
+                         <div className="flex items-center gap-1 text-emerald-500/50">
+                            <Zap size={10} />
+                            ROI: 2.4x
+                         </div>
+                      </div>
+                    </motion.div>
+                  ))}
+              </AnimatePresence>
+            </div>
+          </div>
+        ))}
+        
+        {/* Add Suggestion Column */}
+        <div className="min-w-[320px] flex flex-col bg-zinc-950/20 border border-white/5 border-dashed rounded-[32px] p-8 items-center justify-center text-center group cursor-pointer hover:bg-zinc-900/10 transition-all">
+           <div className="w-12 h-12 rounded-2xl bg-zinc-900 border border-white/10 flex items-center justify-center text-zinc-600 group-hover:scale-110 group-hover:text-indigo-400 group-hover:border-indigo-500/50 transition-all mb-4">
+              <Plus size={24} />
+           </div>
+           <h3 className="font-bold text-zinc-500 uppercase tracking-widest text-xs">Add Workspace</h3>
+        </div>
+      </div>
     </div>
   )
 }

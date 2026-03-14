@@ -1,0 +1,118 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id               String          @id @default(uuid())
+  name             String?
+  username         String?         @unique
+  email            String          @unique
+  avatarUrl        String?         @map("avatar_url")
+  onboardingDone   Boolean         @default(false) @map("onboarding_done")
+  
+  // Professional Profile
+  techRoles        String[]        @map("tech_roles")
+  skills           String[]
+  bio              String?
+  collabGoals      String[]        @map("collab_goals")
+  
+  // Team Context
+  companySize      String?         @map("company_size")
+  teamSize         String?         @map("team_size")
+  
+  createdAt        DateTime        @default(now()) @map("created_at")
+  lastSeen         DateTime        @default(now()) @map("last_seen")
+  
+  // Relations
+  repositories     Repository[]
+  assignedDebt     DebtItem[]      @relation("AssignedTo")
+  createdDebt      DebtItem[]      @relation("CreatedBy")
+  notifications    Notification[]
+  logs             ActivityLog[]
+
+  @@map("users")
+}
+
+model Repository {
+  id          String     @id @default(uuid())
+  name        String
+  ownerId     String     @map("owner_id")
+  owner       User       @relation(fields: [ownerId], references: [id])
+  url         String?
+  healthScore Int        @default(100) @map("health_score")
+  techStack   String[]   @map("tech_stack")
+  createdAt   DateTime   @default(now()) @map("created_at")
+  debtItems   DebtItem[]
+  
+  @@map("repositories")
+}
+
+model DebtItem {
+  id           String     @id @default(uuid())
+  title        String
+  description  String?
+  severity     String     @default("medium") // low, medium, high, critical
+  status       String     @default("detected") // detected, triaged, in_progress, resolved
+  costImpact   Float?     @map("cost_impact") // estimated hours/days
+  
+  repoId       String     @map("repo_id")
+  repository   Repository @relation(fields: [repoId], references: [id])
+  
+  assigneeId   String?    @map("assignee_id")
+  assignee     User?      @relation("AssignedTo", fields: [assigneeId], references: [id])
+  
+  creatorId    String     @map("creator_id")
+  creator      User       @relation("CreatedBy", fields: [creatorId], references: [id])
+  
+  sprintId     String?    @map("sprint_id")
+  sprint       Sprint?    @relation(fields: [sprintId], references: [id])
+  
+  createdAt    DateTime   @default(now()) @map("created_at")
+  resolvedAt   DateTime?  @map("resolved_at")
+
+  @@map("debt_items")
+}
+
+model Sprint {
+  id        String     @id @default(uuid())
+  name      String
+  startDate DateTime   @map("start_date")
+  endDate   DateTime   @map("end_date")
+  status    String     @default("upcoming") // upcoming, active, completed
+  debtItems DebtItem[]
+
+  @@map("sprints")
+}
+
+model Notification {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  type        String
+  message     String
+  read        Boolean  @default(false)
+  referenceId String?  @map("reference_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@map("notifications")
+}
+
+model ActivityLog {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  action    String
+  metadata  Json?
+  createdAt DateTime @default(now()) @map("created_at")
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@map("activity_logs")
+}
