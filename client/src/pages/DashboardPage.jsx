@@ -234,7 +234,7 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-arena-dim font-mono text-sm animate-pulse">// loading dashboard...</div>
+        <div className="text-arena-dim font-mono text-sm animate-pulse">loading dashboard...</div>
       </div>
     );
   }
@@ -248,7 +248,7 @@ export default function DashboardPage() {
             Welcome back, <span className="text-gradient">{user?.username}</span>
           </h1>
           <p className="font-mono text-xs text-arena-dim mt-1">
-            // {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+            {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
           </p>
         </div>
         <div className="flex items-center gap-2">
