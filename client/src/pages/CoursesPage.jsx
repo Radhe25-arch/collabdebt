@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, useMemo } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import api from '@/lib/api';
 import Icons from '@/assets/icons';
-import { Spinner, BadgeTag, ProgressBar } from '@/components/ui';
+import { Spinner, BadgeTag } from '@/components/ui';
 
 // Professional, Minimalist SaaS Color Palette Mapping
 const LANG_META = {
@@ -34,32 +34,37 @@ const LANG_META = {
   'ai-ml':        { icon: Icons.Target,     color: '#A855F7' },
 };
 
-const DIFF_COLORS = { BEGINNER: 'green', INTERMEDIATE: 'blue', ADVANCED: 'purple' };
-
-const DOMAIN_SLUGS = ['web-dev', 'data-science', 'devops', 'cybersecurity', 'game-dev', 'system-design', 'blockchain', 'ai-ml'];
+// Core languages are these specific slugs, everything else is a "Domain Architecture"
+const CORE_LANG_SLUGS = [
+  'javascript', 'typescript', 'python', 'html', 'css', 'java', 'cpp', 'c', 
+  'csharp', 'go', 'rust', 'kotlin', 'swift', 'php', 'ruby', 'dart', 'bash', 'sql'
+];
 
 function CategoryCard({ category, courseCount, onClick, isActive }) {
-  const meta = LANG_META[category.slug] || { icon: Icons.Book, color: '#888' };
+  const meta = LANG_META[category.slug] || { 
+    icon: Icons[Object.keys(Icons).find(k => k.toLowerCase().includes(category.iconName?.toLowerCase()))] || Icons.Book, 
+    color: '#3B82F6' 
+  };
   const IconComponent = meta.icon;
 
   return (
     <div 
       onClick={() => onClick(category)}
-      className={`relative p-5 rounded-xl border cursor-pointer transition-all duration-200 flex flex-col justify-between h-32
+      className={`relative p-4 rounded-xl border cursor-pointer transition-all duration-200 flex flex-col justify-between h-28 animate-fade-in
         ${isActive 
           ? 'bg-[#111] border-arena-purple/50 shadow-[0_0_0_1px_rgba(124,58,237,0.3)]' 
-          : 'bg-[#0A0A0A] border-white/5 hover:border-white/15'
+          : 'bg-[#0A0A0A] border-white/5 hover:border-white/10 hover:bg-[#0E0E0E]'
         }
       `}
     >
       <div className="flex justify-between items-start">
-        <div className="w-8 h-8 rounded-md bg-white/5 border border-white/10 flex items-center justify-center">
-          <IconComponent size={14} className="text-white/80" />
+        <div className="w-7 h-7 rounded-md bg-white/5 border border-white/10 flex items-center justify-center">
+          <IconComponent size={13} className="text-white/70" />
         </div>
-        <span className="font-mono text-[10px] text-white/40">{courseCount} paths</span>
+        <span className="font-mono text-[9px] text-white/30 uppercase tracking-tighter">{courseCount} paths</span>
       </div>
       <div>
-        <h3 className="font-body text-sm text-white font-semibold tracking-wide">{category.name}</h3>
+        <h3 className="font-body text-xs text-white/90 font-semibold tracking-tight leading-tight line-clamp-2">{category.name}</h3>
       </div>
     </div>
   );
@@ -73,7 +78,7 @@ function CourseListCard({ course, onClick }) {
   return (
     <div
       onClick={() => onClick(course.slug)}
-      className={`group flex flex-col sm:flex-row sm:items-center justify-between p-5 md:p-6 rounded-xl cursor-pointer transition-all duration-200 gap-4 border ${
+      className={`group flex flex-col sm:flex-row sm:items-center justify-between p-5 rounded-xl cursor-pointer transition-all duration-200 gap-4 border ${
         completed
           ? 'bg-arena-teal/5 border-arena-teal/20 hover:border-arena-teal/35'
           : 'bg-[#0A0A0A] border-white/5 hover:border-white/15'
@@ -126,11 +131,13 @@ function CourseListCard({ course, onClick }) {
 
 export default function CoursesPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const type = searchParams.get('type') || 'languages'; // default to languages
+
   const [categories, setCategories] = useState([]);
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   
-  // State for minimal categorized view
   const [activeCategory, setActiveCategory] = useState(null);
 
   useEffect(() => {
@@ -138,17 +145,16 @@ export default function CoursesPage() {
       try {
         const [catRes, courseRes] = await Promise.all([
           api.get('/courses/categories'),
-          api.get('/courses?limit=300'),
+          api.get('/courses?limit=500'),
         ]);
         setCategories(catRes.data.categories || []);
         const coursesRaw = courseRes.data.courses || [];
 
-        // Try to get enrollment data (may fail if not logged in)
         let enrollMap = {};
         try {
           const enrollRes = await api.get('/courses/my-enrollments', { _silent: true });
           (enrollRes.data.enrollments || []).forEach(e => { enrollMap[e.courseId] = e; });
-        } catch { /* not logged in or endpoint error — no problem */ }
+        } catch { /* ignored */ }
 
         setCourses(coursesRaw.map(c => ({ ...c, enrollment: enrollMap[c.id] || null })));
       } catch (err) {
@@ -158,10 +164,17 @@ export default function CoursesPage() {
       }
     };
     load();
-  }, []);
+    // Reset active category when switching view type
+    setActiveCategory(null);
+  }, [type]);
 
-  const langCategories = categories.filter((c) => !DOMAIN_SLUGS.includes(c.slug));
-  const domainCategories = categories.filter((c) => DOMAIN_SLUGS.includes(c.slug));
+  const filteredCategories = useMemo(() => {
+    if (type === 'languages') {
+      return categories.filter(c => CORE_LANG_SLUGS.includes(c.slug));
+    } else {
+      return categories.filter(c => !CORE_LANG_SLUGS.includes(c.slug));
+    }
+  }, [categories, type]);
 
   const getCoursesByCategory = (catId) => courses.filter((c) => c.categoryId === catId || c.category?.id === catId);
   const handleCourseClick = (slug) => navigate(`/courses/${slug}`);
@@ -174,16 +187,15 @@ export default function CoursesPage() {
     );
   }
 
-  // If a category is selected, render the list of courses for that category
   if (activeCategory) {
     const activeCourses = getCoursesByCategory(activeCategory.id).sort((a,b) => a.order - b.order);
     return (
-      <div className="max-w-5xl mx-auto space-y-8 pb-16">
+      <div className="max-w-5xl mx-auto space-y-8 pb-16 animate-fade-in">
         <button 
           onClick={() => setActiveCategory(null)}
           className="flex items-center gap-2 text-white/50 hover:text-white text-sm font-body transition-colors"
         >
-          <Icons.ArrowLeft size={14} /> Back to Library
+          <Icons.ArrowLeft size={14} /> Back to {type === 'languages' ? 'Languages' : 'Domains'}
         </button>
 
         <div>
@@ -208,45 +220,38 @@ export default function CoursesPage() {
     );
   }
 
-  // Main Library View
   return (
-    <div className="max-w-7xl mx-auto pb-16">
-      <div className="mb-12">
-        <h1 className="font-display text-4xl text-white font-semibold tracking-tight mb-3">Curriculum Library</h1>
+    <div className="max-w-7xl mx-auto pb-16 animate-fade-in">
+      <div className="mb-10">
+        <BadgeTag variant={type === 'languages' ? 'purple' : 'teal'} className="mb-3 uppercase tracking-widest text-[10px]">
+          {type === 'languages' ? 'Core Curriculum' : 'Expertise Paths'}
+        </BadgeTag>
+        <h1 className="font-display text-4xl text-white font-semibold tracking-tight mb-3">
+          {type === 'languages' ? 'Programming Languages' : 'Tech Architectures'}
+        </h1>
         <p className="font-body text-base text-white/50 max-w-2xl">
-          A structured, minimal, and highly professional learning path. Select a technology stack or domain below to begin your journey.
+          {type === 'languages' 
+            ? 'Master the syntax and patterns of modern programming languages. From assembly to high-level logic.'
+            : 'Deep dive into specialized architecture domains. Scale systems, secure networks, and build hardware.'}
         </p>
       </div>
 
-      <div className="space-y-16">
-        {/* Languages */}
-        {langCategories.length > 0 && (
-          <section>
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="font-body text-sm font-medium text-white/70 uppercase tracking-widest">Programming Languages</h2>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
-              {langCategories.map((cat) => (
-                <CategoryCard key={cat.id} category={cat} courseCount={getCoursesByCategory(cat.id).length} onClick={setActiveCategory} />
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Domains */}
-        {domainCategories.length > 0 && (
-          <section>
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="font-body text-sm font-medium text-white/70 uppercase tracking-widest">Domain Architectures</h2>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
-              {domainCategories.map((cat) => (
-                <CategoryCard key={cat.id} category={cat} courseCount={getCoursesByCategory(cat.id).length} onClick={setActiveCategory} />
-              ))}
-            </div>
-          </section>
-        )}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+        {filteredCategories.map((cat) => (
+          <CategoryCard 
+            key={cat.id} 
+            category={cat} 
+            courseCount={getCoursesByCategory(cat.id).length} 
+            onClick={setActiveCategory} 
+          />
+        ))}
       </div>
+      
+      {filteredCategories.length === 0 && (
+        <div className="py-20 text-center border border-white/5 border-dashed rounded-2xl">
+          <p className="font-mono text-sm text-white/30">No tracks found in this section.</p>
+        </div>
+      )}
     </div>
   );
 }

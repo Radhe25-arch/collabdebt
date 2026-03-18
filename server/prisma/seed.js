@@ -21,7 +21,7 @@ const CATEGORIES = [
   { name: 'Dart', slug: 'dart', description: 'Build beautiful Flutter apps', iconName: 'dart', order: 16 },
   { name: 'Bash', slug: 'bash', description: 'Automate everything', iconName: 'bash', order: 17 },
   { name: 'SQL', slug: 'sql', description: 'Master databases', iconName: 'sql', order: 18 },
-  // Domain Paths
+  // Domain Architectures (100+)
   { name: 'Web Development', slug: 'web-dev', description: 'Build the modern web', iconName: 'web', order: 19 },
   { name: 'Data Science & ML', slug: 'data-science', description: 'Turn data into insights', iconName: 'data', order: 20 },
   { name: 'DevOps & Cloud', slug: 'devops', description: 'Ship faster, scale better', iconName: 'devops', order: 21 },
@@ -30,6 +30,82 @@ const CATEGORIES = [
   { name: 'System Design', slug: 'system-design', description: 'Architect scalable systems', iconName: 'system', order: 24 },
   { name: 'Blockchain', slug: 'blockchain', description: 'Decentralized future', iconName: 'blockchain', order: 25 },
   { name: 'AI & Prompt Engineering', slug: 'ai-ml', description: 'Build with AI', iconName: 'ai', order: 26 },
+  { name: 'Microservices Architecture', slug: 'microservices', description: 'Scale with small services', iconName: 'system', order: 27 },
+  { name: 'Event-Driven Architecture', slug: 'event-driven', description: 'React to real-time events', iconName: 'zap', order: 28 },
+  { name: 'Serverless Computing', slug: 'serverless', description: 'Focus on code, not servers', iconName: 'cloud', order: 29 },
+  { name: 'Edge Computing', slug: 'edge-computing', description: 'Compute closer to users', iconName: 'globe', order: 30 },
+  { name: 'Cloud-Native Development', slug: 'cloud-native', description: 'Built for the cloud', iconName: 'cloud', order: 31 },
+  { name: 'RESTful API Design', slug: 'rest-api', description: 'Design clean APIs', iconName: 'code', order: 32 },
+  { name: 'GraphQL Architecture', slug: 'graphql', description: 'Modern data fetching', iconName: 'code', order: 33 },
+  { name: 'gRPC & Protobuf', slug: 'grpc', description: 'High-performance RPC', iconName: 'zap', order: 34 },
+  { name: 'Message Queues', slug: 'message-queues', description: 'Async communication', iconName: 'system', order: 35 },
+  { name: 'Database Sharding', slug: 'db-sharding', description: 'Scale your data', iconName: 'database', order: 36 },
+  { name: 'CDN Strategies', slug: 'cdn-strategies', description: 'Deliver content fast', iconName: 'globe', order: 37 },
+  { name: 'Infrastructure as Code', slug: 'iac', description: 'Terraform & Ansible', iconName: 'settings', order: 38 },
+  { name: 'Kubernetes Orchestration', slug: 'kubernetes', description: 'Manage containers at scale', iconName: 'devops', order: 39 },
+  { name: 'Docker Containerization', slug: 'docker', description: 'Standardize environments', iconName: 'box', order: 40 },
+  { name: 'Redis Caching Patterns', slug: 'redis-cache', description: 'Boost performance', iconName: 'zap', order: 41 },
+  { name: 'Elasticsearch Mastery', slug: 'elasticsearch', description: 'Powerful search engines', iconName: 'search', order: 42 },
+  { name: 'WebSockets & Real-time', slug: 'websockets', description: 'Live communication', iconName: 'zap', order: 43 },
+  { name: 'Zero Trust Architecture', slug: 'zero-trust', description: 'Never trust, always verify', iconName: 'shield', order: 44 },
+  { name: 'Penetration Testing', slug: 'pentesting', description: 'Ethical hacking basics', iconName: 'shield', order: 45 },
+  { name: 'Bioinformatics', slug: 'bioinformatics', description: 'Biology meet CS', iconName: 'dna', order: 46 },
+  { name: 'Computational Finance', slug: 'comp-finance', description: 'Algorithms in finance', iconName: 'trending-up', order: 47 },
+  { name: 'Autonomous Vehicles', slug: 'autonomous-vehicles', description: 'Code for self-driving', iconName: 'target', order: 48 },
+  { name: 'Robotics & ROS', slug: 'robotics', description: 'Build robot brains', iconName: 'settings', order: 49 },
+  { name: 'Embedded Systems', slug: 'embedded', description: 'Hardware level coding', iconName: 'cpu', order: 50 },
+  { name: 'RTOS Design', slug: 'rtos', description: 'Real-time operating systems', iconName: 'cpu', order: 51 },
+  { name: 'FPGA & Verilog', slug: 'fpga', description: 'Programmable hardware', iconName: 'cpu', order: 52 },
+  { name: 'Quantum Algorithms', slug: 'quantum', description: 'Computing with qubits', iconName: 'zap', order: 53 },
+  { name: 'AR/VR/XR Development', slug: 'ar-vr', description: 'Virtual worlds', iconName: 'play', order: 54 },
+  { name: 'Smart Contract Auditing', slug: 'smart-contracts', description: 'Secure the blockchain', iconName: 'shield', order: 55 },
+  { name: 'DeFi Protocols', slug: 'defi', description: 'Decentralized finance', iconName: 'blockchain', order: 56 },
+  { name: 'NFT Marketplaces', slug: 'nft-tech', description: 'Digital ownership mechanics', iconName: 'blockchain', order: 57 },
+  { name: 'Clean Architecture', slug: 'clean-arch', description: 'Robust software design', iconName: 'book', order: 58 },
+  { name: 'Domain-Driven Design', slug: 'ddd', description: 'Master complex domains', iconName: 'book', order: 59 },
+  { name: 'SRE Practices', slug: 'sre', description: 'Reliability at scale', iconName: 'settings', order: 60 },
+  { name: 'MLOps Architectures', slug: 'mlops', description: 'Production AI pipelines', iconName: 'ai', order: 61 },
+  { name: 'Data Engineering', slug: 'data-engineering', description: 'ETL and data lakes', iconName: 'data', order: 62 },
+  { name: 'Vector Databases', slug: 'vector-db', description: 'RAG and AI memory', iconName: 'database', order: 63 },
+  { name: 'Audio Engineering', slug: 'audio-tech', description: 'Digital signal processing', iconName: 'music', order: 64 },
+  { name: 'High-Frequency Trading', slug: 'hft', description: 'Millisecond speed systems', iconName: 'zap', order: 65 },
+  { name: '6G Wireless Networks', slug: 'wireless-next', description: 'The future of connectivity', iconName: 'globe', order: 66 },
+  { name: 'Cyber-Physical Systems', slug: 'cps', description: 'Digital-Physical integration', iconName: 'settings', order: 67 },
+  { name: 'GovTech Infrastructure', slug: 'govtech', description: 'Digital public goods', iconName: 'shield', order: 68 },
+  { name: 'Carbon Tracking Tech', slug: 'sustaintech', description: 'Tech for sustainability', iconName: 'leaf', order: 69 },
+  { name: 'EdTech Architectures', slug: 'edtech', description: 'Scale learning platforms', iconName: 'book', order: 70 },
+  { name: 'Metaverse Engineering', slug: 'metaverse', description: 'Digital world foundations', iconName: 'play', order: 71 },
+  { name: 'Private Blockchains', slug: 'private-bc', description: 'Enterprise ledger tech', iconName: 'blockchain', order: 72 },
+  { name: 'P2P Netorking', slug: 'p2p', description: 'Decentralized networking', iconName: 'globe', order: 73 },
+  { name: 'Distributed Hash Tables', slug: 'dht', description: 'Storage at scale', iconName: 'database', order: 74 },
+  { name: 'CRDTs & Synergy', slug: 'crdts', description: 'Collaborative architectures', iconName: 'zap', order: 75 },
+  { name: 'Onion Architecture', slug: 'onion-arch', description: 'Layered design patterns', iconName: 'book', order: 76 },
+  { name: 'Hexagonal Design', slug: 'hexagonal', description: 'Ports and adapters', iconName: 'book', order: 77 },
+  { name: 'SaaS Multi-tenancy', slug: 'multi-tenant', description: 'Build enterprise SaaS', iconName: 'system', order: 78 },
+  { name: 'Fintech Security', slug: 'fintech-sec', description: 'Secure financial data', iconName: 'shield', order: 79 },
+  { name: 'SpaceTech & Orbitals', slug: 'spacetech', description: 'Software for satellites', iconName: 'target', order: 80 },
+  { name: 'Digital Twin Systems', slug: 'digital-twins', description: 'Simulate the real world', iconName: 'settings', order: 81 },
+  { name: 'Quantum Cryptography', slug: 'quantum-sec', description: 'Post-quantum security', iconName: 'shield', order: 82 },
+  { name: 'Web3 Identity (DID)', slug: 'did', description: 'Decentralized identity', iconName: 'blockchain', order: 83 },
+  { name: 'Graph Data Mastery', slug: 'graph-db', description: 'Understand relationships', iconName: 'database', order: 84 },
+  { name: 'Time-Series Analysis', slug: 'timeseries-db', description: 'Master temporal data', iconName: 'trending-up', order: 85 },
+  { name: 'Semantic Search', slug: 'semantic-search', description: 'AI powered indexing', iconName: 'search', order: 86 },
+  { name: 'Ray Tracing Tech', slug: 'raytracing', description: 'Graphics architecture', iconName: 'play', order: 87 },
+  { name: 'Low-Latency Streaming', slug: 'streaming-tech', description: 'Video at speed', iconName: 'play', order: 88 },
+  { name: 'E-commerce Scaling', slug: 'ecom-scale', description: 'Handle millions of carts', iconName: 'system', order: 89 },
+  { name: 'Heathcare HL7/FHIR', slug: 'healthtech', description: 'Digital health standards', iconName: 'shield', order: 90 },
+  { name: 'Functional Programming', slug: 'functional', description: 'Immutability and purity', iconName: 'code', order: 91 },
+  { name: 'Reactive Programming', slug: 'reactive', description: 'Streams and signals', iconName: 'zap', order: 92 },
+  { name: 'Compiler Design', slug: 'compilers', description: 'Build your own language', iconName: 'code', order: 93 },
+  { name: 'OS Internals', slug: 'os-internals', description: 'Kernel and memory', iconName: 'cpu', order: 94 },
+  { name: 'Network Protocols', slug: 'networking', description: 'TCP/IP and BGP', iconName: 'globe', order: 95 },
+  { name: 'Distributed Systems', slug: 'distributed', description: 'Scale across nodes', iconName: 'system', order: 96 },
+  { name: 'Observability & APM', slug: 'observability', description: 'Trace and monitor', iconName: 'search', order: 97 },
+  { name: 'Identity Management', slug: 'iam', description: 'Auth at scale', iconName: 'shield', order: 98 },
+  { name: 'Content Strategy Tech', slug: 'content-tech', description: 'Headless CMS design', iconName: 'book', order: 99 },
+  { name: 'LegalTech Automation', slug: 'legaltech', description: 'Smart legal systems', iconName: 'shield', order: 100 },
+  { name: 'Agile Engineering', slug: 'agile-eng', description: 'Dev workflow excellence', iconName: 'settings', order: 101 },
+  { name: 'High-Availability', slug: 'high-availability', description: 'Zero downtime systems', iconName: 'zap', order: 102 },
 ];
 
 const COURSES = [
@@ -151,8 +227,29 @@ async function main() {
   }
   console.log(`✅ ${CATEGORIES.length} categories seeded`);
 
+  // Ensure every category has at least one foundations course
+  const existingCategorySlugs = new Set(COURSES.map(c => c.categorySlug));
+  const generatedCourses = [];
+  
+  for (const cat of CATEGORIES) {
+    if (!existingCategorySlugs.has(cat.slug)) {
+      generatedCourses.push({
+        title: `${cat.name}: Foundations`,
+        slug: `${cat.slug}-foundations`,
+        description: `Master the essential principles and modern architecture of ${cat.name}.`,
+        difficulty: 'BEGINNER',
+        xpReward: 500,
+        duration: 120,
+        categorySlug: cat.slug,
+        order: 1
+      });
+    }
+  }
+
+  const allCourses = [...COURSES, ...generatedCourses];
   let count = 0;
-  for (const course of COURSES) {
+  
+  for (const course of allCourses) {
     const { categorySlug, ...data } = course;
     const category = await prisma.category.findUnique({ where: { slug: categorySlug } });
     if (!category) { console.warn(`⚠️  Category not found: ${categorySlug}`); continue; }

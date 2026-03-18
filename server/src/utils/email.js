@@ -4,7 +4,7 @@ const logger = require('./logger');
 const transporter = nodemailer.createTransport({
   host:   process.env.SMTP_HOST  || 'smtp.gmail.com',
   port:   Number(process.env.SMTP_PORT) || 587,
-  secure: false,
+  secure: Number(process.env.SMTP_PORT) === 465, // Use SSL for port 465
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
@@ -15,11 +15,15 @@ const transporter = nodemailer.createTransport({
 async function send({ to, subject, html }) {
   if (!process.env.SMTP_USER) {
     logger.warn(`[EMAIL] SMTP not configured — skipping email to ${to}: ${subject}`);
+    // In dev, we can log the HTML for verification
+    if (process.env.NODE_ENV !== 'production') {
+      logger.debug(`[EMAIL_DEV_PREVIEW] Content for ${to}:\n${html}`);
+    }
     return;
   }
   try {
     await transporter.sendMail({
-      from: process.env.EMAIL_FROM || 'CodeArena <noreply@codearena.dev>',
+      from: process.env.EMAIL_FROM || 'SkillForge <noreply@skillforge.dev>',
       to, subject, html,
     });
     logger.info(`[EMAIL] Sent "${subject}" to ${to}`);
@@ -36,46 +40,36 @@ function base(content) {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
     *{margin:0;padding:0;box-sizing:border-box}
-    body{background:#0A0A0F;font-family:'JetBrains Mono',monospace;color:#F0EEF8}
-    .wrap{max-width:580px;margin:40px auto;background:#111118;border:1px solid rgba(124,58,237,0.3);border-radius:16px;overflow:hidden}
-    .topbar{height:4px;background:linear-gradient(90deg,#7C3AED,#9D65F5,#00D9B5)}
-    .header{padding:28px 36px 24px;border-bottom:1px solid rgba(124,58,237,0.15)}
-    .logo-row{display:flex;align-items:center;gap:10px;margin-bottom:6px}
-    .logo-icon{width:32px;height:32px;background:linear-gradient(135deg,#7C3AED,#00D9B5);border-radius:8px;display:flex;align-items:center;justify-content:center}
-    .logo-text{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;background:linear-gradient(135deg,#9D65F5,#00D9B5);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-    .header-cmd{font-size:11px;color:#5A5870;letter-spacing:0.08em}
-    .body{padding:32px 36px}
-    h1{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;margin-bottom:8px;color:#F0EEF8}
-    p{font-size:13px;line-height:1.8;color:#9896AA;margin-bottom:16px}
-    .highlight{color:#9D65F5;font-weight:600}
-    .teal{color:#00D9B5}
-    .code-line{font-size:12px;color:#5A5870;margin-bottom:4px}
-    .code-line .kw{color:#9D65F5}
-    .code-line .str{color:#00D9B5}
-    .code-line .fn{color:#F0EEF8}
-    .btn{display:inline-block;background:linear-gradient(135deg,#7C3AED,#9D65F5);color:#fff!important;text-decoration:none;padding:14px 32px;border-radius:10px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;letter-spacing:0.04em;margin:8px 0}
-    .btn-outline{display:inline-block;border:1px solid rgba(124,58,237,0.4);color:#9D65F5!important;text-decoration:none;padding:10px 24px;border-radius:8px;font-size:12px}
-    .stat-row{display:flex;gap:12px;margin:20px 0}
-    .stat{flex:1;background:#16161F;border:1px solid rgba(124,58,237,0.15);border-radius:10px;padding:16px;text-align:center}
-    .stat-val{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;background:linear-gradient(135deg,#9D65F5,#00D9B5);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-    .stat-lbl{font-size:10px;color:#5A5870;text-transform:uppercase;letter-spacing:0.1em;margin-top:4px}
-    .divider{height:1px;background:rgba(124,58,237,0.12);margin:24px 0}
-    .otp-box{background:#16161F;border:1px dashed rgba(0,217,181,0.4);border-radius:10px;padding:24px;text-align:center;margin:20px 0}
-    .otp-num{font-family:'Syne',sans-serif;font-size:36px;font-weight:800;letter-spacing:12px;color:#00D9B5}
-    .otp-exp{font-size:11px;color:#5A5870;margin-top:8px}
-    .badge-row{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}
-    .badge{background:rgba(124,58,237,0.12);border:1px solid rgba(124,58,237,0.25);border-radius:100px;padding:4px 12px;font-size:11px;color:#9D65F5}
-    .xp-bar-wrap{background:#16161F;border-radius:100px;height:8px;margin:12px 0;overflow:hidden}
-    .xp-bar{height:100%;background:linear-gradient(90deg,#7C3AED,#00D9B5);border-radius:100px}
-    .footer{padding:20px 36px;border-top:1px solid rgba(124,58,237,0.1);display:flex;justify-content:space-between;align-items:center}
-    .footer-text{font-size:11px;color:#5A5870}
-    .footer-link{font-size:11px;color:#7C3AED;text-decoration:none}
-    .terminal{background:#0A0A0F;border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:16px 20px;margin:16px 0;font-size:12px}
+    body{background:#020205;font-family:'Inter',sans-serif;color:#F0EEF8;line-height:1.6}
+    .wrap{max-width:600px;margin:40px auto;background:#0A0A0F;border:1px solid rgba(124,58,237,0.25);border-radius:24px;overflow:hidden;box-shadow:0 24px 48px rgba(0,0,0,0.5)}
+    .topbar{height:6px;background:linear-gradient(90deg,#7C3AED,#A855F7,#2DD4BF)}
+    .header{padding:40px 48px 32px;border-bottom:1px solid rgba(255,255,255,0.05)}
+    .logo-row{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+    .logo-icon{width:36px;height:36px;background:linear-gradient(135deg,#7C3AED,#2DD4BF);border-radius:10px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 20px rgba(124,58,237,0.3)}
+    .logo-text{font-size:20px;font-weight:800;letter-spacing:-0.03em;color:#FFFFFF}
+    .header-cmd{font-family:'JetBrains Mono',monospace;font-size:11px;color:#5A5870;letter-spacing:0.04em}
+    .body{padding:40px 48px}
+    h1{font-size:28px;font-weight:800;margin-bottom:12px;color:#FFFFFF;letter-spacing:-0.02em}
+    p{font-size:15px;color:#94A3B8;margin-bottom:20px}
+    .highlight{color:#A855F7;font-weight:700}
+    .teal{color:#2DD4BF;font-weight:600}
+    .btn{display:inline-block;background:linear-gradient(135deg,#7C3AED,#A855F7);color:#FFFFFF!important;text-decoration:none;padding:16px 36px;border-radius:12px;font-size:15px;font-weight:700;letter-spacing:0.01em;margin:12px 0;box-shadow:0 10px 20px rgba(124,58,237,0.2)}
+    .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:24px 0}
+    .stat-card{background:#11111A;border:1px solid rgba(255,255,255,0.05);border-radius:16px;padding:20px;text-align:left}
+    .stat-val{font-size:24px;font-weight:800;color:#FFFFFF;margin-bottom:4px}
+    .stat-lbl{font-size:11px;color:#64748B;text-transform:uppercase;letter-spacing:0.1em}
+    .terminal{background:#050508;border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:20px 24px;margin:24px 0;font-family:'JetBrains Mono',monospace;font-size:12px}
     .terminal .prompt{color:#5A5870}
-    .terminal .cmd{color:#9D65F5}
-    .terminal .out{color:#00D9B5}
+    .terminal .cmd{color:#A855F7}
+    .terminal .out{color:#2DD4BF}
+    .divider{height:1px;background:rgba(255,255,255,0.05);margin:32px 0}
+    .footer{padding:24px 48px;background:#050508;border-top:1px solid rgba(255,255,255,0.05);display:flex;justify-content:space-between;align-items:center}
+    .footer-text{font-size:11px;color:#475569}
+    .footer-link{font-size:11px;color:#7C3AED;text-decoration:none;font-weight:600}
+    .badge-wrap{display:flex;gap:8px;margin:16px 0}
+    .badge{background:rgba(124,58,237,0.1);border:1px solid rgba(124,58,237,0.2);border-radius:8px;padding:6px 14px;font-size:11px;font-weight:600;color:#A855F7}
   </style>
 </head>
 <body>
@@ -84,18 +78,18 @@ function base(content) {
     <div class="header">
       <div class="logo-row">
         <div class="logo-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg>
         </div>
-        <span class="logo-text">CodeArena</span>
+        <span class="logo-text">SkillForge</span>
       </div>
-      <div class="header-cmd">// system.notification &gt; user.inbox</div>
+      <div class="header-cmd">system.broadcast://welcome_new_architect</div>
     </div>
     <div class="body">
       ${content}
     </div>
     <div class="footer">
-      <span class="footer-text">© CodeArena — Free. Forever.</span>
-      <a href="${process.env.CLIENT_URL || 'https://codearena.dev'}" class="footer-link">codearena.dev</a>
+      <span class="footer-text">© 2026 SkillForge — Master the Machine.</span>
+      <a href="${process.env.CLIENT_URL || 'https://skillforge.dev'}" class="footer-link">skillforge.dev</a>
     </div>
   </div>
 </body>
@@ -105,49 +99,61 @@ function base(content) {
 // ─── WELCOME EMAIL ─────────────────────────────────────────
 async function sendWelcome(user) {
   const html = base(`
-    <h1>Welcome to the Arena, <span class="highlight">${user.username}</span></h1>
-    <p>Your account is live. You just joined <span class="teal">48,291 developers</span> who are learning, competing, and leveling up — for free, forever.</p>
+    <h1>Welcome to the Forge, <span class="highlight">${user.username}</span></h1>
+    <p>Your workspace is initialized. You've joined a global network of architects building the future of software, one commit at a time.</p>
 
     <div class="terminal">
-      <div><span class="prompt">$ </span><span class="cmd">arena</span> <span class="out">new-user --init</span></div>
-      <div style="margin-top:8px;color:#5A5870">✓ Profile created: <span style="color:#F0EEF8">@${user.username}</span></div>
-      <div style="color:#5A5870">✓ Level: <span style="color:#9D65F5">1 — Beginner</span></div>
-      <div style="color:#5A5870">✓ XP awarded: <span style="color:#00D9B5">+100 welcome bonus</span></div>
-      <div style="color:#5A5870">✓ Status: <span style="color:#00D9B5">READY TO COMPETE</span></div>
+      <div><span class="prompt">$ </span><span class="cmd">skillforge</span> <span class="out">user --activate</span></div>
+      <div style="margin-top:10px;color:#5A5870">✓ Network identity: <span style="color:#FFFFFF">@${user.username}</span></div>
+      <div style="color:#5A5870">✓ Architect Tier: <span style="color:#A855F7">Candidate</span></div>
+      <div style="color:#5A5870">✓ Resource Access: <span style="color:#2DD4BF">UNLOCKED</span></div>
+      <div style="color:#5A5870">✓ Initial Bonus: <span style="color:#2DD4BF">+100 XP provisioned</span></div>
     </div>
 
-    <div class="stat-row">
-      <div class="stat"><div class="stat-val">127</div><div class="stat-lbl">Free Courses</div></div>
-      <div class="stat"><div class="stat-val">∞</div><div class="stat-lbl">No Paywall</div></div>
-      <div class="stat"><div class="stat-val">10</div><div class="stat-lbl">Levels</div></div>
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-val">102</div>
+        <div class="stat-lbl">Domain Clusters</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val">∞</div>
+        <div class="stat-lbl">Intellect Capacity</div>
+      </div>
     </div>
 
-    <p>Here's how to hit the ground running:</p>
+    <p>Your journey begins with these tactical objectives:</p>
 
-    <div style="margin:16px 0">
-      <div class="code-line"><span class="kw">01.</span> <span class="fn">Pick a course</span> — <span class="str">Web Dev, DSA, Python, React</span></div>
-      <div class="code-line"><span class="kw">02.</span> <span class="fn">Complete daily quests</span> — <span class="str">earn XP every day</span></div>
-      <div class="code-line"><span class="kw">03.</span> <span class="fn">Join this week's tournament</span> — <span class="str">free entry, real glory</span></div>
-      <div class="code-line"><span class="kw">04.</span> <span class="fn">Challenge someone</span> — <span class="str">1v1 battle, full report card</span></div>
+    <div style="margin:20px 0;background:rgba(255,255,255,0.02);border-radius:12px;padding:24px;border:1px solid rgba(255,255,255,0.04)">
+      <div style="display:flex;gap:12px;margin-bottom:16px">
+        <div style="color:#A855F7;font-weight:800;font-family:'JetBrains Mono',monospace">01</div>
+        <div style="font-size:14px;color:#FFFFFF"><strong>Claim your path</strong> — Select a language or architecture domain library.</div>
+      </div>
+      <div style="display:flex;gap:12px;margin-bottom:16px">
+        <div style="color:#A855F7;font-weight:800;font-family:'JetBrains Mono',monospace">02</div>
+        <div style="font-size:14px;color:#FFFFFF"><strong>Deploy code</strong> — Complete your first lesson to solidify your streak.</div>
+      </div>
+      <div style="display:flex;gap:12px">
+        <div style="color:#A855F7;font-weight:800;font-family:'JetBrains Mono',monospace">03</div>
+        <div style="font-size:14px;color:#FFFFFF"><strong>Consult the Mentor</strong> — Sync with the Lead Architect for code reviews.</div>
+      </div>
     </div>
 
-    <div class="xp-bar-wrap"><div class="xp-bar" style="width:2%"></div></div>
-    <p style="font-size:11px;color:#5A5870">Your XP: 100 / 500 to reach Apprentice</p>
-
-    <a href="${process.env.CLIENT_URL || 'https://codearena.dev'}/dashboard" class="btn">Enter the Arena →</a>
+    <div style="text-align:center;margin-top:32px">
+      <a href="${process.env.CLIENT_URL || 'https://skillforge.dev'}/dashboard" class="btn">Enter the Core Library →</a>
+    </div>
 
     <div class="divider"></div>
-    <div class="badge-row">
-      <span class="badge">Beginner</span>
+    <div class="badge-wrap">
       <span class="badge">Level 1</span>
-      <span class="badge">+100 XP</span>
+      <span class="badge">New Architect</span>
+      <span class="badge">+100 XP Bonus</span>
     </div>
-    <p style="font-size:11px;color:#5A5870">You're receiving this because you signed up at CodeArena. No spam, ever.</p>
+    <p style="font-size:12px;color:#475569;margin-top:20px">You are receiving this encrypted transmission because of your registration at SkillForge.</p>
   `);
 
   await send({
     to:      user.email,
-    subject: '[CodeArena] Welcome to the Arena — You\'re In!',
+    subject: `[SkillForge] Workspace Initialized — Welcome, ${user.username}!`,
     html,
   });
 }
@@ -155,25 +161,25 @@ async function sendWelcome(user) {
 // ─── PASSWORD RESET ────────────────────────────────────────
 async function sendPasswordReset(user, otp) {
   const html = base(`
-    <h1>Password Reset</h1>
-    <p>Someone requested a password reset for <span class="highlight">@${user.username}</span>. If that wasn't you, ignore this.</p>
+    <h1>Security Override</h1>
+    <p>A password reset request was initiated for your profile: <span class="highlight">@${user.username}</span>.</p>
 
-    <div class="otp-box">
-      <div style="font-size:11px;color:#5A5870;margin-bottom:12px;text-transform:uppercase;letter-spacing:0.1em">Your one-time code</div>
-      <div class="otp-num">${otp}</div>
-      <div class="otp-exp">Expires in 15 minutes · Single use only</div>
+    <div style="background:#050508;border:1px dashed rgba(45,212,191,0.3);border-radius:16px;padding:32px;text-align:center;margin:28px 0">
+      <div style="font-size:11px;color:#64748B;margin-bottom:12px;text-transform:uppercase;letter-spacing:0.12em">One-Time Verification Code</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:42px;font-weight:800;letter-spacing:10px;color:#2DD4BF">${otp}</div>
+      <div style="font-size:12px;color:#475569;margin-top:12px">Valid for 15 minutes · Non-transferable</div>
     </div>
 
     <div class="terminal">
-      <div><span class="prompt">$ </span><span class="cmd">arena</span> reset-password --otp=<span class="out">${otp}</span></div>
+      <div><span class="prompt">$ </span><span class="cmd">skillforge</span> auth --reset --otp=<span class="out">${otp}</span></div>
     </div>
 
-    <p>Enter this code on the password reset page. Do not share it with anyone.</p>
+    <p>If you did not request this, please secure your account immediately.</p>
   `);
 
   await send({
     to:      user.email,
-    subject: '[CodeArena] Password Reset Code',
+    subject: '[SkillForge] Reset Your Security Credentials',
     html,
   });
 }
@@ -181,24 +187,26 @@ async function sendPasswordReset(user, otp) {
 // ─── STREAK REMINDER ───────────────────────────────────────
 async function sendStreakReminder(user) {
   const html = base(`
-    <h1>Your streak is at risk 🔥</h1>
-    <p>You have a <span class="highlight">${user.streak}-day learning streak</span>. Don't let it break today.</p>
+    <h1>Critical Performance Alert</h1>
+    <p>Your training continuity is at risk. Your <span class="highlight">${user.streak}-day streak</span> will expire in less than 24 hours.</p>
 
     <div class="terminal">
-      <div><span class="prompt">$ </span><span class="cmd">arena</span> <span class="out">streak --status</span></div>
-      <div style="margin-top:8px;color:#5A5870">Current streak: <span style="color:#f97316">${user.streak} days 🔥</span></div>
-      <div style="color:#f87171">WARNING: No activity detected today</div>
-      <div style="color:#5A5870">Action required: <span style="color:#F0EEF8">complete 1 lesson</span></div>
+      <div><span class="prompt">$ </span><span class="cmd">skillforge</span> <span class="out">streak --status</span></div>
+      <div style="margin-top:10px;color:#5A5870">Current continuity: <span style="color:#F97316">${user.streak} days 🔥</span></div>
+      <div style="color:#F87171">STATUS: DEGRADING</div>
+      <div style="color:#5A5870">Required Action: <span style="color:#FFFFFF">Deploy 1 lesson module</span></div>
     </div>
 
-    <p>Complete just one lesson today — it takes under 10 minutes — and your streak stays alive.</p>
+    <p>Consistency is the difference between a coder and an architect. Don't let the fire go out.</p>
 
-    <a href="${process.env.CLIENT_URL || 'https://codearena.dev'}/courses" class="btn">Keep My Streak →</a>
+    <div style="text-align:center">
+      <a href="${process.env.CLIENT_URL || 'https://skillforge.dev'}/dashboard" class="btn">Maintain Continuity →</a>
+    </div>
   `);
 
   await send({
     to:      user.email,
-    subject: `[CodeArena] Your ${user.streak}-day streak expires today`,
+    subject: `[SkillForge] Critical: Your ${user.streak}-day streak is at risk`,
     html,
   });
 }
@@ -206,33 +214,37 @@ async function sendStreakReminder(user) {
 // ─── WEEKLY SUMMARY ────────────────────────────────────────
 async function sendWeeklySummary(user, stats) {
   const html = base(`
-    <h1>Your Week in Review</h1>
-    <p>Here's what <span class="highlight">@${user.username}</span> accomplished this week on CodeArena:</p>
+    <h1>Sector Performance Report</h1>
+    <p>Weekly intelligence summary for architect <span class="highlight">@${user.username}</span>.</p>
 
-    <div class="stat-row">
-      <div class="stat"><div class="stat-val">+${stats.xpEarned}</div><div class="stat-lbl">XP Earned</div></div>
-      <div class="stat"><div class="stat-val">${stats.lessonsCompleted}</div><div class="stat-lbl">Lessons</div></div>
-      <div class="stat"><div class="stat-val">Lv${user.level}</div><div class="stat-lbl">Level</div></div>
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-val">+${stats.xpEarned}</div>
+        <div class="stat-lbl">XP Gain</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val">${stats.lessonsCompleted}</div>
+        <div class="stat-lbl">Modules Done</div>
+      </div>
     </div>
 
     <div class="terminal">
-      <div><span class="prompt">$ </span><span class="cmd">arena</span> <span class="out">weekly-report --user=${user.username}</span></div>
-      <div style="margin-top:8px;color:#5A5870">xp_this_week: <span style="color:#9D65F5">+${stats.xpEarned}</span></div>
-      <div style="color:#5A5870">lessons_done: <span style="color:#00D9B5">${stats.lessonsCompleted}</span></div>
-      <div style="color:#5A5870">current_level: <span style="color:#F0EEF8">${user.level}</span></div>
-      <div style="color:#5A5870">streak: <span style="color:#f97316">${user.streak} days 🔥</span></div>
+      <div><span class="prompt">$ </span><span class="cmd">skillforge</span> <span class="out">analytics --user=@${user.username}</span></div>
+      <div style="margin-top:10px;color:#5A5870">velocity: <span style="color:#A855F7">+${Math.round(stats.xpEarned/7)} XP/day</span></div>
+      <div style="color:#5A5870">rank_shift: <span style="color:#2DD4BF">STABLE</span></div>
+      <div style="color:#5A5870">current_tier: <span style="color:#FFFFFF">Level ${user.level}</span></div>
     </div>
 
-    <p>New tournament starts Monday. Free entry, bonus XP for top finishers.</p>
+    <p>Elite tournaments are provisioning for the next cycle. Ensure your hardware is ready.</p>
 
-    <a href="${process.env.CLIENT_URL || 'https://codearena.dev'}/dashboard" class="btn">Back to Arena →</a>
-    &nbsp;
-    <a href="${process.env.CLIENT_URL || 'https://codearena.dev'}/tournaments" class="btn-outline">View Tournament</a>
+    <div style="text-align:center;margin-top:24px">
+      <a href="${process.env.CLIENT_URL || 'https://skillforge.dev'}/dashboard" class="btn">Return to Task Board →</a>
+    </div>
   `);
 
   await send({
     to:      user.email,
-    subject: `[CodeArena] Your week: +${stats.xpEarned} XP earned`,
+    subject: `[SkillForge] Weekly Report: +${stats.xpEarned} XP Provisioned`,
     html,
   });
 }
@@ -240,24 +252,26 @@ async function sendWeeklySummary(user, stats) {
 // ─── LEVEL UP NOTIFICATION ─────────────────────────────────
 async function sendLevelUp(user, newLevel, levelName) {
   const html = base(`
-    <h1>Level Up! <span class="teal">${levelName}</span></h1>
-    <p>Congratulations <span class="highlight">@${user.username}</span> — you just reached <span class="teal">Level ${newLevel}: ${levelName}</span>!</p>
+    <h1>Tier Promotion: <span class="teal">${levelName}</span></h1>
+    <p>Excellent work, <span class="highlight">${user.username}</span>. You've officially achieved <span class="teal">Level ${newLevel}: ${levelName}</span>.</p>
 
     <div class="terminal">
-      <div><span class="prompt">$ </span><span class="cmd">arena</span> <span class="out">level-up --achieved</span></div>
-      <div style="margin-top:8px;color:#5A5870">previous: <span style="color:#5A5870">Level ${newLevel - 1}</span></div>
-      <div style="color:#5A5870">current:  <span style="color:#00D9B5">Level ${newLevel} — ${levelName}</span></div>
-      <div style="color:#5A5870">total_xp: <span style="color:#9D65F5">${user.xp.toLocaleString()} XP</span></div>
+      <div><span class="prompt">$ </span><span class="cmd">skillforge</span> <span class="out">promote --achieved</span></div>
+      <div style="margin-top:10px;color:#5A5870">previous_tier: <span style="color:#5A5870">Level ${newLevel - 1}</span></div>
+      <div style="color:#5A5870">current_tier:  <span style="color:#2DD4BF">Level ${newLevel} — ${levelName}</span></div>
+      <div style="color:#5A5870">network_xp: <span style="color:#A855F7">${user.xp.toLocaleString()} total</span></div>
     </div>
 
-    <p>Keep going — the leaderboard is watching.</p>
+    <p>New architectural patterns and advanced modules have been unlocked for your tier.</p>
 
-    <a href="${process.env.CLIENT_URL || 'https://codearena.dev'}/profile" class="btn">View Your Profile →</a>
+    <div style="text-align:center;margin-top:24px">
+      <a href="${process.env.CLIENT_URL || 'https://skillforge.dev'}/profile" class="btn">View Identity Hub →</a>
+    </div>
   `);
 
   await send({
     to:      user.email,
-    subject: `[CodeArena] You reached Level ${newLevel}: ${levelName}!`,
+    subject: `[SkillForge] Promotion: You reached Level ${newLevel}!`,
     html,
   });
 }

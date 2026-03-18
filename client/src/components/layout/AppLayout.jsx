@@ -7,7 +7,8 @@ import api from '@/lib/api';
 
 const NAV_CORE = [
   { to: '/dashboard',   label: 'Dashboard',   Icon: Icons.Home },
-  { to: '/courses',     label: 'Courses',     Icon: Icons.Courses },
+  { to: '/courses?type=languages', label: 'Core Languages', Icon: Icons.Code },
+  { to: '/courses?type=domains',   label: 'Tech Domains',    Icon: Icons.Target },
   { to: '/leaderboard', label: 'Leaderboard', Icon: Icons.Leaderboard },
   { to: '/tournaments', label: 'Tournaments', Icon: Icons.Tournament },
 ];
@@ -29,7 +30,7 @@ const LEVEL_NAMES = ['Beginner','Apprentice','Coder','Developer','Senior Dev','A
 const THRESHOLDS  = [0,500,1200,2500,4500,7500,12000,18000,26000,36000];
 
 const PAGE_TITLES = {
-  '/dashboard':'Dashboard', '/courses':'Courses', '/leaderboard':'Leaderboard',
+  '/dashboard':'Dashboard', '/courses':'Curriculum Library', '/leaderboard':'Leaderboard',
   '/tournaments':'Tournaments', '/battles':'1v1 Battles', '/quests':'Daily Quests',
   '/mentor':'AI Mentor', '/rooms':'Code Rooms', '/portfolio':'Portfolio Builder',
   '/profile':'Profile', '/settings':'Settings', '/admin':'Admin Panel',

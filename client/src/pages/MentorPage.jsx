@@ -5,87 +5,68 @@ import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
 
-const SUGGESTION_CHIPS = [
-  'Explain closures in JavaScript',
-  'Review my code for bugs',
-  'How does Big O work?',
-  'Debug this async function',
-  'Explain recursion with examples',
-  'What is the event loop?',
-  'How do React hooks work?',
-  'Explain promises vs async/await',
+const POWER_UPS = [
+  { id: 'optimize', label: 'Optimize', icon: Icons.Zap, prompt: 'Analyze this code and suggest performance optimizations with specific focus on time/space complexity.' },
+  { id: 'debug',    label: 'Identify Bugs', icon: Icons.Search, prompt: 'Find potential logic errors, race conditions, or edge cases in this code snippet.' },
+  { id: 'refactor', label: 'Clean Code', icon: Icons.Award, prompt: 'Refactor this code to follow SOLID principles and improve maintainability.' },
+  { id: 'explain',  label: 'Line-by-Line', icon: Icons.Book, prompt: 'Give me a deep-dive, line-by-line explanation of how this architecture works.' },
 ];
 
-// ─── MARKDOWN RENDERER ────────────────────────────────────
 function MsgContent({ content }) {
-  // Split content into code blocks and text
   const parts = content.split(/(```[\s\S]*?```)/g);
-
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       {parts.map((part, i) => {
         if (part.startsWith('```')) {
           const lines   = part.split('\n');
           const lang    = lines[0].replace('```', '').trim() || 'code';
           const code    = lines.slice(1, -1).join('\n');
           return (
-            <div key={i} className="relative group">
-              <div className="flex items-center justify-between px-3 py-1.5 bg-arena-bg rounded-t-lg border border-arena-border border-b-0">
-                <span className="font-mono text-xs text-arena-dim">{lang}</span>
+            <div key={i} className="relative group my-2">
+              <div className="flex items-center justify-between px-3 py-1.5 bg-[#050505] rounded-t-lg border border-white/5 border-b-0">
+                <span className="font-mono text-[10px] text-white/30 uppercase tracking-widest">{lang}</span>
                 <button
-                  onClick={() => { navigator.clipboard.writeText(code); toast.success('Copied'); }}
-                  className="font-mono text-xs text-arena-dim hover:text-arena-teal transition-colors opacity-0 group-hover:opacity-100"
-                >
-                  copy
-                </button>
+                  onClick={() => { navigator.clipboard.writeText(code); toast.success('Copied to Clipboard'); }}
+                  className="font-mono text-[10px] text-arena-teal opacity-0 group-hover:opacity-100 transition-opacity"
+                >copy</button>
               </div>
-              <pre className="bg-arena-bg border border-arena-border rounded-b-lg p-3 overflow-x-auto text-xs font-mono text-arena-muted leading-relaxed">
+              <pre className="bg-[#050505] border border-white/5 rounded-b-lg p-4 overflow-x-auto text-[11px] font-mono text-white/70 leading-relaxed shadow-inner">
                 <code>{code}</code>
               </pre>
             </div>
           );
         }
-
-        // Render text with bold/inline-code
-        const rendered = part
-          .split(/(\*\*.*?\*\*|`.*?`)/g)
-          .map((chunk, ci) => {
-            if (chunk.startsWith('**') && chunk.endsWith('**'))
-              return <strong key={ci} className="text-arena-text font-semibold">{chunk.slice(2,-2)}</strong>;
-            if (chunk.startsWith('`') && chunk.endsWith('`'))
-              return <code key={ci} className="font-mono text-xs bg-arena-bg3 border border-arena-border px-1.5 py-0.5 rounded text-arena-teal">{chunk.slice(1,-1)}</code>;
-            return <span key={ci}>{chunk}</span>;
-          });
-
-        return (
-          <div key={i} className="text-sm leading-relaxed whitespace-pre-wrap">
-            {rendered}
-          </div>
-        );
+        const rendered = part.split(/(\*\*.*?\*\*|`.*?`)/g).map((chunk, ci) => {
+          if (chunk.startsWith('**') && chunk.endsWith('**'))
+            return <strong key={ci} className="text-white font-semibold">{chunk.slice(2,-2)}</strong>;
+          if (chunk.startsWith('`') && chunk.endsWith('`'))
+            return <code key={ci} className="font-mono text-[11px] bg-white/5 border border-white/10 px-1.5 py-0.5 rounded text-arena-teal">{chunk.slice(1,-1)}</code>;
+          return <span key={ci}>{chunk}</span>;
+        });
+        return <div key={i} className="text-[13px] leading-relaxed whitespace-pre-wrap text-white/80">{rendered}</div>;
       })}
     </div>
   );
 }
 
-// ─── MESSAGE BUBBLE ────────────────────────────────────────
 function Message({ msg }) {
   const isUser = msg.role === 'user';
   return (
-    <div className={`flex gap-3 ${isUser ? 'flex-row-reverse' : ''}`}>
-      <div className={`w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center font-mono text-xs font-bold ${
-        isUser ? 'bg-arena-purple text-white' : 'bg-arena-teal/20 border border-arena-teal/30 text-arena-teal'
+    <div className={`flex gap-4 ${isUser ? 'flex-row-reverse' : ''} animate-fade-in`}>
+      <div className={`w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center border ${
+        isUser ? 'bg-arena-purple/10 border-arena-purple/30 text-arena-purple2' : 'bg-arena-teal/10 border-arena-teal/30 text-arena-teal'
       }`}>
-        {isUser ? 'U' : 'AI'}
+        {isUser ? <Icons.Profile size={14} /> : <Icons.Shield size={14} />}
       </div>
-      <div className={`max-w-[85%] ${isUser ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
-        <div className={`px-4 py-3 rounded-xl text-arena-text ${
+      <div className={`max-w-[85%] ${isUser ? 'items-end' : 'items-start'} flex flex-col gap-1.5`}>
+        <div className={`px-5 py-3.5 rounded-2xl ${
           isUser
-            ? 'bg-arena-purple/20 border border-arena-purple/30 rounded-tr-sm'
-            : 'bg-arena-bg2 border border-arena-border rounded-tl-sm'
+            ? 'bg-arena-purple/5 border border-white/5 rounded-tr-sm'
+            : 'bg-[#0A0A0A] border border-white/5 rounded-tl-sm'
         }`}>
           <MsgContent content={msg.content} />
         </div>
-        <span className="font-mono text-xs text-arena-dim px-1">
+        <span className="font-mono text-[9px] text-white/20 px-2 uppercase tracking-tighter">
           {msg.timestamp ? format(new Date(msg.timestamp), 'HH:mm') : ''}
         </span>
       </div>
@@ -93,14 +74,12 @@ function Message({ msg }) {
   );
 }
 
-// ─── MAIN MENTOR PAGE ─────────────────────────────────────
 export default function MentorPage() {
   const [sessions, setSessions]       = useState([]);
   const [activeSession, setActive]    = useState(null);
   const [messages, setMessages]       = useState([]);
   const [input, setInput]             = useState('');
   const [code, setCode]               = useState('');
-  const [showCode, setShowCode]       = useState(false);
   const [sending, setSending]         = useState(false);
   const [loading, setLoading]         = useState(true);
   const bottomRef = useRef(null);
@@ -115,10 +94,10 @@ export default function MentorPage() {
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [messages, sending]);
 
   const newSession = async () => {
-    const r = await api.post('/mentor/sessions', { topic: 'New Session' });
+    const r = await api.post('/mentor/sessions', { topic: 'Consultation ' + (sessions.length + 1) });
     setSessions(s => [r.data.session, ...s]);
     setActive(r.data.session);
     setMessages([]);
@@ -136,136 +115,89 @@ export default function MentorPage() {
     if (activeSession?.id === id) { setActive(null); setMessages([]); }
   };
 
-  const send = useCallback(async (msgText) => {
+  const send = useCallback(async (msgText, attachedCode) => {
     const text = (msgText || input).trim();
-    if (!text) return;
+    const finalCode = attachedCode ?? code;
+    if (!text && !finalCode) return;
 
     let sessionId = activeSession?.id;
     if (!sessionId) {
-      const r = await api.post('/mentor/sessions', { topic: text.slice(0, 40) });
+      const r = await api.post('/mentor/sessions', { topic: text.slice(0, 30) || 'Architectural Review' });
       setSessions(s => [r.data.session, ...s]);
       setActive(r.data.session);
       sessionId = r.data.session.id;
     }
 
-    const userMsg = { role: 'user', content: code ? `${text}\n\n\`\`\`\n${code}\n\`\`\`` : text, timestamp: new Date().toISOString() };
+    const userMsg = { role: 'user', content: finalCode ? `${text}\n\n\`\`\`\n${finalCode}\n\`\`\`` : text, timestamp: new Date().toISOString() };
     setMessages(m => [...m, userMsg]);
     setInput('');
-    setCode('');
-    setShowCode(false);
+    if (!attachedCode) setCode('');
     setSending(true);
 
     try {
-      const r = await api.post(`/mentor/sessions/${sessionId}/message`, { message: text, code: code || undefined });
+      const r = await api.post(`/mentor/sessions/${sessionId}/message`, { message: text, code: finalCode || undefined });
       const aiMsg = { role: 'assistant', content: r.data.response, timestamp: new Date().toISOString() };
       setMessages(m => [...m, aiMsg]);
-
-      // Update session in list
-      setSessions(s => s.map(x =>
-        x.id === sessionId
-          ? { ...x, messages: [...(Array.isArray(x.messages) ? x.messages : []), userMsg, aiMsg] }
-          : x
-      ));
-    } catch (_) {
-      toast.error('Failed to get response');
-    }
+      setSessions(s => s.map(x => x.id === sessionId ? { ...x, messages: [...(Array.isArray(x.messages) ? x.messages : []), userMsg, aiMsg] } : x));
+    } catch (_) { toast.error('Signal Loss: Mentor unreachable'); }
     setSending(false);
   }, [input, code, activeSession]);
 
   if (loading) return (
-    <div className="flex justify-center py-24"><Spinner size={24} className="text-arena-purple2" /></div>
+    <div className="flex items-center justify-center py-32"><Spinner size={24} className="text-arena-purple2" /></div>
   );
 
   return (
-    <div className="flex gap-5 h-[calc(100vh-7rem)]">
-      {/* Sidebar — sessions */}
-      <div className="w-56 flex-shrink-0 flex flex-col gap-3">
-        <Button onClick={newSession} variant="primary" size="sm" className="w-full">
-          <Icons.Plus size={13} /> New Session
-        </Button>
-
-        <div className="flex-1 overflow-y-auto space-y-1">
-          {sessions.length === 0 && (
-            <p className="font-mono text-xs text-arena-dim text-center py-4">No sessions yet</p>
-          )}
-          {sessions.map(s => (
-            <button
-              key={s.id}
-              onClick={() => selectSession(s)}
-              className={`w-full text-left px-3 py-2.5 rounded-lg group flex items-center gap-2 transition-colors ${
-                activeSession?.id === s.id
-                  ? 'bg-arena-purple/15 border border-arena-border'
-                  : 'hover:bg-arena-bg3'
-              }`}
-            >
-              <Icons.Shield size={12} className="text-arena-dim flex-shrink-0" />
-              <div className="flex-1 min-w-0">
-                <p className="font-mono text-xs text-arena-text truncate">{s.topic || 'Session'}</p>
-                <p className="font-mono text-xs text-arena-dim">
-                  {Array.isArray(s.messages) ? s.messages.length : 0} msgs
-                </p>
-              </div>
-              <button
-                onClick={(e) => deleteSession(s.id, e)}
-                className="opacity-0 group-hover:opacity-100 text-arena-dim hover:text-red-400 transition-all"
-              >
-                <Icons.XIcon size={11} />
-              </button>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Main chat area */}
-      <div className="flex-1 flex flex-col arena-card overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 py-3 border-b border-arena-border flex-shrink-0">
+    <div className="flex gap-6 h-[calc(100vh-8rem)] min-h-[600px]">
+      {/* LEFT: Chat Section */}
+      <div className="flex-1 flex flex-col bg-[#0A0A0F] border border-white/5 rounded-2xl overflow-hidden relative shadow-2xl">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-white/5 bg-black/40 backdrop-blur-md z-10">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-arena-teal/15 border border-arena-teal/20 flex items-center justify-center">
-              <Icons.Shield size={14} className="text-arena-teal" />
+            <div className="w-9 h-9 rounded-xl bg-arena-purple/10 border border-arena-purple/20 flex items-center justify-center">
+              <Icons.Shield size={18} className="text-arena-purple" />
             </div>
             <div>
-              <p className="font-display font-bold text-sm">AI Code Mentor</p>
-              <p className="font-mono text-xs text-arena-dim">Senior engineer · always available</p>
+              <p className="font-display font-bold text-sm text-white tracking-tight">Lead Architect</p>
+              <p className="font-mono text-[10px] text-white/30 uppercase tracking-widest flex items-center gap-1.5">
+                <span className="w-1 h-1 rounded-full bg-arena-teal animate-pulse" /> Strategic Oversight
+              </p>
             </div>
           </div>
-          <BadgeTag variant="teal">Online</BadgeTag>
+          <div className="flex items-center gap-2">
+             <Button onClick={newSession} variant="ghost" size="sm" className="h-8 border-white/5 hover:bg-white/5">
+                <Icons.Plus size={14} className="text-white/40" />
+             </Button>
+          </div>
         </div>
 
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5">
+        <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6 scrollbar-hide">
           {messages.length === 0 && (
-            <div className="flex flex-col items-center justify-center h-full gap-6">
-              <div className="w-14 h-14 rounded-2xl bg-arena-teal/15 border border-arena-teal/20 flex items-center justify-center">
-                <Icons.Shield size={24} className="text-arena-teal" />
-              </div>
-              <div className="text-center">
-                <p className="font-display font-bold text-base mb-2">Ask me anything about code</p>
-                <p className="font-mono text-xs text-arena-dim max-w-xs">
-                  Code review, debugging, concepts, DSA problems, interview prep — I'm here 24/7
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-2 justify-center max-w-lg">
-                {SUGGESTION_CHIPS.map(chip => (
-                  <button
-                    key={chip}
-                    onClick={() => send(chip)}
-                    className="badge-tag badge-gray hover:badge-purple font-mono text-xs transition-all cursor-pointer"
-                  >
-                    {chip}
-                  </button>
-                ))}
-              </div>
+            <div className="flex flex-col items-center justify-center h-full text-center py-12">
+               <div className="grid grid-cols-2 gap-4 max-w-md">
+                 {POWER_UPS.map(up => (
+                   <button
+                     key={up.id}
+                     onClick={() => { setCode('// Paste relevant code into the Context Desk on the right'); setInput(up.prompt); }}
+                     className="p-4 rounded-xl border border-white/5 bg-[#0D0D12] hover:border-arena-purple/40 hover:bg-arena-purple/5 transition-all text-left group"
+                   >
+                     <up.icon size={16} className="text-white/30 group-hover:text-arena-purple mb-3 transition-colors" />
+                     <p className="font-display font-semibold text-xs text-white/80 group-hover:text-white">{up.label}</p>
+                     <p className="font-mono text-[9px] text-white/30 mt-1 uppercase tracking-tighter">Tactical Power-up</p>
+                   </button>
+                 ))}
+               </div>
             </div>
           )}
           {messages.map((msg, i) => <Message key={i} msg={msg} />)}
           {sending && (
-            <div className="flex gap-3">
-              <div className="w-7 h-7 rounded-full bg-arena-teal/20 border border-arena-teal/30 flex items-center justify-center text-arena-teal font-mono text-xs font-bold">AI</div>
-              <div className="px-4 py-3 rounded-xl rounded-tl-sm bg-arena-bg2 border border-arena-border">
+            <div className="flex gap-4 animate-fade-in">
+              <div className="w-8 h-8 rounded-lg bg-arena-teal/10 border border-arena-teal/30 flex items-center justify-center text-arena-teal">
+                <Icons.Shield size={14} />
+              </div>
+              <div className="px-5 py-4 rounded-2xl rounded-tl-sm bg-[#0A0A0A] border border-white/5">
                 <div className="flex items-center gap-1.5">
                   {[0,1,2].map(i => (
-                    <div key={i} className="w-1.5 h-1.5 rounded-full bg-arena-teal animate-bounce" style={{ animationDelay: `${i * 0.15}s` }} />
+                    <div key={i} className="w-1 h-1 rounded-full bg-arena-teal animate-bounce" style={{ animationDelay: `${i * 0.15}s` }} />
                   ))}
                 </div>
               </div>
@@ -274,58 +206,108 @@ export default function MentorPage() {
           <div ref={bottomRef} />
         </div>
 
-        {/* Input area */}
-        <div className="flex-shrink-0 border-t border-arena-border">
-          {showCode && (
-            <div className="px-4 pt-3">
-              <div className="flex items-center justify-between mb-1">
-                <span className="font-mono text-xs text-arena-dim">Code to review (optional)</span>
-                <button onClick={() => setShowCode(false)} className="text-arena-dim hover:text-arena-text">
-                  <Icons.XIcon size={12} />
-                </button>
-              </div>
-              <textarea
-                className="w-full arena-input font-mono text-xs resize-none"
-                rows={5}
-                value={code}
-                onChange={e => setCode(e.target.value)}
-                placeholder="// Paste your code here..."
-                spellCheck={false}
-              />
-            </div>
-          )}
-          <div className="flex items-end gap-2 p-4">
-            <button
-              onClick={() => setShowCode(v => !v)}
-              className={`flex-shrink-0 p-2.5 rounded-lg border transition-colors ${
-                showCode ? 'border-arena-teal/40 text-arena-teal bg-arena-teal/10' : 'border-arena-border text-arena-dim hover:text-arena-text'
-              }`}
-              title="Attach code"
-            >
-              <Icons.Code size={14} />
-            </button>
-            <div className="flex-1 relative">
-              <textarea
-                className="w-full arena-input text-sm resize-none pr-12"
-                rows={1}
-                style={{ minHeight: 42, maxHeight: 120 }}
-                value={input}
-                onChange={e => setInput(e.target.value)}
-                placeholder="Ask about code, algorithms, debugging..."
-                onKeyDown={e => {
-                  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
-                }}
-                onInput={e => {
-                  e.target.style.height = 'auto';
-                  e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
-                }}
-              />
-            </div>
-            <Button onClick={() => send()} variant="teal" size="sm" loading={sending} disabled={!input.trim() && !code}>
-              <Icons.ArrowRight size={14} />
-            </Button>
+        <div className="px-6 pb-6 pt-2 bg-gradient-to-t from-black/80 to-transparent">
+          <div className="relative flex items-end gap-3 bg-[#111] border border-white/10 p-3 rounded-2xl shadow-xl">
+             <textarea
+               className="flex-1 bg-transparent border-none text-sm text-white/80 placeholder:text-white/20 resize-none py-2 px-1 focus:ring-0 scrollbar-hide"
+               rows={1}
+               style={{ minHeight: 40, maxHeight: 180 }}
+               value={input}
+               onChange={e => setInput(e.target.value)}
+               placeholder="Consult with the Architect..."
+               onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }}}
+               onInput={e => { e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 180) + 'px'; }}
+             />
+             <Button 
+                onClick={() => send()} 
+                variant="purple" 
+                size="sm" 
+                className="h-10 w-10 p-0 rounded-xl"
+                loading={sending} 
+                disabled={!input.trim() && !code}
+             >
+                <Icons.ArrowRight size={16} />
+             </Button>
           </div>
         </div>
+      </div>
+
+      {/* RIGHT: Context Intelligence Desk */}
+      <div className="w-[380px] flex flex-col gap-4 invisible md:visible">
+         <div className="flex-1 bg-[#0A0A0F] border border-white/5 rounded-2xl flex flex-col p-5 overflow-hidden shadow-2xl">
+            <div className="flex items-center justify-between mb-5">
+               <div className="flex items-center gap-2">
+                 <Icons.Code size={14} className="text-arena-teal" />
+                 <h2 className="font-display font-bold text-sm uppercase tracking-wider text-white">Context Desk</h2>
+               </div>
+               <BadgeTag variant="gray" className="text-[9px]">v4.0 Core</BadgeTag>
+            </div>
+
+            <div className="flex-1 flex flex-col min-h-0 bg-black/40 rounded-xl border border-white/5 p-4 overflow-hidden group focus-within:border-arena-teal/30 transition-colors">
+               <div className="flex items-center justify-between mb-3">
+                 <p className="font-mono text-[10px] text-white/30 uppercase tracking-widest">Active Buffer</p>
+                 <button onClick={() => setCode('')} className="text-white/20 hover:text-red-400 transition-colors">
+                   <Icons.XIcon size={12} />
+                 </button>
+               </div>
+               <textarea
+                 className="flex-1 w-full bg-transparent border-none font-mono text-xs text-white/60 placeholder:text-white/10 resize-none focus:ring-0 scrollbar-hide"
+                 value={code}
+                 onChange={e => setCode(e.target.value)}
+                 placeholder="// Operational Context (Code, Logs, JSON)..."
+                 spellCheck={false}
+               />
+               <div className="flex justify-end pt-3 border-t border-white/5 mt-3">
+                  <span className="font-mono text-[9px] text-white/20">{code.length} characters matched</span>
+               </div>
+            </div>
+
+            <div className="mt-5 space-y-2">
+               <p className="font-mono text-[10px] text-white/30 uppercase tracking-widest px-1">Tactical Actions</p>
+               <div className="grid grid-cols-1 gap-2">
+                  {POWER_UPS.map(up => (
+                    <button
+                      key={up.id}
+                      onClick={() => send(up.prompt)}
+                      className="flex items-center justify-between p-3 rounded-lg bg-white/5 hover:bg-white/10 border border-transparent hover:border-white/10 transition-all group"
+                      disabled={!code.trim() && !sending}
+                    >
+                      <div className="flex items-center gap-3">
+                        <up.icon size={12} className="text-arena-teal group-hover:scale-110 transition-transform" />
+                        <span className="font-body text-xs text-white/70 group-hover:text-white">{up.label}</span>
+                      </div>
+                      <Icons.ChevronRight size={12} className="text-white/10 group-hover:text-white/40" />
+                    </button>
+                  ))}
+               </div>
+            </div>
+         </div>
+
+         <div className="bg-[#0A0A0F] border border-white/5 rounded-2xl p-4">
+            <h3 className="font-mono text-[10px] text-white/30 uppercase tracking-widest mb-3">Recent Sessions</h3>
+            <div className="space-y-1 max-h-40 overflow-y-auto scrollbar-hide">
+               {sessions.map(s => (
+                 <button
+                   key={s.id}
+                   onClick={() => selectSession(s)}
+                   className={`w-full flex items-center justify-between p-2.5 rounded-lg text-left transition-all ${
+                     activeSession?.id === s.id ? 'bg-arena-purple/10 border border-arena-purple/20' : 'hover:bg-white/5'
+                   }`}
+                 >
+                   <div className="flex items-center gap-2.5 min-w-0">
+                     <Icons.Shield size={10} className={activeSession?.id === s.id ? 'text-arena-purple' : 'text-white/20'} />
+                     <span className={`font-mono text-[11px] truncate ${activeSession?.id === s.id ? 'text-white' : 'text-white/40'}`}>
+                        {s.topic}
+                     </span>
+                   </div>
+                   <button onClick={(e) => deleteSession(s.id, e)} className="text-white/10 hover:text-red-400 p-1">
+                      <Icons.XIcon size={10} />
+                   </button>
+                 </button>
+               ))}
+               {sessions.length === 0 && <p className="text-center py-4 font-mono text-[9px] text-white/20">Empty Matrix</p>}
+            </div>
+         </div>
       </div>
     </div>
   );
