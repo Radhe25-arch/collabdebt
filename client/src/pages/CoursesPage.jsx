@@ -134,23 +134,30 @@ export default function CoursesPage() {
   const [activeCategory, setActiveCategory] = useState(null);
 
   useEffect(() => {
-    Promise.all([
-      api.get('/courses/categories'),
-      api.get('/courses?limit=300'),
-    ]).then(([catRes, courseRes]) => {
-      setCategories(catRes.data.categories || []);
-      const coursesRaw = courseRes.data.courses || [];
-      // Also fetch my enrollments to get progress + completedAt
-      api.get('/courses?limit=300').then(r => {
-        // courses already include isEnrolled; we need enrollment details per course
-        // Fetch enrollments separately
-        api.get('/courses/my-enrollments').catch(() => null).then(enrollRes => {
-          const enrollMap = {};
-          (enrollRes?.data?.enrollments || []).forEach(e => { enrollMap[e.courseId] = e; });
-          setCourses(coursesRaw.map(c => ({ ...c, enrollment: enrollMap[c.id] || null })));
-        });
-      });
-    }).catch(() => {}).finally(() => setLoading(false));
+    const load = async () => {
+      try {
+        const [catRes, courseRes] = await Promise.all([
+          api.get('/courses/categories'),
+          api.get('/courses?limit=300'),
+        ]);
+        setCategories(catRes.data.categories || []);
+        const coursesRaw = courseRes.data.courses || [];
+
+        // Try to get enrollment data (may fail if not logged in)
+        let enrollMap = {};
+        try {
+          const enrollRes = await api.get('/courses/my-enrollments');
+          (enrollRes.data.enrollments || []).forEach(e => { enrollMap[e.courseId] = e; });
+        } catch { /* not logged in or endpoint error — no problem */ }
+
+        setCourses(coursesRaw.map(c => ({ ...c, enrollment: enrollMap[c.id] || null })));
+      } catch (err) {
+        console.error('Failed to load courses', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
   }, []);
 
   const langCategories = categories.filter((c) => !DOMAIN_SLUGS.includes(c.slug));
