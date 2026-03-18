@@ -72,7 +72,10 @@ api.interceptors.response.use(
       }
     }
     const message = err.response?.data?.error || err.message;
-    if (err.response?.status >= 500) toast.error('Server error. Try again.');
+    // Only show server error toast for unexpected errors, not silenced/background calls
+    if (err.response?.status >= 500 && !original?._silent) {
+      toast.error('Server error. Try again.');
+    }
     return Promise.reject({ ...err, message });
   }
 );

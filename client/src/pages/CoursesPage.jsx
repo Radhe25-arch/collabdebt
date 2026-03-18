@@ -146,7 +146,7 @@ export default function CoursesPage() {
         // Try to get enrollment data (may fail if not logged in)
         let enrollMap = {};
         try {
-          const enrollRes = await api.get('/courses/my-enrollments');
+          const enrollRes = await api.get('/courses/my-enrollments', { _silent: true });
           (enrollRes.data.enrollments || []).forEach(e => { enrollMap[e.courseId] = e; });
         } catch { /* not logged in or endpoint error — no problem */ }
 
