@@ -54,6 +54,8 @@ enum NotificationType {
   TOURNAMENT_END
   WEEKLY_SUMMARY
   NEW_COURSE
+  BATTLE_INVITE
+  BATTLE_ACCEPTED
 }
 
 // ─── USER ────────────────────────────────────────────────
@@ -441,6 +443,7 @@ model HallOfFame {
 
 enum BattleStatus {
   PENDING
+  CONFIGURING
   ACTIVE
   COMPLETED
   DECLINED
@@ -453,6 +456,10 @@ model Battle {
   challengedId String
   status       BattleStatus @default(PENDING)
   problemId    String?
+  mode         String       @default("system") // system vs custom
+  language     String       @default("javascript")
+  problemText  String?
+  codeStarter  String?
   timeLimit    Int          @default(1800) // seconds — 30 min default
   startsAt     DateTime?
   endsAt       DateTime?

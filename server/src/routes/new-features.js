@@ -15,6 +15,7 @@ battleRouter.post('/',                battleCtrl.challenge);
 battleRouter.get('/',                 battleCtrl.getMyBattles);
 battleRouter.get('/:id',              battleCtrl.getBattle);
 battleRouter.post('/:id/respond',     battleCtrl.respond);
+battleRouter.post('/:id/configure',   battleCtrl.configure);
 battleRouter.post('/:id/submit',      battleCtrl.submit);
 battleRouter.post('/:id/complete',    battleCtrl.forceComplete);
 

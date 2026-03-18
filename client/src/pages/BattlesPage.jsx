@@ -7,6 +7,25 @@ import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import { formatDistanceToNow } from 'date-fns';
 
+const LANGUAGES = [
+  'javascript','typescript','python','java','cpp','c','csharp','go','rust',
+  'kotlin','swift','php','ruby','dart','bash','sql','html','css'
+];
+
+const TIMER_OPTIONS = [
+  { label: '5 min',  value: 300 },
+  { label: '10 min', value: 600 },
+  { label: '15 min', value: 900 },
+  { label: '30 min', value: 1800 },
+  { label: '45 min', value: 2700 },
+  { label: '60 min', value: 3600 },
+];
+
+const MODE_OPTIONS = [
+  { id: 'system', label: 'System Generated', desc: 'AI picks a unique problem. Never repeated.' },
+  { id: 'custom', label: 'Custom Problem', desc: 'Write your own challenge for the opponent.' },
+];
+
 export default function BattlesPage() {
   const navigate  = useNavigate();
   const { user }  = useAuthStore();
@@ -25,22 +44,41 @@ export default function BattlesPage() {
     setSending(true);
     try {
       const r = await api.post('/battles', { challengedUsername: opponent });
-      toast.success('Challenge sent!');
+      toast.success('Challenge sent! Waiting for opponent to accept.');
       setModal(false);
       setOpponent('');
-      navigate(`/battles/${r.data.battle.id}`);
+      setBattles(prev => [r.data.battle, ...prev]);
     } catch (err) {
       toast.error(err.response?.data?.error || 'Could not send challenge');
     }
     setSending(false);
   };
 
+  // Separate incoming pending challenges
+  const pendingIncoming = battles.filter(b => b.status === 'PENDING' && b.challengedId === user?.id);
+  const configuringBattles = battles.filter(b => b.status === 'CONFIGURING' && b.challengerId === user?.id);
+  const otherBattles = battles.filter(b => !pendingIncoming.includes(b) && !configuringBattles.includes(b));
+
+  const handleRespond = async (battleId, accept) => {
+    try {
+      await api.post(`/battles/${battleId}/respond`, { accept });
+      toast.success(accept ? 'Accepted! Waiting for host to configure.' : 'Challenge declined.');
+      // Refresh
+      const r = await api.get('/battles');
+      setBattles(r.data.battles || []);
+      if (accept) navigate(`/battles/${battleId}`);
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed');
+    }
+  };
+
   const statusColor = {
-    PENDING:   'badge-purple',
-    ACTIVE:    'badge-teal',
-    COMPLETED: 'badge-gray',
-    DECLINED:  'badge-red',
-    EXPIRED:   'badge-gray',
+    PENDING:     'purple',
+    CONFIGURING: 'blue',
+    ACTIVE:      'teal',
+    COMPLETED:   'gray',
+    DECLINED:    'red',
+    EXPIRED:     'gray',
   };
 
   return (
@@ -48,7 +86,7 @@ export default function BattlesPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-display font-black text-2xl mb-1">1v1 Battles</h1>
-          <p className="font-mono text-xs text-arena-dim">// challenge any developer · full report card after every battle</p>
+          <p className="font-mono text-xs text-arena-dim">Challenge any developer. Full report after every battle.</p>
         </div>
         <Button onClick={() => setModal(true)} variant="primary">
           <Icons.Zap size={14} /> Challenge
@@ -73,9 +111,41 @@ export default function BattlesPage() {
         ))}
       </div>
 
+      {/* Incoming Challenges */}
+      {pendingIncoming.length > 0 && (
+        <div className="arena-card overflow-hidden">
+          <div className="px-5 py-3 border-b border-arena-border bg-arena-purple/5">
+            <span className="font-mono text-xs text-arena-purple2 uppercase tracking-widest">Incoming Challenges</span>
+          </div>
+          <div className="divide-y divide-arena-border/40">
+            {pendingIncoming.map(b => (
+              <div key={b.id} className="flex items-center gap-4 px-5 py-4">
+                <Avatar user={b.challenger} size={36} />
+                <div className="flex-1 min-w-0">
+                  <span className="font-mono text-sm font-bold text-arena-text">{b.challenger?.username}</span>
+                  <p className="font-mono text-xs text-arena-dim">wants to battle you!</p>
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={() => handleRespond(b.id, true)} className="px-3 py-1.5 rounded-lg text-xs font-mono font-bold bg-arena-teal/20 text-arena-teal border border-arena-teal/30 hover:bg-arena-teal/30 transition-colors">Accept</button>
+                  <button onClick={() => handleRespond(b.id, false)} className="px-3 py-1.5 rounded-lg text-xs font-mono font-bold bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 transition-colors">Decline</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Configuring Battles (Host must configure) */}
+      {configuringBattles.map(b => (
+        <HostConfigPanel key={b.id} battle={b} onStart={() => navigate(`/battles/${b.id}`)} onRefresh={async () => {
+          const r = await api.get('/battles');
+          setBattles(r.data.battles || []);
+        }} />
+      ))}
+
       {loading ? (
         <div className="flex justify-center py-12"><Spinner size={24} className="text-arena-purple2" /></div>
-      ) : battles.length === 0 ? (
+      ) : otherBattles.length === 0 && pendingIncoming.length === 0 && configuringBattles.length === 0 ? (
         <div className="arena-card p-16 text-center">
           <Icons.Zap size={32} className="text-arena-dim mx-auto mb-4" />
           <p className="font-display font-bold mb-2">No battles yet</p>
@@ -84,18 +154,18 @@ export default function BattlesPage() {
             <Icons.Zap size={14} /> Start a Battle
           </Button>
         </div>
-      ) : (
+      ) : otherBattles.length > 0 && (
         <div className="arena-card overflow-hidden">
           <div className="px-5 py-3 border-b border-arena-border">
             <span className="font-mono text-xs text-arena-dim uppercase tracking-widest">Battle History</span>
           </div>
           <div className="divide-y divide-arena-border/40">
-            {battles.map((b) => {
-              const opponent = b.challengerId === user?.id ? b.challenged : b.challenger;
+            {otherBattles.map((b) => {
+              const opp = b.challengerId === user?.id ? b.challenged : b.challenger;
               const isWinner = b.winnerId === user?.id;
               const isDraw   = b.status === 'COMPLETED' && !b.winnerId;
               const isActive = b.status === 'ACTIVE';
-              const isPending = b.status === 'PENDING' && b.challengedId === user?.id;
+              const isConfig = b.status === 'CONFIGURING';
 
               return (
                 <div
@@ -103,11 +173,11 @@ export default function BattlesPage() {
                   className="flex items-center gap-4 px-5 py-3.5 cursor-pointer hover:bg-arena-bg3/50 transition-colors"
                   onClick={() => navigate(`/battles/${b.id}`)}
                 >
-                  <Avatar user={opponent} size={36} />
+                  <Avatar user={opp} size={36} />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-sm font-bold text-arena-text">{opponent?.username}</span>
-                      <BadgeTag variant={statusColor[b.status]?.replace('badge-','') || 'gray'}>
+                      <span className="font-mono text-sm font-bold text-arena-text">{opp?.username}</span>
+                      <BadgeTag variant={statusColor[b.status] || 'gray'}>
                         {b.status}
                       </BadgeTag>
                     </div>
@@ -126,8 +196,8 @@ export default function BattlesPage() {
                         <span className="w-1.5 h-1.5 rounded-full bg-arena-teal animate-pulse" /> LIVE
                       </span>
                     )}
-                    {isPending && (
-                      <span className="font-mono text-xs text-arena-purple2">Respond</span>
+                    {isConfig && (
+                      <span className="font-mono text-xs text-blue-400">Configuring</span>
                     )}
                     <Icons.ChevronRight size={14} className="text-arena-dim" />
                   </div>
@@ -158,6 +228,114 @@ export default function BattlesPage() {
           </div>
         </div>
       </Modal>
+    </div>
+  );
+}
+
+// ─── HOST CONFIGURATION PANEL ──────────────────────────────
+function HostConfigPanel({ battle, onStart, onRefresh }) {
+  const [mode, setMode]         = useState('system');
+  const [language, setLanguage] = useState('javascript');
+  const [timeLimit, setTimeLimit] = useState(1800);
+  const [customProblem, setCustomProblem] = useState('');
+  const [configuring, setConfiguring] = useState(false);
+
+  const handleStart = async () => {
+    setConfiguring(true);
+    try {
+      const body = { mode, language, timeLimit };
+      if (mode === 'custom') body.problemText = customProblem;
+      await api.post(`/battles/${battle.id}/configure`, body);
+      toast.success('Battle started! Timer is running.');
+      await onRefresh();
+      onStart();
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to start');
+    }
+    setConfiguring(false);
+  };
+
+  return (
+    <div className="arena-card overflow-hidden">
+      <div className="px-5 py-3 border-b border-arena-border bg-blue-500/5">
+        <div className="flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
+          <span className="font-mono text-xs text-blue-400 uppercase tracking-widest">Configure Match — You Are The Host</span>
+        </div>
+      </div>
+
+      <div className="p-5 space-y-5">
+        <div className="flex items-center gap-3 p-3 rounded-xl bg-arena-bg3 border border-arena-border">
+          <Avatar user={battle.challenged} size={32} />
+          <div>
+            <p className="font-mono text-sm font-bold text-white">{battle.challenged?.username}</p>
+            <p className="font-mono text-xs text-arena-dim">Opponent accepted. Configure and start the match.</p>
+          </div>
+        </div>
+
+        {/* Problem Mode */}
+        <div>
+          <label className="font-mono text-xs text-arena-dim uppercase tracking-widest block mb-2">Problem Mode</label>
+          <div className="grid grid-cols-2 gap-3">
+            {MODE_OPTIONS.map(opt => (
+              <button
+                key={opt.id}
+                onClick={() => setMode(opt.id)}
+                className={`p-3 rounded-xl text-left border transition-all ${mode === opt.id ? 'bg-arena-purple/10 border-arena-purple/40' : 'bg-arena-bg3 border-arena-border hover:border-white/20'}`}
+              >
+                <p className="font-mono text-xs font-bold text-white">{opt.label}</p>
+                <p className="font-mono text-[10px] text-arena-dim mt-1">{opt.desc}</p>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Custom problem input */}
+        {mode === 'custom' && (
+          <div>
+            <label className="font-mono text-xs text-arena-dim uppercase tracking-widest block mb-2">Problem Description</label>
+            <textarea
+              className="w-full arena-input p-3 text-sm min-h-[100px] resize-y"
+              placeholder="Write the problem statement for your opponent..."
+              value={customProblem}
+              onChange={(e) => setCustomProblem(e.target.value)}
+            />
+          </div>
+        )}
+
+        {/* Language */}
+        <div>
+          <label className="font-mono text-xs text-arena-dim uppercase tracking-widest block mb-2">Language</label>
+          <div className="flex flex-wrap gap-2">
+            {LANGUAGES.map(lang => (
+              <button
+                key={lang}
+                onClick={() => setLanguage(lang)}
+                className={`px-3 py-1.5 rounded-lg font-mono text-xs transition-all ${language === lang ? 'bg-arena-purple text-white' : 'bg-arena-bg3 text-arena-dim border border-arena-border hover:text-white'}`}
+              >{lang}</button>
+            ))}
+          </div>
+        </div>
+
+        {/* Timer */}
+        <div>
+          <label className="font-mono text-xs text-arena-dim uppercase tracking-widest block mb-2">Timer</label>
+          <div className="flex flex-wrap gap-2">
+            {TIMER_OPTIONS.map(t => (
+              <button
+                key={t.value}
+                onClick={() => setTimeLimit(t.value)}
+                className={`px-4 py-2 rounded-lg font-mono text-xs transition-all ${timeLimit === t.value ? 'bg-arena-teal text-black font-bold' : 'bg-arena-bg3 text-arena-dim border border-arena-border hover:text-white'}`}
+              >{t.label}</button>
+            ))}
+          </div>
+        </div>
+
+        {/* Start */}
+        <Button onClick={handleStart} variant="primary" className="w-full" loading={configuring}>
+          <Icons.Zap size={14} /> Start Battle Now
+        </Button>
+      </div>
     </div>
   );
 }

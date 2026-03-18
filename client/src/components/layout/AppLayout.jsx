@@ -120,6 +120,7 @@ function Sidebar({ open }) {
 function Topbar({ sidebarOpen, toggleSidebar }) {
   const { user } = useAuthStore();
   const location = useLocation();
+  const navigate = useNavigate();
   const [notifs, setNotifs]       = useState([]);
   const [notifOpen, setNotifOpen] = useState(false);
   const unread = notifs.filter(n => !n.read).length;
@@ -190,6 +191,38 @@ function Topbar({ sidebarOpen, toggleSidebar }) {
                   <div key={n.id} className={`px-4 py-3 ${!n.read ? 'bg-arena-purple/5' : ''}`}>
                     <p className="text-xs font-semibold text-arena-text">{n.title}</p>
                     <p className="text-xs font-mono text-arena-muted mt-0.5">{n.body}</p>
+                    {n.type === 'BATTLE_INVITE' && !n.read && n.data?.battleId && (
+                      <div className="flex gap-2 mt-2">
+                        <button
+                          className="px-3 py-1 rounded-md text-xs font-mono font-bold bg-arena-teal/20 text-arena-teal border border-arena-teal/30 hover:bg-arena-teal/30 transition-colors"
+                          onClick={async () => {
+                            try {
+                              await api.post(`/battles/${n.data.battleId}/respond`, { accept: true });
+                              await api.patch(`/notifications/${n.id}/read`);
+                              setNotifs(prev => prev.map(x => x.id === n.id ? { ...x, read: true } : x));
+                              setNotifOpen(false);
+                              navigate(`/battles/${n.data.battleId}`);
+                            } catch {}
+                          }}
+                        >Accept</button>
+                        <button
+                          className="px-3 py-1 rounded-md text-xs font-mono font-bold bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 transition-colors"
+                          onClick={async () => {
+                            try {
+                              await api.post(`/battles/${n.data.battleId}/respond`, { accept: false });
+                              await api.patch(`/notifications/${n.id}/read`);
+                              setNotifs(prev => prev.map(x => x.id === n.id ? { ...x, read: true } : x));
+                            } catch {}
+                          }}
+                        >Decline</button>
+                      </div>
+                    )}
+                    {n.type === 'BATTLE_ACCEPTED' && !n.read && n.data?.battleId && (
+                      <button
+                        className="mt-2 px-3 py-1 rounded-md text-xs font-mono font-bold bg-arena-purple/20 text-arena-purple2 border border-arena-purple/30 hover:bg-arena-purple/30 transition-colors"
+                        onClick={() => { setNotifOpen(false); navigate(`/battles/${n.data.battleId}`); }}
+                      >Configure Match →</button>
+                    )}
                   </div>
                 ))}
               </div>
