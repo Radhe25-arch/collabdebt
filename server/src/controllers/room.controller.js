@@ -139,6 +139,11 @@ function getStarterCode(language) {
     cpp:        '// CodeArena Code Room\n#include <iostream>\nusing namespace std;\n\nint main() {\n    // Your code here\n    cout << "Hello, Arena!" << endl;\n    return 0;\n}',
     java:       '// CodeArena Code Room\npublic class Solution {\n    public static void main(String[] args) {\n        // Your code here\n        System.out.println("Hello, Arena!");\n    }\n}',
     typescript: '// CodeArena Code Room\nfunction solution(input: string): string {\n  // Your code here\n  return input;\n}\n\nconsole.log(solution("Hello, Arena!"));',
+    rust:       '// CodeArena Code Room\nfn main() {\n    println!("Hello, Arena!");\n}',
+    go:         '// CodeArena Code Room\npackage main\nimport "fmt"\n\nfunc main() {\n    fmt.Println("Hello, Arena!")\n}',
+    ruby:       '# CodeArena Code Room\nputs "Hello, Arena!"',
+    php:        '<?php\n// CodeArena Code Room\necho "Hello, Arena!";\n?>',
+    csharp:     '// CodeArena Code Room\nusing System;\n\nclass Program {\n    static void Main() {\n        Console.WriteLine("Hello, Arena!");\n    }\n}',
   };
   return starters[language] || starters.javascript;
 }

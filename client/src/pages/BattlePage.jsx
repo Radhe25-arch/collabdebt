@@ -774,9 +774,9 @@ export default function BattlePage() {
               placeholder={
                 canCode
                   ? `// Write your ${selectedLang} solution here\n// Problem ${currentProblem + 1} of ${battle.totalProblems || 1}\n`
-                  : isPending ? '// Waiting for opponent to accept...'
-                  : isConfiguring ? (isChallenger ? '// Configure the match on the left panel...' : '// Waiting for host to start the battle...')
-                  : '// Battle has ended'
+                  : isPending ? 'Waiting for opponent to accept...'
+                  : isConfiguring ? (isChallenger ? 'Configure the match on the left panel...' : 'Waiting for host to start the battle...')
+                  : 'Battle has ended'
               }
               spellCheck={false}
             />

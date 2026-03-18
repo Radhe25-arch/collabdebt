@@ -235,21 +235,18 @@ async function pushToGithub(req, res, next) {
 
 // ─── ADD PROJECT ───────────────────────────────────────────
 
-async function addProject(req, res, next) {
+async function deleteProject(req, res, next) {
   try {
-    const { title, description, language, code, tags, repoUrl, liveUrl, featured } = req.body;
+    const { projectId } = req.params;
+    const portfolio = await prisma.portfolio.findUnique({ where: { userId: req.user.id } });
+    if (!portfolio) throw new AppError('Portfolio not found', 404);
 
-    let portfolio = await prisma.portfolio.findUnique({ where: { userId: req.user.id } });
-    if (!portfolio) {
-      portfolio = await prisma.portfolio.create({ data: { userId: req.user.id } });
-    }
-
-    const project = await prisma.portfolioProject.create({
-      data: { portfolioId: portfolio.id, title, description, language, code, tags, repoUrl, liveUrl, featured: !!featured },
+    await prisma.portfolioProject.delete({
+      where: { id: projectId, portfolioId: portfolio.id },
     });
 
-    res.status(201).json({ project });
+    res.json({ success: true, message: 'Project deleted' });
   } catch (err) { next(err); }
 }
 
-module.exports = { getPortfolio, upsertPortfolio, generateReadme, pushToGithub, addProject };
+module.exports = { getPortfolio, upsertPortfolio, generateReadme, pushToGithub, addProject, deleteProject };

@@ -31,6 +31,7 @@ portfolioRouter.put('/me',                        authenticate, portfolioCtrl.up
 portfolioRouter.get('/me/readme',                 authenticate, portfolioCtrl.generateReadme);
 portfolioRouter.post('/me/push-github',           authenticate, portfolioCtrl.pushToGithub);
 portfolioRouter.post('/me/projects',              authenticate, portfolioCtrl.addProject);
+portfolioRouter.delete('/me/projects/:projectId',     authenticate, portfolioCtrl.deleteProject);
 portfolioRouter.get('/user/:userId',              portfolioCtrl.getPortfolio);
 
 module.exports = { battleRouter, questRouter, portfolioRouter };

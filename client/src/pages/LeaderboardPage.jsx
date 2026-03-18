@@ -114,7 +114,7 @@ export default function LeaderboardPage() {
       {/* Header */}
       <div>
         <h1 className="font-display font-black text-2xl mb-1">Leaderboard</h1>
-        <p className="font-mono text-xs text-arena-dim">// compete globally, weekly, or by category</p>
+        <p className="font-mono text-xs text-arena-dim uppercase tracking-widest">Global Ranking and Weekly Leaders</p>
       </div>
 
       {/* Tab bar */}

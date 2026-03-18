@@ -405,7 +405,7 @@ export default function LessonPage() {
                   </div>
                   <div className="px-4 pb-3 space-y-0.5">
                     {output.lines.length === 0 ? (
-                      <p className="font-mono text-[11px] text-white/20 italic">// no output</p>
+                      <p className="font-mono text-[11px] text-white/20 uppercase tracking-widest">No Output Available</p>
                     ) : output.lines.map((line, i) => (
                       <p key={i} className={`font-mono text-[11px] whitespace-pre-wrap ${
                         output.isError && i === output.lines.length - 1 ? 'text-red-400' : 'text-arena-teal'

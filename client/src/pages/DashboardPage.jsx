@@ -44,17 +44,17 @@ function ActivityHeatmap({ logs }) {
         ))}
       </div>
       <div className="flex items-center gap-2 mt-2">
-        <span className="font-mono text-xs text-arena-dim">Less</span>
+        <span className="font-mono text-xs text-arena-dim uppercase tracking-widest">Activity History</span>
         {['bg-arena-bg3', 'bg-arena-purple/30', 'bg-arena-purple/60', 'bg-arena-purple', 'bg-arena-teal'].map((c) => (
           <div key={c} className={`w-3 h-3 rounded-sm ${c}`} />
         ))}
-        <span className="font-mono text-xs text-arena-dim">More</span>
+        <span className="font-mono text-xs text-arena-dim uppercase tracking-widest ml-1">Engagement</span>
       </div>
     </div>
   );
 }
 
-// ─── COURSE PROGRESS CARD ──────────────────────────────────
+// Course Progress Card
 function CourseProgressCard({ enrollment, onContinue }) {
   const course = enrollment?.course;
   if (!course) return null;
@@ -281,7 +281,7 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-arena-dim font-mono text-sm animate-pulse">loading dashboard...</div>
+        <div className="text-arena-dim font-mono text-xs uppercase tracking-widest animate-pulse">Initializing Dashboard...</div>
       </div>
     );
   }
