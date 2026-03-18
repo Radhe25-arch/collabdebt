@@ -54,6 +54,16 @@ courseRouter.get('/categories', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+courseRouter.get('/my-enrollments', authenticate, async (req, res, next) => {
+  try {
+    const enrollments = await prisma.enrollment.findMany({
+      where: { userId: req.user.id },
+      select: { courseId: true, progress: true, completedAt: true, enrolledAt: true },
+    });
+    res.json({ enrollments });
+  } catch (err) { next(err); }
+});
+
 courseRouter.get('/:id', optionalAuth, async (req, res, next) => {
   try {
     const course = await prisma.course.findFirst({

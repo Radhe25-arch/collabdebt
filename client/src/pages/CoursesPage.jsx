@@ -66,35 +66,58 @@ function CategoryCard({ category, courseCount, onClick, isActive }) {
 }
 
 function CourseListCard({ course, onClick }) {
-  const enrolled = course.isEnrolled;
+  const enrolled  = course.isEnrolled;
+  const completed = course.enrollment?.completedAt != null || course.enrollment?.progress === 100;
+  const progress  = course.enrollment?.progress || 0;
 
   return (
-    <div 
+    <div
       onClick={() => onClick(course.slug)}
-      className="group flex flex-col sm:flex-row sm:items-center justify-between p-5 md:p-6 bg-[#0A0A0A] border border-white/5 hover:border-white/15 rounded-xl cursor-pointer transition-colors duration-200 gap-4"
+      className={`group flex flex-col sm:flex-row sm:items-center justify-between p-5 md:p-6 rounded-xl cursor-pointer transition-all duration-200 gap-4 border ${
+        completed
+          ? 'bg-arena-teal/5 border-arena-teal/20 hover:border-arena-teal/35'
+          : 'bg-[#0A0A0A] border-white/5 hover:border-white/15'
+      }`}
     >
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-3 mb-2">
+        <div className="flex items-center flex-wrap gap-2 mb-2">
           <h3 className="font-body text-base text-white/90 font-medium group-hover:text-white transition-colors">{course.title}</h3>
-          <BadgeTag variant={DIFF_COLORS[course.difficulty] || 'gray'} className="text-[10px] px-1.5 py-0.5 rounded uppercase tracking-wider bg-transparent border border-current text-opacity-80">
-            {course.difficulty}
-          </BadgeTag>
-          {enrolled && <span className="bg-arena-teal/10 text-arena-teal border border-arena-teal/20 text-[10px] px-1.5 py-0.5 rounded uppercase tracking-wider">Enrolled</span>}
+          <span className={`font-mono text-[10px] px-1.5 py-0.5 rounded uppercase tracking-wider border ${
+            course.difficulty === 'BEGINNER'     ? 'text-green-400 border-green-400/25' :
+            course.difficulty === 'INTERMEDIATE' ? 'text-blue-400 border-blue-400/25' :
+            'text-purple-400 border-purple-400/25'
+          }`}>{course.difficulty}</span>
+          {completed
+            ? <span className="flex items-center gap-1 bg-arena-teal/15 text-arena-teal border border-arena-teal/25 font-mono text-[10px] px-2 py-0.5 rounded-full">✓ Completed</span>
+            : enrolled
+            ? <span className="bg-white/6 text-white/50 border border-white/10 font-mono text-[10px] px-2 py-0.5 rounded-full">{progress}% done</span>
+            : null
+          }
         </div>
-        <p className="font-body text-sm text-white/50 leading-relaxed truncate">{course.description}</p>
+        <p className="font-mono text-xs text-white/40 leading-relaxed line-clamp-1">{course.description}</p>
+        {enrolled && !completed && progress > 0 && (
+          <div className="mt-2.5 h-0.5 rounded-full bg-white/8 overflow-hidden max-w-xs">
+            <div className="h-full rounded-full bg-arena-teal/60" style={{ width: `${progress}%` }} />
+          </div>
+        )}
       </div>
 
-      <div className="flex items-center gap-6 sm:pl-6 sm:border-l border-white/5">
+      <div className="flex items-center gap-5 sm:pl-6 sm:border-l border-white/5 flex-shrink-0">
         <div className="flex flex-col items-end gap-1">
-          <span className="font-mono text-[11px] text-white/40 flex items-center gap-1.5">
-            <Icons.Book size={12} /> {course._count?.lessons || 0} Lessons
+          <span className="font-mono text-[11px] text-white/35 flex items-center gap-1.5">
+            <Icons.Book size={11} /> {course._count?.lessons || 0} Lessons
           </span>
-          <span className="font-mono text-[11px] text-white/40 flex items-center gap-1.5">
-            <Icons.Zap size={12} /> {course.xpReward} XP
+          <span className="font-mono text-[11px] text-white/35 flex items-center gap-1.5">
+            <Icons.Zap size={11} /> {course.xpReward} XP
           </span>
         </div>
-        <div className="w-8 h-8 rounded-full border border-white/10 flex flex-shrink-0 items-center justify-center group-hover:bg-white/5 transition-colors">
-          <Icons.ArrowRight size={14} className="text-white/60 group-hover:text-white transition-colors" />
+        <div className={`w-8 h-8 rounded-full flex flex-shrink-0 items-center justify-center transition-colors border ${
+          completed ? 'bg-arena-teal/15 border-arena-teal/30' : 'border-white/10 group-hover:bg-white/5'
+        }`}>
+          {completed
+            ? <Icons.Check size={13} className="text-arena-teal" />
+            : <Icons.ArrowRight size={13} className="text-white/50 group-hover:text-white transition-colors" />
+          }
         </div>
       </div>
     </div>
@@ -116,7 +139,17 @@ export default function CoursesPage() {
       api.get('/courses?limit=300'),
     ]).then(([catRes, courseRes]) => {
       setCategories(catRes.data.categories || []);
-      setCourses(courseRes.data.courses || []);
+      const coursesRaw = courseRes.data.courses || [];
+      // Also fetch my enrollments to get progress + completedAt
+      api.get('/courses?limit=300').then(r => {
+        // courses already include isEnrolled; we need enrollment details per course
+        // Fetch enrollments separately
+        api.get('/courses/my-enrollments').catch(() => null).then(enrollRes => {
+          const enrollMap = {};
+          (enrollRes?.data?.enrollments || []).forEach(e => { enrollMap[e.courseId] = e; });
+          setCourses(coursesRaw.map(c => ({ ...c, enrollment: enrollMap[c.id] || null })));
+        });
+      });
     }).catch(() => {}).finally(() => setLoading(false));
   }, []);
 
