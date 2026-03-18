@@ -233,7 +233,34 @@ async function pushToGithub(req, res, next) {
   } catch (err) { next(err); }
 }
 
-// ─── ADD PROJECT ───────────────────────────────────────────
+// ─── MANAGE PROJECTS ─────────────────────────────────────────
+
+async function addProject(req, res, next) {
+  try {
+    const { title, description, tags, repoUrl, liveUrl, featured } = req.body;
+    let portfolio = await prisma.portfolio.findUnique({ where: { userId: req.user.id } });
+    
+    if (!portfolio) {
+      portfolio = await prisma.portfolio.create({
+        data: { userId: req.user.id, githubUsername: req.user.username },
+      });
+    }
+
+    const project = await prisma.portfolioProject.create({
+      data: {
+        portfolioId: portfolio.id,
+        title,
+        description,
+        tags: tags ? JSON.parse(JSON.stringify(tags)) : [],
+        repoUrl,
+        liveUrl,
+        featured: !!featured,
+      },
+    });
+
+    res.status(201).json({ project });
+  } catch (err) { next(err); }
+}
 
 async function deleteProject(req, res, next) {
   try {
