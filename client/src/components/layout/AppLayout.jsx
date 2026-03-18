@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore, useUIStore } from '@/store';
 import { Avatar, XPBar } from '@/components/ui';
 import Icons from '@/assets/icons';
@@ -38,16 +38,17 @@ const PAGE_TITLES = {
 
 function NavItem({ to, label, Icon }) {
   const location = useLocation();
-  const isActive = location.pathname + location.search === to;
+  // String match including search params for exactness
+  const isActive = (location.pathname + location.search) === to;
 
   return (
-    <NavLink 
+    <Link 
       to={to} 
       className={`sidebar-link ${isActive ? 'active' : ''}`}
     >
       <Icon size={15} />
       <span className="whitespace-nowrap text-sm">{label}</span>
-    </NavLink>
+    </Link>
   );
 }
 

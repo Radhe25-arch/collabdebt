@@ -32,12 +32,28 @@ const LANG_META = {
   'system-design':{ icon: Icons.Code,       color: '#F59E0B' },
   blockchain:     { icon: Icons.Code,       color: '#F7931A' },
   'ai-ml':        { icon: Icons.Target,     color: '#A855F7' },
+  'r':            { icon: Icons.TrendingUp, color: '#276DC3' },
+  'julia':        { icon: Icons.Zap,        color: '#9558B2' },
+  'scala':        { icon: Icons.Award,      color: '#DC322F' },
+  'elixir':       { icon: Icons.Zap,        color: '#4E2A8E' },
+  'haskell':      { icon: Icons.Target,     color: '#5D4F85' },
+  'lua':          { icon: Icons.Code,       color: '#000080' },
+  'perl':         { icon: Icons.Code,       color: '#39457E' },
+  'fortran':      { icon: Icons.Book,       color: '#734996' },
+  'cobol':        { icon: Icons.Terminal,   color: '#005CAB' },
+  'clojure':      { icon: Icons.Award,      color: '#5881D8' },
+  'erlang':       { icon: Icons.Zap,        color: '#A90533' },
+  'prolog':       { icon: Icons.Search,     color: '#74283C' },
+  'fsharp':       { icon: Icons.Code,       color: '#B845FC' },
+  'ocaml':        { icon: Icons.Target,     color: '#EC6813' },
 };
 
 // Core languages are these specific slugs, everything else is a "Domain Architecture"
 const CORE_LANG_SLUGS = [
   'javascript', 'typescript', 'python', 'html', 'css', 'java', 'cpp', 'c', 
-  'csharp', 'go', 'rust', 'kotlin', 'swift', 'php', 'ruby', 'dart', 'bash', 'sql'
+  'csharp', 'go', 'rust', 'kotlin', 'swift', 'php', 'ruby', 'dart', 'bash', 'sql',
+  'r', 'julia', 'scala', 'elixir', 'haskell', 'lua', 'perl', 'fortran', 'cobol',
+  'clojure', 'erlang', 'prolog', 'fsharp', 'ocaml'
 ];
 
 function CategoryCard({ category, courseCount, onClick, isActive }) {
