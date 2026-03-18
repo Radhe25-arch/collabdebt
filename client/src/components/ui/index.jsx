@@ -111,9 +111,9 @@ export function Modal({ open, onClose, title, children, width = 'max-w-lg' }) {
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in"
       onClick={(e) => { if (e.target === overlayRef.current) onClose?.(); }}
     >
-      <div className={`w-full ${width} bg-arena-bg2 border border-arena-border rounded-xl shadow-2xl animate-fade-up`}>
+      <div className={`w-full ${width} bg-arena-bg2 border border-arena-border rounded-xl shadow-2xl animate-fade-up max-h-[85vh] flex flex-col`}>
         {(title || onClose) && (
-          <div className="flex items-center justify-between px-5 py-4 border-b border-arena-border">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-arena-border flex-shrink-0">
             {title && <h3 className="font-display font-bold text-base text-arena-text">{title}</h3>}
             {onClose && (
               <button onClick={onClose} className="text-arena-dim hover:text-arena-text transition-colors p-1">
@@ -124,7 +124,7 @@ export function Modal({ open, onClose, title, children, width = 'max-w-lg' }) {
             )}
           </div>
         )}
-        <div className="p-5">{children}</div>
+        <div className="p-5 overflow-y-auto">{children}</div>
       </div>
     </div>
   );

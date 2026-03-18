@@ -100,6 +100,7 @@ export default function LessonPage() {
   const [completing, setCompleting] = useState(false);
   const [quizOpen, setQuizOpen]     = useState(false);
   const [code, setCode]             = useState('');
+  const [output, setOutput]         = useState('');
   const [showXP, setShowXP]         = useState(null);
 
   useEffect(() => {
@@ -109,6 +110,22 @@ export default function LessonPage() {
       if (r.data.lesson.codeStarter) setCode(r.data.lesson.codeStarter);
     }).finally(() => setLoading(false));
   }, [lessonSlug]);
+
+  const handleRunCode = () => {
+    const logs = [];
+    const origLog = console.log;
+    console.log = (...args) => { logs.push(args.map(a => typeof a === 'object' ? JSON.stringify(a, null, 2) : String(a)).join(' ')); origLog(...args); };
+    try {
+      // eslint-disable-next-line no-eval
+      const result = eval(code);
+      if (result !== undefined && !logs.length) logs.push(String(result));
+      setOutput(logs.length ? logs.join('\n') : '(no output)');
+    } catch (err) {
+      setOutput(`❌ Error: ${err.message}`);
+    } finally {
+      console.log = origLog;
+    }
+  };
 
   const handleComplete = async () => {
     if (isCompleted) return;
@@ -226,7 +243,7 @@ export default function LessonPage() {
                 <span className="font-mono text-xs text-arena-dim ml-1">practice.js</span>
               </div>
               <button
-                onClick={() => { setCode(lesson.codeStarter || '// Write your code here\n\n'); }}
+                onClick={() => { setCode(lesson.codeStarter || '// Write your code here\n\n'); setOutput(''); }}
                 className="font-mono text-xs text-arena-dim hover:text-arena-muted transition-colors"
               >
                 reset
@@ -236,7 +253,7 @@ export default function LessonPage() {
               value={code}
               onChange={(e) => setCode(e.target.value)}
               className="w-full bg-arena-bg text-arena-text font-mono text-xs p-4 outline-none resize-none border-0"
-              style={{ height: 380, tabSize: 2 }}
+              style={{ height: output ? 240 : 340, tabSize: 2 }}
               spellCheck={false}
               placeholder="// Practice code here..."
               onKeyDown={(e) => {
@@ -249,9 +266,17 @@ export default function LessonPage() {
                 }
               }}
             />
+            {output && (
+              <div className="border-t border-arena-border bg-black/30 px-4 py-3 max-h-32 overflow-y-auto">
+                <pre className="font-mono text-xs text-arena-teal whitespace-pre-wrap">{output}</pre>
+              </div>
+            )}
             <div className="px-4 py-2 border-t border-arena-border">
-              <button className="flex items-center gap-2 text-arena-teal hover:text-arena-teal2 transition-colors font-mono text-xs">
-                <Icons.Play size={11} /> Run in browser console
+              <button
+                onClick={handleRunCode}
+                className="flex items-center gap-2 text-arena-teal hover:text-arena-teal2 transition-colors font-mono text-xs font-bold"
+              >
+                ▶ Run Code
               </button>
             </div>
           </div>
