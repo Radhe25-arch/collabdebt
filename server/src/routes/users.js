@@ -99,4 +99,23 @@ router.delete('/:id/follow', authenticate, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+router.delete('/me', authenticate, async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    
+    // Prisma cascading delete (configured in schema.prisma) will handle:
+    // Interest, Enrollments, Progress, Badges, TournamentEntries, Notifications, 
+    // ActivityLogs, RefreshTokens, PasswordResets, Follows, XPTransactions,
+    // Battles, Submissions, Quests, Portfolios, MentorSessions, etc.
+    
+    await prisma.user.delete({ where: { id: userId } });
+    
+    res.clearCookie('token'); // Clear the session cookie
+    res.json({ message: 'Account permanently erased' });
+  } catch (err) { 
+    console.error('Account deletion error:', err);
+    next(err); 
+  }
+});
+
 module.exports = router;

@@ -72,11 +72,35 @@ export default function SettingsPage() {
       </div>
 
       {/* Danger zone */}
-      <div className="arena-card p-6 border-red-500/20">
-        <span className="font-mono text-xs text-red-400 uppercase tracking-widest block mb-4">Danger Zone</span>
-        <Button onClick={() => { logout(); }} variant="danger">
-          <Icons.LogOut size={14} /> Sign Out of All Devices
-        </Button>
+      <div className="arena-card p-6 border-red-500/20 space-y-4">
+        <div>
+          <span className="font-mono text-xs text-red-400 uppercase tracking-widest block mb-1">Danger Zone</span>
+          <p className="font-mono text-[10px] text-arena-dim uppercase tracking-tighter">// permanent actions block</p>
+        </div>
+        
+        <div className="flex flex-col sm:flex-row gap-3">
+          <Button onClick={() => logout()} variant="secondary" className="flex-1 opacity-70 hover:opacity-100">
+            <Icons.LogOut size={14} /> Sign Out
+          </Button>
+          
+          <Button 
+            onClick={async () => {
+              if (window.confirm("CRITICAL: This will permanently erase your entire SkillForge history, XP, and progress. This action is irreversible. Proceed?")) {
+                try {
+                  await api.delete('/users/me');
+                  logout();
+                  window.location.href = '/';
+                } catch {
+                  toast.error("Erasure failed. Access level insufficient?");
+                }
+              }
+            }} 
+            variant="danger" 
+            className="flex-1"
+          >
+            <Icons.Trash size={14} /> Erase Account Memory
+          </Button>
+        </div>
       </div>
     </div>
   );

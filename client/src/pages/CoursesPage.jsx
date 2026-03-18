@@ -61,7 +61,10 @@ function CategoryCard({ category, courseCount, onClick, isActive }) {
         <div className="w-7 h-7 rounded-md bg-white/5 border border-white/10 flex items-center justify-center">
           <IconComponent size={13} className="text-white/70" />
         </div>
-        <span className="font-mono text-[9px] text-white/30 uppercase tracking-tighter">{courseCount} paths</span>
+        <div className="flex flex-col items-end gap-1">
+          <span className="font-mono text-[9px] text-white/30 uppercase tracking-tighter">{courseCount} paths</span>
+          <span className="font-mono text-[7px] text-arena-teal/40 uppercase tracking-widest hidden sm:block">SRC: /mnt/forge/{category.slug}</span>
+        </div>
       </div>
       <div>
         <h3 className="font-body text-xs text-white/90 font-semibold tracking-tight leading-tight line-clamp-2">{category.name}</h3>

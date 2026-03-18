@@ -36,13 +36,23 @@ const PAGE_TITLES = {
   '/profile':'Profile', '/settings':'Settings', '/admin':'Admin Panel',
 };
 
-function NavSection({ items }) {
-  return items.map(({ to, label, Icon }) => (
-    <NavLink key={to} to={to} className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
+function NavItem({ to, label, Icon }) {
+  const location = useLocation();
+  const isActive = location.pathname + location.search === to;
+
+  return (
+    <NavLink 
+      to={to} 
+      className={`sidebar-link ${isActive ? 'active' : ''}`}
+    >
       <Icon size={15} />
       <span className="whitespace-nowrap text-sm">{label}</span>
     </NavLink>
-  ));
+  );
+}
+
+function NavSection({ items }) {
+  return items.map((item) => <NavItem key={item.to} {...item} />);
 }
 
 function Sidebar({ open }) {
