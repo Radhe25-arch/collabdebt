@@ -68,9 +68,8 @@ const COURSES = [
 ];
 
 async function main() {
-  console.log('🌱 Seeding database...');
+  console.log('🌱 Seeding SkillForge database...');
 
-  // Seed categories
   for (const cat of CATEGORIES) {
     await prisma.category.upsert({
       where: { slug: cat.slug },
@@ -80,21 +79,20 @@ async function main() {
   }
   console.log(`✅ ${CATEGORIES.length} categories seeded`);
 
-  // Seed courses
-  let courseCount = 0;
+  let count = 0;
   for (const course of COURSES) {
-    const { categorySlug, ...courseData } = course;
+    const { categorySlug, ...data } = course;
     const category = await prisma.category.findUnique({ where: { slug: categorySlug } });
-    if (!category) { console.warn(`Category not found: ${categorySlug}`); continue; }
+    if (!category) { console.warn(`⚠️  Category not found: ${categorySlug}`); continue; }
     await prisma.course.upsert({
       where: { slug: course.slug },
-      update: { ...courseData, categoryId: category.id, isPublished: true },
-      create: { ...courseData, categoryId: category.id, isPublished: true },
+      update: { ...data, categoryId: category.id, isPublished: true },
+      create: { ...data, categoryId: category.id, isPublished: true },
     });
-    courseCount++;
+    count++;
   }
-  console.log(`✅ ${courseCount} courses seeded`);
-  console.log('🎉 Database seeded successfully!');
+  console.log(`✅ ${count} courses seeded`);
+  console.log('🎉 Done!');
 }
 
 main()
