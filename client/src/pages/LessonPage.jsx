@@ -100,7 +100,7 @@ export default function LessonPage() {
   const [completing, setCompleting] = useState(false);
   const [quizOpen, setQuizOpen]     = useState(false);
   const [code, setCode]             = useState('');
-  const [output, setOutput]         = useState('');
+  const [output, setOutput]         = useState(null); // { lines: [], isError: bool }
   const [showXP, setShowXP]         = useState(null);
 
   useEffect(() => {
@@ -111,19 +111,24 @@ export default function LessonPage() {
     }).finally(() => setLoading(false));
   }, [lessonSlug]);
 
-  const handleRunCode = () => {
-    const logs = [];
-    const origLog = console.log;
-    console.log = (...args) => { logs.push(args.map(a => typeof a === 'object' ? JSON.stringify(a, null, 2) : String(a)).join(' ')); origLog(...args); };
+  const runCode = () => {
+    const lines = [];
+    const origLog   = console.log;
+    const origWarn  = console.warn;
+    const origError = console.error;
+    console.log   = (...args) => lines.push(args.map(a => typeof a === 'object' ? JSON.stringify(a, null, 2) : String(a)).join(' '));
+    console.warn  = (...args) => lines.push('⚠ ' + args.map(String).join(' '));
+    console.error = (...args) => lines.push('✖ ' + args.map(String).join(' '));
     try {
-      // eslint-disable-next-line no-eval
-      const result = eval(code);
-      if (result !== undefined && !logs.length) logs.push(String(result));
-      setOutput(logs.length ? logs.join('\n') : '(no output)');
+      // eslint-disable-next-line no-new-func
+      new Function(code)();
+      setOutput({ lines, isError: false });
     } catch (err) {
-      setOutput(`❌ Error: ${err.message}`);
+      setOutput({ lines: [...lines, err.toString()], isError: true });
     } finally {
-      console.log = origLog;
+      console.log   = origLog;
+      console.warn  = origWarn;
+      console.error = origError;
     }
   };
 
@@ -243,7 +248,7 @@ export default function LessonPage() {
                 <span className="font-mono text-xs text-arena-dim ml-1">practice.js</span>
               </div>
               <button
-                onClick={() => { setCode(lesson.codeStarter || '// Write your code here\n\n'); setOutput(''); }}
+                onClick={() => { setCode(lesson.codeStarter || '// Write your code here\n\n'); }}
                 className="font-mono text-xs text-arena-dim hover:text-arena-muted transition-colors"
               >
                 reset
@@ -253,7 +258,7 @@ export default function LessonPage() {
               value={code}
               onChange={(e) => setCode(e.target.value)}
               className="w-full bg-arena-bg text-arena-text font-mono text-xs p-4 outline-none resize-none border-0"
-              style={{ height: output ? 240 : 340, tabSize: 2 }}
+              style={{ height: 380, tabSize: 2 }}
               spellCheck={false}
               placeholder="// Practice code here..."
               onKeyDown={(e) => {
@@ -266,18 +271,26 @@ export default function LessonPage() {
                 }
               }}
             />
-            {output && (
-              <div className="border-t border-arena-border bg-black/30 px-4 py-3 max-h-32 overflow-y-auto">
-                <pre className="font-mono text-xs text-arena-teal whitespace-pre-wrap">{output}</pre>
-              </div>
-            )}
-            <div className="px-4 py-2 border-t border-arena-border">
+            <div className="border-t border-arena-border">
               <button
-                onClick={handleRunCode}
-                className="flex items-center gap-2 text-arena-teal hover:text-arena-teal2 transition-colors font-mono text-xs font-bold"
+                onClick={runCode}
+                className="flex items-center gap-2 text-arena-teal hover:text-arena-teal2 transition-colors font-mono text-xs w-full px-4 py-2.5 hover:bg-arena-teal/5"
               >
-                ▶ Run Code
+                <Icons.Play size={11} /> ▶ Run Code
               </button>
+              {output && (
+                <div className={`border-t border-arena-border bg-black/30 px-4 py-3 max-h-40 overflow-y-auto`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-mono text-[10px] text-arena-dim uppercase tracking-widest">Output</span>
+                    <button onClick={() => setOutput(null)} className="font-mono text-[10px] text-arena-dim hover:text-white">clear</button>
+                  </div>
+                  {output.lines.length === 0 ? (
+                    <p className="font-mono text-xs text-arena-dim italic">// no output</p>
+                  ) : output.lines.map((line, i) => (
+                    <p key={i} className={`font-mono text-xs whitespace-pre-wrap ${output.isError && i === output.lines.length - 1 ? 'text-red-400' : 'text-arena-teal'}`}>{line}</p>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
