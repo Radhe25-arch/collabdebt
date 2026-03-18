@@ -84,11 +84,31 @@ async function main() {
     const { categorySlug, ...data } = course;
     const category = await prisma.category.findUnique({ where: { slug: categorySlug } });
     if (!category) { console.warn(`⚠️  Category not found: ${categorySlug}`); continue; }
-    await prisma.course.upsert({
+    const dbCourse = await prisma.course.upsert({
       where: { slug: course.slug },
       update: { ...data, categoryId: category.id, isPublished: true },
       create: { ...data, categoryId: category.id, isPublished: true },
     });
+
+    // Generate 5 syllabus lessons per course so it's fully playable
+    const lessonTitles = [
+      "Introduction & Setup",
+      "Core Concepts & Fundamentals",
+      "Deep Dive & Architecture",
+      "Real-World Patterns",
+      "Final Project & Review"
+    ];
+
+    for (let i = 0; i < lessonTitles.length; i++) {
+        const title = lessonTitles[i];
+        const lslug = `${dbCourse.slug}-lesson-${i+1}`;
+        await prisma.lesson.upsert({
+           where: { courseId_slug: { courseId: dbCourse.id, slug: lslug } },
+           update: { title, order: i+1, content: `## ${title}\n\nWelcome to ${title} for **${dbCourse.title}**. This module covers everything you need to know to progress to the next level.\n\n### Instructions\nRead through the concepts and complete the interactive exercises available in the embedded editor!`, xpReward: 100, duration: 15 },
+           create: { title, slug: lslug, order: i+1, courseId: dbCourse.id, content: `## ${title}\n\nWelcome to ${title} for **${dbCourse.title}**. This module covers everything you need to know to progress to the next level.\n\n### Instructions\nRead through the concepts and complete the interactive exercises available in the embedded editor!`, xpReward: 100, duration: 15 },
+        });
+    }
+
     count++;
   }
   console.log(`✅ ${count} courses seeded`);
