@@ -28,9 +28,33 @@ const SYSTEM_PROBLEMS = [
   { title: 'Fibonacci Number', desc: 'Given n, calculate the nth Fibonacci number.', starter: { javascript: 'function fib(n) {\n  // your code\n}', python: 'def fib(n):\n    pass', java: 'class Solution {\n  public int fib(int n) {\n    // your code\n  }\n}', cpp: 'int fib(int n) {\n  // your code\n}' } },
 ];
 
-function pickSystemProblem(language) {
-  const idx = Math.floor(Math.random() * SYSTEM_PROBLEMS.length);
-  const p = SYSTEM_PROBLEMS[idx];
+async function pickSystemProblem(challengerId, challengedId, language) {
+  // Get titles of problems this pair has seen in last 10 battles
+  const recentBattles = await prisma.battle.findMany({
+    where: {
+      OR: [
+        { challengerId, challengedId },
+        { challengerId: challengedId, challengedId: challengerId },
+      ],
+      mode: 'system',
+      problemText: { not: null },
+    },
+    select: { problemText: true },
+    orderBy: { createdAt: 'desc' },
+    take: 10,
+  });
+
+  const usedTitles = recentBattles.map(b => {
+    const firstLine = b.problemText.split('\n')[0]; // "# Title"
+    return firstLine.replace('# ', '').trim();
+  });
+
+  const available = SYSTEM_PROBLEMS.filter(p => !usedTitles.includes(p.title));
+  const pool = available.length > 0 ? available : SYSTEM_PROBLEMS; // fallback to all if all seen
+
+  const idx = Math.floor(Math.random() * pool.length);
+  const p = pool[idx];
+
   return {
     title: p.title,
     description: p.desc,
@@ -147,7 +171,7 @@ async function configure(req, res, next) {
 
     // If system mode, generate a problem
     if (mode === 'system') {
-      const sysProblem = pickSystemProblem(language);
+      const sysProblem = await pickSystemProblem(battle.challengerId, battle.challengedId, language);
       finalProblem = `# ${sysProblem.title}\n\n${sysProblem.description}`;
       finalStarter = sysProblem.codeStarter;
     }

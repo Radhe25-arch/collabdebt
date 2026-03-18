@@ -126,7 +126,10 @@ function Topbar({ sidebarOpen, toggleSidebar }) {
   const unread = notifs.filter(n => !n.read).length;
 
   useEffect(() => {
-    api.get('/notifications').then(r => setNotifs(r.data.notifications || [])).catch(() => {});
+    const fetchNotifs = () => api.get('/notifications').then(r => setNotifs(r.data.notifications || [])).catch(() => {});
+    fetchNotifs();
+    const id = setInterval(fetchNotifs, 10000); // Poll every 10s
+    return () => clearInterval(id);
   }, []);
 
   // Match nested paths too

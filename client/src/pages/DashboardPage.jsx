@@ -131,6 +131,48 @@ function TournamentWidget({ tournament, onJoin }) {
   );
 }
 
+// ─── ACTIVE BATTLE WIDGET ──────────────────────────────────
+function ActiveBattleWidget({ battle, onJoin }) {
+  if (!battle) return null;
+  const isPending = battle.status === 'PENDING';
+  const isConfig  = battle.status === 'CONFIGURING';
+  const isActive  = battle.status === 'ACTIVE';
+
+  return (
+    <div
+      className={`arena-card p-5 cursor-pointer border-l-4 transition-all hover:bg-arena-bg3/60 ${
+        isActive ? 'border-l-arena-teal bg-arena-teal/5' :
+        isPending ? 'border-l-yellow-400 bg-yellow-500/5' :
+        'border-l-arena-purple bg-arena-purple/5'
+      }`}
+      onClick={() => onJoin(battle.id)}
+    >
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <span className={`w-2 h-2 rounded-full animate-pulse ${
+            isActive ? 'bg-arena-teal' : isPending ? 'bg-yellow-400' : 'bg-arena-purple2'
+          }`} />
+          <span className="font-mono text-[10px] text-white/50 uppercase tracking-widest">
+            {isActive ? 'Live Battle' : isPending ? 'Incoming Challenge' : 'Configure Match'}
+          </span>
+        </div>
+        <Icons.Zap size={14} className={isActive ? 'text-arena-teal' : 'text-arena-dim'} />
+      </div>
+      <div className="flex items-center gap-3">
+        <div className="flex-1 min-w-0">
+          <p className="font-mono text-sm font-bold text-white truncate">Vs {battle.challenger?.username === 'Me' ? battle.challenged?.username : battle.challenger?.username}</p>
+          <p className="font-mono text-[11px] text-white/40 mt-1">
+            {isActive ? 'Battle is live! Go and solve.' : isPending ? 'Someone challenged you!' : 'Waiting to start...'}
+          </p>
+        </div>
+        <button className="px-4 py-1.5 rounded-lg bg-white/5 border border-white/10 font-mono text-xs text-white hover:bg-white/10 transition-colors">
+          Join →
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ─── RECENT BADGES ─────────────────────────────────────────
 function RecentBadges({ badges }) {
   if (!badges?.length) return (
@@ -202,6 +244,7 @@ export default function DashboardPage() {
   const [topUsers, setTopUsers]      = useState([]);
   const [myRank, setMyRank]          = useState(null);
   const [tournament, setTournament]  = useState(null);
+  const [activeBattle, setActiveBattle] = useState(null);
   const [loading, setLoading]        = useState(true);
 
   const lvl    = Math.min(user?.level || 1, 10);
@@ -214,11 +257,15 @@ export default function DashboardPage() {
       api.get('/users/me/stats'),
       api.get('/leaderboard/global?limit=5'),
       api.get('/tournaments/current'),
-    ]).then(([s, lb, t]) => {
+      api.get('/battles'),
+    ]).then(([s, lb, t, b]) => {
       setStats(s.data);
       setTopUsers(lb.data.users || []);
       setMyRank(lb.data.myRank);
       setTournament(t.data.tournament);
+      // Find the most relevant active/pending battle
+      const live = (b.data.battles || []).find(x => ['ACTIVE', 'PENDING', 'CONFIGURING'].includes(x.status));
+      setActiveBattle(live);
     }).catch(() => {}).finally(() => setLoading(false));
   }, []);
 
@@ -301,6 +348,11 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left col — main */}
         <div className="lg:col-span-2 space-y-5">
+          {/* Active Battle */}
+          {activeBattle && (
+            <ActiveBattleWidget battle={activeBattle} onJoin={(id) => navigate(`/battles/${id}`)} />
+          )}
+
           {/* Continue learning */}
           {recentEnrollment && (
             <CourseProgressCard enrollment={recentEnrollment} onContinue={(slug) => navigate(`/courses/${slug}`)} />

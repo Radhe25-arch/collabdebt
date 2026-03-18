@@ -581,10 +581,10 @@ export default function BattlePage() {
       </div>
 
       {/* ─── MAIN ARENA ─── */}
-      <div className="flex-1 flex overflow-hidden min-h-0">
+      <div className="flex-1 flex overflow-hidden min-h-0 animate-fade-up">
 
         {/* Left: Problem / Waiting state */}
-        <div className="w-[38%] flex flex-col border-r border-arena-border overflow-hidden">
+        <div className="w-[38%] flex flex-col border-r border-arena-border overflow-hidden animate-fade-up delay-100">
 
           {/* ── PENDING state: waiting for opponent ── */}
           {isPending && (
@@ -737,7 +737,7 @@ export default function BattlePage() {
         </div>
 
         {/* Right: Code editor */}
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-hidden animate-fade-up delay-200">
           {/* Editor toolbar */}
           <div className="flex items-center gap-3 px-4 py-2.5 bg-arena-bg2 border-b border-arena-border flex-shrink-0">
             <select
