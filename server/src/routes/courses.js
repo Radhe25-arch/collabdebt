@@ -85,7 +85,9 @@ courseRouter.get('/:id', optionalAuth, async (req, res, next) => {
 
 courseRouter.post('/:id/enroll', authenticate, async (req, res, next) => {
   try {
-    const course = await prisma.course.findUnique({ where: { id: req.params.id } });
+    const course = await prisma.course.findFirst({
+      where: { OR: [{ id: req.params.id }, { slug: req.params.id }] },
+    });
     if (!course) throw new AppError('Course not found', 404);
 
     const existing = await prisma.enrollment.findUnique({
