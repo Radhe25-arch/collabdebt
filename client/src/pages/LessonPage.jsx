@@ -11,144 +11,192 @@ function QuizGateModal({ quiz, lessonId, onPass, onClose }) {
   const [submitted, setSubmitted] = useState(false);
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
-  // Randomize question order once per mount
+  const [currentIndex, setCurrentIndex] = useState(0);
+
   const [shuffled] = useState(() =>
     [...quiz.questions].sort(() => Math.random() - 0.5)
   );
 
   const handleSubmit = async () => {
     const arr = shuffled.map((_, i) => answers[i] ?? -1);
-    if (arr.some((a) => a === -1)) { toast.error('Answer all questions first'); return; }
+    const unanswered = arr.findIndex(a => a === -1);
+    if (unanswered !== -1) { 
+      setCurrentIndex(unanswered);
+      toast.error(`Please answer question ${unanswered + 1}`); 
+      return; 
+    }
+    
     setLoading(true);
     try {
-      // Map shuffled answers back to original question order
-      const originalOrder = shuffled.map((q, i) => ({ originalIndex: quiz.questions.indexOf(q), answer: answers[i] }));
+      const originalOrderMap = shuffled.map((q, i) => ({ originalIndex: quiz.questions.indexOf(q), answer: answers[i] }));
       const orderedAnswers = quiz.questions.map((_, i) => {
-        const found = originalOrder.find(o => o.originalIndex === i);
+        const found = originalOrderMap.find(o => o.originalIndex === i);
         return found ? found.answer : -1;
       });
       const r = await api.post(`/lessons/${lessonId}/quiz`, { answers: orderedAnswers });
       setResults(r.data);
       setSubmitted(true);
-      if (r.data.passed) {
-        toast.success(`Quiz passed! +${r.data.xpAwarded} XP 🎉`);
-      } else {
-        toast.error(`${r.data.correct}/${r.data.total} correct — need 70% to proceed`);
-      }
+      if (r.data.passed) toast.success(`Passed! +${r.data.xpAwarded} XP`);
+      else toast.error('You did not pass the assessment.');
     } catch { toast.error('Submission failed'); }
     setLoading(false);
   };
 
-  const retry = () => { setAnswers({}); setSubmitted(false); setResults(null); };
+  const progress = Math.round(((Object.keys(answers).length) / shuffled.length) * 100);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-      <div className="w-full max-w-xl bg-[#0f0f0f] border border-white/10 rounded-2xl shadow-2xl flex flex-col max-h-[88vh]">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-white/8 flex-shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-arena-purple/20 border border-arena-purple/30 flex items-center justify-center">
-              <Icons.Target size={14} className="text-arena-purple2" />
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6 bg-[#020205]/95 backdrop-blur-xl animate-fade-in">
+      <div className="w-full max-w-4xl h-[720px] bg-[#0A0A0F]/60 border border-white/5 rounded-[32px] shadow-2xl flex flex-col overflow-hidden">
+        
+        {/* Header with Progress Bar */}
+        <div className="px-8 py-6 border-b border-white/5 flex items-center justify-between relative">
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center">
+              <Icons.Target size={18} className="text-blue-500" />
             </div>
             <div>
-              <p className="font-display font-bold text-sm text-white">Lesson Quiz</p>
-              <p className="font-mono text-[10px] text-white/40">Must pass to mark complete</p>
+              <h3 className="font-display font-black text-lg text-white tracking-tight">Technical Assessment</h3>
+              <p className="font-mono text-[10px] text-slate-500 uppercase tracking-widest">
+                Question {currentIndex + 1} of {shuffled.length}
+              </p>
             </div>
           </div>
-          <button onClick={onClose} className="text-white/30 hover:text-white transition-colors">
-            <Icons.X size={16} />
+          <button onClick={onClose} className="p-2 hover:bg-white/5 rounded-full text-slate-500 hover:text-white transition-colors">
+            <Icons.X size={20} />
           </button>
+          
+          <div className="absolute bottom-0 left-0 h-[2px] bg-blue-600 transition-all duration-500" style={{ width: `${progress}%` }} />
         </div>
 
-        <div className="overflow-y-auto flex-1 p-6 space-y-5">
-          {!submitted ? (
-            <>
-              <p className="font-mono text-[11px] text-white/40 uppercase tracking-widest">
-                {shuffled.length} Questions · 70% to pass
-              </p>
-              {shuffled.map((q, qi) => (
-                <div key={q.id} className="space-y-2.5">
-                  <p className="font-mono text-sm text-white/90 font-medium">{qi + 1}. {q.question}</p>
-                  <div className="space-y-2">
-                    {(q.options || []).map((opt, oi) => (
-                      <button
-                        key={oi}
-                        onClick={() => setAnswers({ ...answers, [qi]: oi })}
-                        className={`w-full text-left px-4 py-3 rounded-xl border font-mono text-xs transition-all ${
-                          answers[qi] === oi
-                            ? 'bg-arena-purple/15 border-arena-purple/50 text-white'
-                            : 'bg-white/3 border-white/8 text-white/60 hover:border-white/20 hover:text-white/80'
-                        }`}
-                      >
-                        <span className="text-white/30 mr-2">{String.fromCharCode(65 + oi)}.</span>
-                        {opt}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </>
-          ) : (
-            <div className="space-y-4">
-              <div className={`p-5 rounded-2xl text-center ${results?.passed ? 'bg-arena-teal/10 border border-arena-teal/25' : 'bg-red-500/8 border border-red-500/20'}`}>
-                <div className={`font-display font-black text-5xl mb-2 ${results?.passed ? 'text-arena-teal' : 'text-red-400'}`}>
-                  {Math.round((results?.correct / results?.total) * 100)}%
-                </div>
-                <p className="font-mono text-xs text-white/50">
-                  {results?.correct}/{results?.total} correct
-                  {results?.passed ? ` · +${results.xpAwarded} XP earned` : ' · Need 70% to proceed'}
-                </p>
+        <div className="flex-1 flex overflow-hidden">
+          {/* Main Content */}
+          <div className="flex-1 overflow-y-auto p-12 custom-scrollbar">
+            {!submitted ? (
+              <div className="max-w-xl mx-auto space-y-10 animate-slide-up">
+                {shuffled.map((q, qi) => (
+                  currentIndex === qi && (
+                    <div key={qi} className="space-y-8">
+                      <h2 className="text-2xl font-display font-black text-white leading-snug">
+                        {q.question}
+                      </h2>
+                      <div className="space-y-3">
+                        {q.options.map((opt, oi) => (
+                          <button
+                            key={oi}
+                            onClick={() => setAnswers({ ...answers, [qi]: oi })}
+                            className={`w-full text-left px-6 py-5 rounded-2xl border transition-all flex items-center gap-4 group ${
+                              answers[qi] === oi
+                                ? 'bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-600/20'
+                                : 'bg-white/3 border-white/5 text-slate-400 hover:bg-white/5 hover:border-white/10'
+                            }`}
+                          >
+                            <span className={`w-8 h-8 rounded-lg flex items-center justify-center font-black text-xs border ${
+                              answers[qi] === oi ? 'bg-white/20 border-white/20 text-white' : 'bg-white/5 border-white/5 text-slate-600 group-hover:text-slate-400'
+                            }`}>
+                              {String.fromCharCode(65 + oi)}
+                            </span>
+                            <span className="text-sm font-medium">{opt}</span>
+                            {answers[qi] === oi && <Icons.Check size={16} className="ml-auto" />}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                ))}
               </div>
-              {results?.results?.map((r, i) => {
-                const q = shuffled[i];
-                return (
-                  <div key={i} className={`p-3.5 rounded-xl border text-xs ${r.correct ? 'border-arena-teal/20 bg-arena-teal/5' : 'border-red-500/15 bg-red-500/5'}`}>
-                    <p className="font-mono text-white/70 mb-1">{i + 1}. {q.question}</p>
-                    <p className={`font-mono font-bold ${r.correct ? 'text-arena-teal' : 'text-red-400'}`}>
-                      {r.correct ? '✓ Correct' : `✗ Answer: ${String.fromCharCode(65 + r.correctIndex)}`}
-                    </p>
-                    {!r.correct && r.explanation && (
-                      <p className="font-mono text-white/40 mt-1">{r.explanation}</p>
-                    )}
+            ) : (
+              <div className="max-w-2xl mx-auto animate-fade-in space-y-8 py-4">
+                <div className={`p-8 rounded-[32px] text-center relative overflow-hidden ${results?.passed ? 'bg-emerald-500/10 border border-emerald-500/20' : 'bg-red-500/10 border border-red-500/20'}`}>
+                  {results?.passed && <div className="absolute top-[-20%] left-[-20%] w-[50%] h-[50%] bg-emerald-500/20 blur-[100px] pointer-events-none" />}
+                  <div className={`font-display font-black text-7xl mb-4 ${results?.passed ? 'text-emerald-500' : 'text-red-500'}`}>
+                    {Math.round((results?.correct / results?.total) * 100)}%
                   </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+                  <h3 className="text-xl font-bold text-white mb-2">{results?.passed ? 'Assessment Passed' : 'Assessment Failed'}</h3>
+                  <p className="font-mono text-sm text-slate-400">
+                    You scored <span className="text-white">{results?.correct}</span> out of <span className="text-white">{results?.total}</span> questions correctly.
+                    {results?.passed && <span className="block mt-2 text-emerald-400">XP Provisioned: +{results.xpAwarded} XP</span>}
+                  </p>
+                </div>
 
-        {/* Footer */}
-        <div className="px-6 py-4 border-t border-white/8 flex-shrink-0 flex gap-3">
-          {!submitted ? (
-            <>
-              <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-white/10 font-mono text-xs text-white/50 hover:text-white hover:border-white/20 transition-all">
-                Cancel
-              </button>
-              <button
-                onClick={handleSubmit}
-                disabled={loading}
-                className="flex-1 py-2.5 rounded-xl bg-arena-purple font-mono text-xs font-bold text-white hover:bg-arena-purple/80 transition-all disabled:opacity-50"
-              >
-                {loading ? '...' : 'Submit Answers'}
-              </button>
-            </>
-          ) : results?.passed ? (
-            <button
-              onClick={onPass}
-              className="flex-1 py-2.5 rounded-xl bg-arena-teal font-mono text-xs font-bold text-black hover:bg-arena-teal/80 transition-all"
-            >
-              ✓ Mark Complete & Continue →
-            </button>
-          ) : (
-            <>
-              <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-white/10 font-mono text-xs text-white/50 hover:text-white transition-all">
-                Study More
-              </button>
-              <button onClick={retry} className="flex-1 py-2.5 rounded-xl bg-arena-purple/80 font-mono text-xs font-bold text-white hover:bg-arena-purple transition-all">
-                Retry Quiz
-              </button>
-            </>
-          )}
+                <div className="space-y-4">
+                  <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] pl-2">Review Findings</h4>
+                  {results?.results?.map((r, i) => {
+                    const q = shuffled[i];
+                    return (
+                      <div key={i} className={`p-5 rounded-2xl border ${r.correct ? 'bg-emerald-500/5 border-emerald-500/10 shadow-sm' : 'bg-red-500/5 border-red-500/10'}`}>
+                        <div className="flex items-start gap-4">
+                          <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${r.correct ? 'bg-emerald-500/20 text-emerald-500' : 'bg-red-500/20 text-red-500'}`}>
+                            {r.correct ? <Icons.Check size={12} strokeWidth={4} /> : <Icons.X size={12} strokeWidth={4} />}
+                          </div>
+                          <div className="space-y-2">
+                             <p className="text-sm font-semibold text-white/90">{q.question}</p>
+                             {!r.correct && (
+                               <p className="text-xs text-red-400 font-medium">Correct Choice: {String.fromCharCode(65 + r.correctIndex)} — {q.options[r.correctIndex]}</p>
+                             )}
+                             {r.explanation && <p className="text-xs text-slate-500 leading-relaxed italic">"{r.explanation}"</p>}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Sidebar / Progress */}
+          <div className="hidden md:flex flex-col w-[280px] border-l border-white/5 p-8 bg-[#020205]/40 backdrop-blur-md">
+            <h4 className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-6">Navigator</h4>
+            <div className="grid grid-cols-4 gap-2 mb-10">
+              {shuffled.map((_, i) => (
+                <button
+                  key={i}
+                  disabled={submitted}
+                  onClick={() => setCurrentIndex(i)}
+                  className={`h-10 rounded-lg flex items-center justify-center font-mono text-[11px] font-bold transition-all border ${
+                    currentIndex === i ? 'bg-blue-600 border-blue-500 text-white' : 
+                    answers[i] !== undefined ? 'bg-white/10 border-white/10 text-slate-300' : 'bg-white/5 border-white/5 text-slate-600 hover:border-white/10'
+                  }`}
+                >
+                  {i + 1}
+                </button>
+              ))}
+            </div>
+
+            <div className="mt-auto space-y-4">
+              <div className="p-4 rounded-2xl bg-white/5 border border-white/5">
+                <p className="text-[10px] font-bold text-slate-500 uppercase mb-2">Completion Rate</p>
+                <div className="flex items-end gap-2">
+                  <span className="text-2xl font-black text-white">{progress}%</span>
+                  <span className="text-[10px] text-slate-600 mb-1">Finished</span>
+                </div>
+              </div>
+              
+              {!submitted ? (
+                <button
+                  onClick={handleSubmit}
+                  disabled={loading}
+                  className="w-full py-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-black uppercase tracking-widest text-[10px] transition-all disabled:opacity-50 shadow-lg shadow-blue-600/20"
+                >
+                  {loading ? 'Initializing...' : 'Transmit Final Result'}
+                </button>
+              ) : results?.passed ? (
+                <button
+                  onClick={onPass}
+                  className="w-full py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black uppercase tracking-widest text-[10px] transition-all shadow-lg shadow-emerald-500/20"
+                >
+                  Release to Dashboard →
+                </button>
+              ) : (
+                <button
+                  onClick={() => { setAnswers({}); setSubmitted(false); setResults(null); setCurrentIndex(0); }}
+                  className="w-full py-3.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 text-white font-black uppercase tracking-widest text-[10px] transition-all"
+                >
+                  Request Retry session
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>

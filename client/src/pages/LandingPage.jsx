@@ -22,8 +22,11 @@ export default function LandingPage() {
         </div>
         <div className="hidden md:flex items-center gap-8">
           <Link to="/courses" className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">Catalog</Link>
-          <Link to="/tournaments" className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">Tournaments</Link>
-          <Link to="/battles" className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">Community</Link>
+          <Link to="/community" className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">Community</Link>
+          <Link to="/battles" className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">1v1 Arena</Link>
+          <Link to="/mentor" className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors group flex items-center gap-1">
+            AI Mentor <span className="text-[10px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded font-black">NEW</span>
+          </Link>
           <Link to="/rooms" className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">Multiplayer</Link>
         </div>
         <div className="flex items-center gap-4">

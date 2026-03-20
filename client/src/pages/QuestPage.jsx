@@ -31,67 +31,80 @@ export default function QuestPage() {
   const claimedQuests = quests.filter(q => q.status === 'CLAIMED');
 
   return (
-    <div className="max-w-4xl mx-auto pb-20 font-sans animate-fade-in space-y-8 pt-4">
-      {/* Header */}
-      <div>
-        <span className="bg-amber-100 text-amber-700 text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-full mb-4 inline-block shadow-sm">
-          CHALLENGES
+    <div className="max-w-5xl mx-auto pb-24 font-sans animate-fade-in space-y-12 pt-8 px-4">
+      {/* ─── HEADER ─── */}
+      <div className="relative">
+        <div className="absolute top-[-40px] left-[-20px] w-32 h-32 bg-blue-600/10 blur-[60px] pointer-events-none" />
+        <span className="bg-blue-600/10 text-blue-500 text-[10px] font-black uppercase tracking-[0.3em] px-4 py-1.5 rounded-full mb-6 inline-block border border-blue-500/10">
+          Global Objectives
         </span>
-        <h1 className="font-display font-black text-4xl text-slate-900 mb-2 tracking-tight">Daily Quests</h1>
-        <p className="text-lg text-slate-600 max-w-xl">Complete specific objectives to earn bonus experience and rare badges.</p>
+        <h1 className="font-display font-black text-5xl text-white mb-4 tracking-tight">Active Quests.</h1>
+        <p className="text-slate-400 text-lg max-w-xl leading-relaxed">
+          Complete these tactical assignments to provision bonus experience and advance your node's rank.
+        </p>
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-24"><div className="w-8 h-8 border-4 border-slate-200 border-t-amber-500 rounded-full animate-spin" /></div>
+        <div className="flex justify-center py-24">
+          <div className="w-10 h-10 border-4 border-white/5 border-t-blue-500 rounded-full animate-spin" />
+        </div>
       ) : quests.length === 0 ? (
-        <div className="bg-slate-50 border border-slate-200 border-dashed rounded-3xl p-20 text-center">
-          <div className="w-20 h-20 rounded-full bg-white shadow-sm flex items-center justify-center mx-auto mb-6">
-            <Icons.Target size={32} className="text-slate-300" />
+        <div className="bg-[#0A0A0F]/60 border border-white/5 border-dashed rounded-[32px] p-24 text-center backdrop-blur-sm">
+          <div className="w-24 h-24 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-8 border border-white/5 shadow-inner">
+            <Icons.Target size={36} className="text-slate-700" />
           </div>
-          <h3 className="font-display font-black text-2xl text-slate-900 mb-2">No Active Quests</h3>
-          <p className="text-slate-500 text-lg max-w-sm mx-auto">Check back tomorrow for new daily objectives.</p>
+          <h3 className="font-display font-black text-2xl text-white mb-3">No Active Objectives</h3>
+          <p className="text-slate-500 text-sm max-w-xs mx-auto leading-relaxed uppercase tracking-wider font-mono">
+            New quests provisioning at 00:00 UTC. Check back soon.
+          </p>
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-10">
           {/* Actionable Quests */}
           {(activeQuests.length > 0 || completedQuests.length > 0) && (
-            <div className="space-y-4">
-              <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest pl-2">Available</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-6">
+              <h2 className="text-[10px] font-black text-slate-600 uppercase tracking-[0.3em] pl-1">Priority Operations</h2>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {[...completedQuests, ...activeQuests].map(q => (
-                  <div key={q.id} className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+                  <div key={q.id} className="group relative bg-[#0A0A0F]/60 border border-white/5 rounded-[32px] p-8 shadow-2xl hover:border-blue-500/20 transition-all duration-500 backdrop-blur-md overflow-hidden">
+                    {/* Background glow when completed */}
                     {q.status === 'COMPLETED' && (
-                       <div className="absolute top-0 left-0 right-0 h-1 bg-emerald-500" />
+                       <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 blur-[40px] pointer-events-none" />
                     )}
-                    <div className="flex justify-between items-start mb-4">
-                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-sm ${q.status === 'COMPLETED' ? 'bg-emerald-50 border border-emerald-100' : 'bg-slate-50 border border-slate-100'}`}>
-                        {q.type === 'COURSE_COMPLETE' ? <Icons.Book size={20} className={q.status === 'COMPLETED' ? 'text-emerald-600' : 'text-blue-600'} /> :
-                         q.type === 'BATTLE_WIN' ? <Icons.Zap size={20} className={q.status === 'COMPLETED' ? 'text-emerald-600' : 'text-amber-500'} /> :
-                         <Icons.Target size={20} className={q.status === 'COMPLETED' ? 'text-emerald-600' : 'text-indigo-600'} />}
+                    
+                    <div className="flex justify-between items-start mb-8 relative z-10">
+                      <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg transition-transform group-hover:scale-110 duration-500 ${q.status === 'COMPLETED' ? 'bg-emerald-500/10 border border-emerald-500/20' : 'bg-white/5 border border-white/5'}`}>
+                        {q.type === 'COURSE_COMPLETE' ? <Icons.BookOpen size={24} className={q.status === 'COMPLETED' ? 'text-emerald-500' : 'text-blue-500'} /> :
+                         q.type === 'BATTLE_WIN' ? <Icons.Zap size={24} className={q.status === 'COMPLETED' ? 'text-emerald-500' : 'text-amber-500'} /> :
+                         <Icons.Target size={24} className={q.status === 'COMPLETED' ? 'text-emerald-500' : 'text-blue-500'} />}
                       </div>
-                      <div className="bg-amber-100 text-amber-700 font-bold text-xs uppercase tracking-widest px-3 py-1.5 rounded-full border border-amber-200">
+                      <div className="bg-[#11111A] text-blue-500 font-mono text-[11px] font-black uppercase tracking-widest px-4 py-2 rounded-xl border border-white/5 shadow-sm group-hover:bg-blue-600 group-hover:text-white transition-all">
                         +{q.xpReward} XP
                       </div>
                     </div>
                     
-                    <h3 className="font-display font-bold text-lg text-slate-900 mb-1 leading-tight">{q.title}</h3>
-                    <p className="text-sm text-slate-500 mb-6 font-medium">{q.description}</p>
+                    <div className="relative z-10 mb-8">
+                      <h3 className="font-display font-black text-2xl text-white mb-2 tracking-tight group-hover:text-blue-400 transition-colors uppercase">{q.title}</h3>
+                      <p className="text-sm text-slate-500 leading-relaxed font-medium">{q.description}</p>
+                    </div>
                     
-                    {q.status === 'COMPLETED' ? (
-                      <button onClick={() => handleClaim(q.id)} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition-colors shadow-sm animate-pulse-slow">
-                        Claim Reward
-                      </button>
-                    ) : (
-                      <div>
-                        <div className="flex justify-between text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">
-                          <span>Progress</span>
-                          <span>{q.progress} / {q.target}</span>
+                    <div className="relative z-10">
+                      {q.status === 'COMPLETED' ? (
+                        <button onClick={() => handleClaim(q.id)} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black uppercase tracking-widest text-[11px] py-4 rounded-2xl transition-all shadow-lg shadow-emerald-500/20 transform hover:-translate-y-1 active:scale-95">
+                          Provision Reward
+                        </button>
+                      ) : (
+                        <div className="space-y-4">
+                          <div className="flex justify-between text-[10px] font-black text-slate-600 uppercase tracking-widest mb-1">
+                            <span>Operational Progress</span>
+                            <span className="text-white">{Math.round((q.progress / q.target) * 100)}%</span>
+                          </div>
+                          <div className="w-full bg-white/5 h-[6px] rounded-full overflow-hidden border border-white/5">
+                            <div className="h-full bg-gradient-to-r from-blue-600 to-indigo-600 transition-all duration-1000" style={{ width: `${Math.min((q.progress / q.target) * 100, 100)}%` }} />
+                          </div>
                         </div>
-                        <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
-                          <div className={`h-2.5 rounded-full ${q.progress > 0 ? 'bg-blue-600' : 'bg-slate-300'}`} style={{ width: `${Math.min((q.progress / q.target) * 100, 100)}%` }} />
-                        </div>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -100,17 +113,17 @@ export default function QuestPage() {
 
           {/* Claimed Quests */}
           {claimedQuests.length > 0 && (
-            <div className="space-y-4 pt-8 border-t border-slate-100">
-              <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest pl-2">Completed Today</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 opacity-60 hover:opacity-100 transition-opacity">
+            <div className="space-y-6 pt-12 border-t border-white/5">
+              <h2 className="text-[10px] font-black text-slate-700 uppercase tracking-[0.3em] pl-1 text-center">Cycle History</h2>
+              <div className="flex flex-wrap justify-center gap-4 opacity-40 hover:opacity-100 transition-opacity duration-500 pb-10">
                 {claimedQuests.map(q => (
-                  <div key={q.id} className="bg-slate-50 border border-slate-200 rounded-3xl p-5 flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center shrink-0">
-                      <Icons.Check size={16} className="text-slate-500" />
+                  <div key={q.id} className="bg-white/3 border border-white/5 rounded-2xl px-6 py-4 flex items-center gap-4 group hover:bg-white/5 transition-all">
+                    <div className="w-8 h-8 rounded-full bg-slate-900 flex items-center justify-center shrink-0 border border-white/5">
+                      <Icons.Check size={14} className="text-slate-600 group-hover:text-emerald-500 transition-colors" />
                     </div>
                     <div>
-                      <h3 className="font-bold text-sm text-slate-900 line-through decoration-slate-400">{q.title}</h3>
-                      <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Claimed {q.xpReward} XP</p>
+                      <h3 className="font-bold text-xs text-slate-400 uppercase tracking-wider">{q.title}</h3>
+                      <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.1em] mt-0.5">Reward Deployed: {q.xpReward} XP</p>
                     </div>
                   </div>
                 ))}
