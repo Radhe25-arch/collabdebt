@@ -244,6 +244,18 @@ export default function DashboardPage() {
             )}
           </div>
           
+          {/* Top Categories */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm">
+            <h3 className="font-bold text-lg text-slate-900 mb-6">Popular Learning Tracks</h3>
+            <div className="flex flex-wrap gap-2.5">
+              {['JavaScript', 'System Design', 'Python', 'React', 'DevOps', 'Rust', 'Cloud Architecture', 'Cybersecurity'].map(tag => (
+                <button key={tag} onClick={() => navigate('/courses')} className="px-4 py-2 rounded-full border border-slate-100 bg-slate-50 text-xs font-bold text-slate-600 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all shadow-sm">
+                  {tag}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Quick Actions */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div onClick={() => navigate('/mentor')} className="bg-white border border-slate-200 p-6 rounded-2xl cursor-pointer hover:shadow-md hover:border-blue-300 transition-all flex flex-col items-center text-center group">
