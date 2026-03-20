@@ -51,7 +51,7 @@ export default function LoginPage() {
           <div className="w-9 h-9 rounded-xl bg-purple-teal flex items-center justify-center glow-purple">
             <Icons.Code size={17} className="text-white" />
           </div>
-          <span className="font-display font-black text-xl text-gradient tracking-tight">SkillForge</span>
+          <span className="font-display font-black text-xl text-gradient tracking-tight">CodeArena</span>
         </div>
 
         {/* Center quote */}

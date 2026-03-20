@@ -162,7 +162,7 @@ export default function RegisterPage() {
             <div className="w-8 h-8 rounded-xl bg-purple-teal flex items-center justify-center">
               <Icons.Code size={15} className="text-white" />
             </div>
-            <span className="font-display font-black text-xl text-gradient tracking-tight">SkillForge</span>
+            <span className="font-display font-black text-xl text-gradient tracking-tight">CodeArena</span>
           </div>
 
           {/* Header */}
