@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import Icons from '@/assets/icons';
 
 const FEATURES = [
@@ -21,9 +21,10 @@ export default function LandingPage() {
           <span className="font-display font-bold text-xl tracking-tight text-slate-900">CodeArena</span>
         </div>
         <div className="hidden md:flex items-center gap-8">
-          {['Catalog', 'Tournaments', 'Community', 'For Business'].map(l => (
-            <a key={l} href="#" className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">{l}</a>
-          ))}
+          <Link to="/courses" className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">Catalog</Link>
+          <Link to="/tournaments" className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">Tournaments</Link>
+          <Link to="/battles" className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">Community</Link>
+          <Link to="/rooms" className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">Multiplayer</Link>
         </div>
         <div className="flex items-center gap-4">
           <button onClick={() => navigate('/login')} className="text-sm font-medium text-slate-600 hover:text-slate-900">Log In</button>

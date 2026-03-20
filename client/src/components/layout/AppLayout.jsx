@@ -176,11 +176,23 @@ export default function AppLayout() {
       <Topbar sidebarOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
       <main
         style={{ marginLeft: sidebarOpen ? 260 : 0 }}
-        className="transition-all duration-300 pt-20 min-h-screen"
+        className="transition-all duration-300 pt-20 min-h-screen flex flex-col"
       >
-        <div className="p-8 max-w-7xl mx-auto">
+        <div className="p-8 max-w-7xl mx-auto flex-1 w-full">
           <Outlet />
         </div>
+        <footer className="mt-auto border-t border-slate-200 py-8 px-8 bg-white/50 backdrop-blur text-sm text-slate-500 flex flex-col md:flex-row items-center justify-between">
+          <div className="flex items-center gap-2 mb-4 md:mb-0">
+            <Icons.Code size={14} className="text-slate-400" />
+            <span className="font-display font-bold text-slate-900 tracking-tight">CodeArena Platform</span>
+            <span className="text-slate-400 ml-2">© 2026. All rights reserved.</span>
+          </div>
+          <div className="flex items-center gap-6 font-medium">
+            <Link to="/privacy" className="hover:text-slate-900 transition-colors">Privacy Policy</Link>
+            <Link to="/support" className="hover:text-slate-900 transition-colors">Terms of Service</Link>
+            <Link to="/mentor" className="hover:text-blue-600 transition-colors flex items-center gap-1"><Icons.Zap size={14} /> AI Support</Link>
+          </div>
+        </footer>
       </main>
     </div>
   );

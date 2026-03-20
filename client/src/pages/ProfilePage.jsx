@@ -276,7 +276,7 @@ export default function ProfilePage() {
                 <p className="font-semibold text-sm text-slate-500">Not currently enrolled in any courses.</p>
               </div>
             ) : profile.enrollments.map((e) => (
-              <div key={e.id} className="flex items-center justify-between px-8 py-5 hover:bg-slate-50 transition-colors group">
+              <div key={e.id} onClick={() => window.location.href = `/courses/${e.course?.slug}`} className="cursor-pointer flex items-center justify-between px-8 py-5 hover:bg-slate-50 transition-colors group">
                 <div className="flex items-center gap-5 min-w-0">
                   <div className="w-12 h-12 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center flex-shrink-0">
                     <Icons.Book size={20} className="text-blue-600" />
@@ -288,9 +288,9 @@ export default function ProfilePage() {
                 </div>
                 <div>
                   {e.completedAt ? (
-                     <span className="bg-emerald-100 text-emerald-700 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest border border-emerald-200 flex flex-col sm:flex-row items-center justify-center">Done</span>
+                     <span className="bg-emerald-100 text-emerald-700 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest border border-emerald-200 flex flex-col sm:flex-row items-center justify-center">Review</span>
                   ) : (
-                    <span className="bg-blue-100 text-blue-700 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest border border-blue-200">Study</span>
+                    <span className="bg-blue-100 text-blue-700 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest border border-blue-200">Study Now</span>
                   )}
                 </div>
               </div>

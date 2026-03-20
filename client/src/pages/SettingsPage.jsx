@@ -38,6 +38,16 @@ export default function SettingsPage() {
     setLoading(false);
   };
 
+    const handleDelete = async () => {
+      if (window.confirm('Are you absolutely sure you want to delete your account? This cannot be undone.')) {
+        try {
+          await api.delete('/users/me');
+          useAuthStore.getState().logout();
+          window.location.href = '/';
+        } catch(err) { toast.error('Failed to delete account'); }
+      }
+    };
+
   return (
     <div className="max-w-3xl mx-auto pb-20 font-sans animate-fade-in space-y-8 pt-4">
       {/* Header */}
@@ -124,7 +134,7 @@ export default function SettingsPage() {
           <Icons.Shield size={20} className="text-red-600" /> Danger Zone
         </h3>
         <p className="text-red-700 text-sm mb-6 max-w-xl">Permanently delete your account and all associated data. This action is irreversible.</p>
-        <button className="bg-white border border-red-200 text-red-600 font-bold px-6 py-2.5 rounded-xl transition-all hover:bg-red-100 shadow-sm text-sm">
+        <button onClick={handleDelete} className="bg-white border border-red-200 text-red-600 font-bold px-6 py-2.5 rounded-xl transition-all hover:bg-red-100 shadow-sm text-sm">
           Delete Account
         </button>
       </div>

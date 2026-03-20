@@ -204,9 +204,11 @@ export default function LeaderboardPage() {
             <p className="font-medium text-slate-500">No data found in this category.</p>
           </div>
         ) : (
-          <div className="divide-y divide-slate-100">
+          <div className="divide-y divide-slate-100 cursor-pointer">
             {entries.map((e) => (
-              <LeaderboardRow key={e.id} entry={e} isMe={e.id === user?.id} />
+              <div key={e.id} onClick={() => window.location.href = `/u/${e.username}`}>
+                <LeaderboardRow entry={e} isMe={e.id === user?.id} />
+              </div>
             ))}
           </div>
         )}
