@@ -200,9 +200,6 @@ export default function CoursePage() {
               <p className="text-xs text-slate-600 mt-4 leading-relaxed">
                 Alex has built scalable systems for Fortune 500 tech firms and is a regular speaker at UI conferences worldwide.
               </p>
-              <button className="w-full mt-5 py-2.5 rounded-full border border-slate-200 text-slate-700 font-semibold text-sm hover:bg-slate-50 transition-colors">
-                View Profile
-              </button>
             </div>
           </div>
 

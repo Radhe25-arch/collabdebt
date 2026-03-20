@@ -93,7 +93,7 @@ export default function RegisterPage() {
       role: form.role, ageGroup: form.ageGroup, interests: form.interests,
     });
     if (res.ok) {
-      toast.success('Welcome to SkillForge!');
+      toast.success('Welcome to CodeArena!');
       navigate('/dashboard');
     } else {
       toast.error(res.error || 'Registration failed');

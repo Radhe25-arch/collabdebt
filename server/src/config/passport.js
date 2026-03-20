@@ -51,6 +51,12 @@ passport.use(
 
           // Welcome XP
           await awardXP(user.id, 100, 'welcome_bonus');
+
+          // Welcome Email
+          const emailService = require('../utils/email');
+          emailService.sendWelcome(user).catch(err => {
+            console.error(`[GOOGLE_SIGNUP_EMAIL] Critical failure: ${err.message}`);
+          });
         }
 
         return done(null, user);

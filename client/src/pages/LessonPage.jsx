@@ -235,40 +235,43 @@ export default function LessonPage() {
   return (
     <div className="max-w-6xl mx-auto pb-16">
       {/* ── Top bar ───────────────────────────────────────── */}
-      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-        <div className="flex items-center gap-2 font-mono text-xs text-white/40">
-          <button
-            onClick={() => navigate(`/courses/${slug}`)}
-            className="hover:text-white/70 transition-colors flex items-center gap-1.5"
-          >
-            <Icons.ArrowLeft size={12} /> {lesson.course?.title || 'Course'}
-          </button>
-          <span>/</span>
-          <span className="text-white/60">{lesson.title}</span>
+      <div className="flex items-center justify-between mb-8 flex-wrap gap-4 py-6 px-1 border-b border-slate-200">
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-2 text-xs font-bold text-slate-400">
+            <button
+              onClick={() => navigate(`/courses/${slug}`)}
+              className="hover:text-blue-600 transition-colors uppercase tracking-widest"
+            >
+              {course.title || 'Course'}
+            </button>
+            <span>/</span>
+            <span className="text-slate-900 uppercase tracking-widest">{lesson.title}</span>
+          </div>
+          <h1 className="font-display font-black text-3xl text-slate-900 tracking-tight">{lesson.title}</h1>
         </div>
 
-        <div className="flex items-center gap-2.5">
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/4 border border-white/8">
-            <Icons.Clock size={11} className="text-white/30" />
-            <span className="font-mono text-[11px] text-white/40">{lesson.duration}m</span>
+        <div className="flex items-center gap-3">
+          <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 border border-slate-200">
+            <Icons.Clock size={14} className="text-slate-400" />
+            <span className="text-xs font-bold text-slate-600">{lesson.duration}m</span>
           </div>
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-arena-purple/10 border border-arena-purple/20">
-            <Icons.Zap size={11} className="text-arena-purple2" />
-            <span className="font-mono text-[11px] text-arena-purple2 font-bold">+{lesson.xpReward} XP</span>
+          <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-purple-50 border border-purple-100">
+            <Icons.Zap size={14} className="text-purple-600" />
+            <span className="text-xs font-bold text-purple-600">+{lesson.xpReward} XP</span>
           </div>
           <button
             onClick={handleMarkComplete}
             disabled={isCompleted || completing}
-            className={`flex items-center gap-2 px-4 py-1.5 rounded-lg font-mono text-xs font-bold transition-all ${
+            className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-xs transition-all shadow-sm ${
               isCompleted
-                ? 'bg-arena-teal/15 border border-arena-teal/30 text-arena-teal cursor-default'
-                : 'bg-white text-black hover:bg-white/90'
+                ? 'bg-emerald-50 border border-emerald-200 text-emerald-600 cursor-default'
+                : 'bg-blue-600 text-white hover:bg-blue-700'
             }`}
           >
             {isCompleted ? (
-              <><Icons.Check size={12} /> Completed</>
+              <><Icons.Check size={14} /> Completed</>
             ) : completing ? '...' : (
-              <><Icons.Check size={12} /> Mark Complete</>
+              <><Icons.Check size={14} /> Mark Complete</>
             )}
           </button>
         </div>
@@ -281,49 +284,46 @@ export default function LessonPage() {
         <div className="xl:col-span-3 space-y-4">
           <div className="bg-[#0a0a0a] border border-white/8 rounded-2xl overflow-hidden">
             {/* Lesson header */}
-            <div className="px-7 pt-7 pb-4">
-              <h1 className="font-display font-bold text-2xl text-white tracking-tight mb-3">{lesson.title}</h1>
+            <div className="px-8 pt-8 pb-4">
+              <h2 className="font-display font-black text-2xl text-white tracking-tight mb-3">{lesson.title}</h2>
               {isCompleted && (
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-arena-teal/12 border border-arena-teal/25 text-arena-teal font-mono text-[10px]">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 font-mono text-[10px] font-bold uppercase tracking-wider">
                   <Icons.Check size={10} /> Completed
                 </div>
               )}
             </div>
 
             {/* Content renderer */}
-            <div className="px-7 pb-7 space-y-4 text-sm text-white/60 leading-relaxed">
+            <div className="px-8 pb-8 space-y-5 text-sm text-slate-400 leading-relaxed font-mono">
               {lesson.content?.split('\n\n').map((para, i) => {
-                if (para.startsWith('# '))  return <h1  key={i} className="font-display font-bold text-xl text-white mt-4">{para.slice(2)}</h1>;
-                if (para.startsWith('## ')) return <h2  key={i} className="font-display font-bold text-base text-white/90 mt-3">{para.slice(3)}</h2>;
-                if (para.startsWith('### ')) return <h3  key={i} className="font-mono font-bold text-sm text-white/80 mt-2">{para.slice(4)}</h3>;
+                if (para.startsWith('# '))  return <h1  key={i} className="font-display font-black text-2xl text-white mt-6 mb-4">{para.slice(2)}</h1>;
+                if (para.startsWith('## ')) return <h2  key={i} className="font-display font-bold text-lg text-white/90 mt-5 mb-3">{para.slice(3)}</h2>;
+                if (para.startsWith('### ')) return <h3  key={i} className="font-bold text-base text-white/80 mt-4 mb-2">{para.slice(4)}</h3>;
                 if (para.startsWith('```')) {
-                  const codeContent = para.replace(/```\w*\n?/, '').replace(/```$/, '');
+                  const content = para.replace(/```\w*\n?/, '').replace(/```$/, '');
                   return (
-                    <div key={i} className="relative group">
-                      <div className="flex items-center justify-between px-4 py-2 bg-white/3 border border-white/8 rounded-t-xl">
-                        <span className="font-mono text-[10px] text-white/30">code</span>
-                        <button
-                          onClick={() => navigator.clipboard.writeText(codeContent)}
-                          className="font-mono text-[10px] text-white/30 hover:text-white/60 transition-colors"
-                        >copy</button>
+                    <div key={i} className="border border-white/10 rounded-xl overflow-hidden my-6">
+                      <div className="bg-white/5 px-4 py-2 border-b border-white/5 flex justify-between items-center">
+                        <span className="text-[10px] text-white/30 uppercase font-bold tracking-widest">Example Snippet</span>
+                        <button onClick={() => navigator.clipboard.writeText(content)} className="text-[10px] text-white/30 hover:text-white transition-colors">Copy</button>
                       </div>
-                      <pre className="p-4 bg-black/60 border border-white/8 border-t-0 rounded-b-xl font-mono text-xs text-arena-teal overflow-x-auto">{codeContent}</pre>
+                      <pre className="p-5 bg-black/40 text-blue-400 text-xs overflow-x-auto">{content}</pre>
                     </div>
                   );
                 }
                 if (para.startsWith('- ')) {
                   return (
-                    <ul key={i} className="space-y-1.5 pl-4">
+                    <ul key={i} className="space-y-2.5 pl-2">
                       {para.split('\n').filter(l => l.startsWith('- ')).map((li, j) => (
-                        <li key={j} className="flex items-start gap-2 font-mono text-sm text-white/60">
-                          <span className="text-arena-purple2 mt-0.5">▸</span>
-                          <span>{li.slice(2)}</span>
+                        <li key={j} className="flex items-start gap-3">
+                          <span className="text-blue-500 mt-1">→</span>
+                          <span className="text-slate-400">{li.slice(2)}</span>
                         </li>
                       ))}
                     </ul>
                   );
                 }
-                return <p key={i} className="font-mono text-sm text-white/60 leading-7">{para}</p>;
+                return <p key={i} className="text-slate-400 leading-7">{para}</p>;
               })}
             </div>
           </div>

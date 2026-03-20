@@ -24,6 +24,8 @@ import PortfolioPage   from '@/pages/PortfolioPage';
 import MentorPage      from '@/pages/MentorPage';
 import RoomsPage, { RoomPage } from '@/pages/RoomsPage';
 import ProfilePage     from '@/pages/ProfilePage';
+import CommunityPage   from '@/pages/CommunityPage';
+import FriendsPage     from '@/pages/FriendsPage';
 import SettingsPage    from '@/pages/SettingsPage';
 import AdminPage       from '@/pages/AdminPage';
 
@@ -89,6 +91,8 @@ export default function App() {
           <Route path="/tournaments/:id"       element={<TournamentPage />} />
           <Route path="/battles"               element={<BattlesPage />} />
           <Route path="/battles/:id"           element={<BattlePage />} />
+          <Route path="/community"             element={<CommunityPage />} />
+          <Route path="/friends"               element={<FriendsPage />} />
           <Route path="/quests"                element={<QuestPage />} />
           <Route path="/portfolio"             element={<PortfolioPage />} />
           <Route path="/mentor"                element={<MentorPage />} />

@@ -101,7 +101,7 @@ export default function PortfolioPage() {
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h1 className="font-display font-black text-2xl mb-1">Portfolio Builder</h1>
-          <p className="font-mono text-xs text-arena-dim uppercase tracking-widest">Connect your SkillForge journey to GitHub</p>
+          <p className="font-mono text-xs text-arena-dim uppercase tracking-widest">Connect your CodeArena journey to GitHub</p>
         </div>
         <div className="flex gap-2">
           <Button onClick={handleGenerate} variant="secondary" loading={generating}>

@@ -23,7 +23,7 @@ async function send({ to, subject, html }) {
   }
   try {
     await transporter.sendMail({
-      from: process.env.EMAIL_FROM || 'SkillForge <noreply@skillforge.dev>',
+      from: process.env.EMAIL_FROM || 'CodeArena <noreply@codearena.dev>',
       to, subject, html,
     });
     logger.info(`[EMAIL] Sent "${subject}" to ${to}`);
@@ -80,7 +80,7 @@ function base(content) {
         <div class="logo-icon">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg>
         </div>
-        <span class="logo-text">SkillForge</span>
+        <span class="logo-text">CodeArena</span>
       </div>
       <div class="header-cmd">system.broadcast://welcome_new_architect</div>
     </div>
@@ -88,8 +88,8 @@ function base(content) {
       ${content}
     </div>
     <div class="footer">
-      <span class="footer-text">© 2026 SkillForge — Master the Machine.</span>
-      <a href="${process.env.CLIENT_URL || 'https://skillforge.dev'}" class="footer-link">skillforge.dev</a>
+      <span class="footer-text">© 2026 CodeArena — Master the Machine.</span>
+      <a href="${process.env.CLIENT_URL || 'https://codearena.dev'}" class="footer-link">codearena.dev</a>
     </div>
   </div>
 </body>
@@ -153,7 +153,7 @@ async function sendWelcome(user) {
 
   await send({
     to:      user.email,
-    subject: `[SkillForge] Workspace Initialized — Welcome, ${user.username}!`,
+    subject: `[CodeArena] Workspace Initialized — Welcome, ${user.username}!`,
     html,
   });
 }
