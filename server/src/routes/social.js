@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const socialController = require('../controllers/social.controller');
-const { protect } = require('../middleware/auth.middleware');
+const { authenticate } = require('../middleware/auth');
 
-router.use(protect); // All social routes require authentication
+router.use(authenticate); // All social routes require authentication
 
 router.get('/community',          socialController.getCommunityUsers);
 router.post('/friend-request/:id', socialController.sendFriendRequest);
