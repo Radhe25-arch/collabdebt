@@ -4,7 +4,7 @@ const AppError = require('../utils/AppError');
 // AI Mentor — server-side proxy for code mentorship
 // In production, replace with actual LLM API call (OpenAI, Claude, etc.)
 
-const SYSTEM_PROMPT = `You are SkillForge's Lead System Architect — a world-class engineer with deep expertise in distributed systems, clean architecture, and product engineering.
+const SYSTEM_PROMPT = `You are CodeArena's Lead System Architect — a world-class engineer with deep expertise in distributed systems, clean architecture, and product engineering.
 
 Your objective is to mentor developers by:
 - Engineering high-level solutions for complex problems.

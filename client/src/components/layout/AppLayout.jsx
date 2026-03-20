@@ -10,9 +10,11 @@ const MAIN_LINKS = [
   { to: '/courses',     label: 'Catalog',      Icon: Icons.Book },
   { to: '/tournaments', label: 'Tournaments',  Icon: Icons.Trophy },
   { to: '/battles',     label: '1v1 Arena',    Icon: Icons.Zap },
+  { to: '/leaderboard', label: 'Rankings',     Icon: Icons.Leaderboard },
   { to: '/community',   label: 'Community',    Icon: Icons.Users },
-  { to: '/mentor',      label: 'AI Mentor',    Icon: Icons.Terminal },
+  { to: '/quests',      label: 'Quests',       Icon: Icons.Target },
   { to: '/friends',     label: 'Friends',      Icon: Icons.MessageSquare },
+  { to: '/mentor',      label: 'AI Mentor',    Icon: Icons.Terminal },
 ];
 
 const BOTTOM_LINKS = [

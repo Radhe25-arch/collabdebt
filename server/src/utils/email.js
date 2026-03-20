@@ -148,7 +148,7 @@ async function sendWelcome(user) {
       <span class="badge">New Architect</span>
       <span class="badge">+100 XP Bonus</span>
     </div>
-    <p style="font-size:12px;color:#475569;margin-top:20px">You are receiving this encrypted transmission because of your registration at SkillForge.</p>
+    <p style="font-size:12px;color:#475569;margin-top:20px">You are receiving this encrypted transmission because of your registration at CodeArena.</p>
   `);
 
   await send({
@@ -171,7 +171,7 @@ async function sendPasswordReset(user, otp) {
     </div>
 
     <div class="terminal">
-      <div><span class="prompt">$ </span><span class="cmd">skillforge</span> auth --reset --otp=<span class="out">${otp}</span></div>
+      <div><span class="prompt">$ </span><span class="cmd">codearena</span> auth --reset --otp=<span class="out">${otp}</span></div>
     </div>
 
     <p>If you did not request this, please secure your account immediately.</p>
@@ -179,7 +179,7 @@ async function sendPasswordReset(user, otp) {
 
   await send({
     to:      user.email,
-    subject: '[SkillForge] Reset Your Security Credentials',
+    subject: '[CodeArena] Reset Your Security Credentials',
     html,
   });
 }
@@ -191,7 +191,7 @@ async function sendStreakReminder(user) {
     <p>Your training continuity is at risk. Your <span class="highlight">${user.streak}-day streak</span> will expire in less than 24 hours.</p>
 
     <div class="terminal">
-      <div><span class="prompt">$ </span><span class="cmd">skillforge</span> <span class="out">streak --status</span></div>
+      <div><span class="prompt">$ </span><span class="cmd">codearena</span> <span class="out">streak --status</span></div>
       <div style="margin-top:10px;color:#5A5870">Current continuity: <span style="color:#F97316">${user.streak} days 🔥</span></div>
       <div style="color:#F87171">STATUS: DEGRADING</div>
       <div style="color:#5A5870">Required Action: <span style="color:#FFFFFF">Deploy 1 lesson module</span></div>
@@ -200,13 +200,13 @@ async function sendStreakReminder(user) {
     <p>Consistency is the difference between a coder and an architect. Don't let the fire go out.</p>
 
     <div style="text-align:center">
-      <a href="${process.env.CLIENT_URL || 'https://skillforge.dev'}/dashboard" class="btn">Maintain Continuity →</a>
+      <a href="${process.env.CLIENT_URL || 'https://codearena.dev'}/dashboard" class="btn">Maintain Continuity →</a>
     </div>
   `);
 
   await send({
     to:      user.email,
-    subject: `[SkillForge] Critical: Your ${user.streak}-day streak is at risk`,
+    subject: `[CodeArena] Critical: Your ${user.streak}-day streak is at risk`,
     html,
   });
 }
@@ -229,7 +229,7 @@ async function sendWeeklySummary(user, stats) {
     </div>
 
     <div class="terminal">
-      <div><span class="prompt">$ </span><span class="cmd">skillforge</span> <span class="out">analytics --user=@${user.username}</span></div>
+      <div><span class="prompt">$ </span><span class="cmd">codearena</span> <span class="out">analytics --user=@${user.username}</span></div>
       <div style="margin-top:10px;color:#5A5870">velocity: <span style="color:#A855F7">+${Math.round(stats.xpEarned/7)} XP/day</span></div>
       <div style="color:#5A5870">rank_shift: <span style="color:#2DD4BF">STABLE</span></div>
       <div style="color:#5A5870">current_tier: <span style="color:#FFFFFF">Level ${user.level}</span></div>
@@ -238,13 +238,13 @@ async function sendWeeklySummary(user, stats) {
     <p>Elite tournaments are provisioning for the next cycle. Ensure your hardware is ready.</p>
 
     <div style="text-align:center;margin-top:24px">
-      <a href="${process.env.CLIENT_URL || 'https://skillforge.dev'}/dashboard" class="btn">Return to Task Board →</a>
+      <a href="${process.env.CLIENT_URL || 'https://codearena.dev'}/dashboard" class="btn">Return to Task Board →</a>
     </div>
   `);
 
   await send({
     to:      user.email,
-    subject: `[SkillForge] Weekly Report: +${stats.xpEarned} XP Provisioned`,
+    subject: `[CodeArena] Weekly Report: +${stats.xpEarned} XP Provisioned`,
     html,
   });
 }
@@ -256,7 +256,7 @@ async function sendLevelUp(user, newLevel, levelName) {
     <p>Excellent work, <span class="highlight">${user.username}</span>. You've officially achieved <span class="teal">Level ${newLevel}: ${levelName}</span>.</p>
 
     <div class="terminal">
-      <div><span class="prompt">$ </span><span class="cmd">skillforge</span> <span class="out">promote --achieved</span></div>
+      <div><span class="prompt">$ </span><span class="cmd">codearena</span> <span class="out">promote --achieved</span></div>
       <div style="margin-top:10px;color:#5A5870">previous_tier: <span style="color:#5A5870">Level ${newLevel - 1}</span></div>
       <div style="color:#5A5870">current_tier:  <span style="color:#2DD4BF">Level ${newLevel} — ${levelName}</span></div>
       <div style="color:#5A5870">network_xp: <span style="color:#A855F7">${user.xp.toLocaleString()} total</span></div>
@@ -265,13 +265,13 @@ async function sendLevelUp(user, newLevel, levelName) {
     <p>New architectural patterns and advanced modules have been unlocked for your tier.</p>
 
     <div style="text-align:center;margin-top:24px">
-      <a href="${process.env.CLIENT_URL || 'https://skillforge.dev'}/profile" class="btn">View Identity Hub →</a>
+      <a href="${process.env.CLIENT_URL || 'https://codearena.dev'}/profile" class="btn">View Identity Hub →</a>
     </div>
   `);
 
   await send({
     to:      user.email,
-    subject: `[SkillForge] Promotion: You reached Level ${newLevel}!`,
+    subject: `[CodeArena] Promotion: You reached Level ${newLevel}!`,
     html,
   });
 }

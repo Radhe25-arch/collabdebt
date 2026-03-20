@@ -1,4 +1,4 @@
-// Centralized SVG icon set for SkillForge — no emoji, pure vectors
+// Centralized SVG icon set for CodeArena — no emoji, pure vectors
 // Usage: <Icon.Home size={18} className="text-ink-secondary" />
 
 const Icon = ({ d, size = 18, className = '', strokeWidth = 1.5, fill = 'none', ...rest }) => (
