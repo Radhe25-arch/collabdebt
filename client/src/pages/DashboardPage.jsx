@@ -247,7 +247,7 @@ export default function DashboardPage() {
           {/* Quick Actions */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div onClick={() => navigate('/mentor')} className="bg-white border border-slate-200 p-6 rounded-2xl cursor-pointer hover:shadow-md hover:border-blue-300 transition-all flex flex-col items-center text-center group">
-              <div className="w-12 h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform"><Icons.Cpu size={20} /></div>
+              <div className="w-12 h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform"><Icons.Terminal size={20} /></div>
               <h4 className="font-bold text-slate-900 text-sm mb-1">AI Mentor</h4>
               <p className="text-xs text-slate-500">Get debugging help</p>
             </div>

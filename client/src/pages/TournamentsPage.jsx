@@ -82,7 +82,7 @@ function TournamentCard({ t, onJoin }) {
           onClick={(e) => { e.stopPropagation(); onJoin(t.id); }}
           className="w-full bg-emerald-600 text-white font-bold py-3.5 rounded-xl text-sm hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2 shadow-sm"
         >
-          <Icons.Link size={16} /> Enter Arena
+          <Icons.ExternalLink size={16} /> Enter Arena
         </button>
       )}
       {isEnded && (

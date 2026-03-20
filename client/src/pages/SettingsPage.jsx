@@ -61,7 +61,7 @@ export default function SettingsPage() {
 
       <div className="bg-white border border-slate-200 rounded-3xl p-8 shadow-sm">
         <h3 className="font-display font-bold text-xl text-slate-900 mb-6 flex items-center gap-3 border-b border-slate-100 pb-4">
-          <Icons.User size={20} className="text-blue-600" /> Public Profile
+          <Icons.Profile size={20} className="text-blue-600" /> Public Profile
         </h3>
         
         <div className="space-y-6 max-w-xl">
@@ -90,7 +90,7 @@ export default function SettingsPage() {
             <div className="space-y-2">
               <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block">Website / Portfolio</label>
               <div className="relative">
-                <Icons.Link size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                <Icons.ExternalLink size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   type="url"
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-11 pr-4 py-3 text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-sans"
@@ -104,7 +104,7 @@ export default function SettingsPage() {
             <div className="space-y-2">
               <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block">Location</label>
                <div className="relative">
-                <Icons.MapPin size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                <Icons.Globe size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   type="text"
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-11 pr-4 py-3 text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-sans"
@@ -123,7 +123,7 @@ export default function SettingsPage() {
             disabled={loading}
             className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-8 py-3 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2"
           >
-            {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Icons.Save size={18} />}
+            {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Icons.Check size={18} />}
             {loading ? 'Saving...' : 'Save Changes'}
           </button>
         </div>

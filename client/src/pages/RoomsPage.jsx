@@ -59,7 +59,7 @@ export default function RoomsPage() {
       ) : rooms.length === 0 ? (
         <div className="bg-slate-50 border border-slate-200 border-dashed rounded-3xl p-20 text-center">
           <div className="w-20 h-20 rounded-full bg-white shadow-sm flex items-center justify-center mx-auto mb-6">
-            <Icons.Monitor size={32} className="text-slate-300" />
+            <Icons.Terminal size={32} className="text-slate-300" />
           </div>
           <h3 className="font-display font-black text-2xl text-slate-900 mb-2">No Active Rooms</h3>
           <p className="text-slate-500 text-lg max-w-sm mx-auto mb-8">Start a collaborative session and invite your team to code together.</p>
@@ -136,7 +136,7 @@ export function RoomPage() {
   return (
     <div className="flex flex-col items-center justify-center py-24 animate-fade-in space-y-4">
       <div className="w-16 h-16 rounded-full bg-indigo-50 flex items-center justify-center mb-4">
-        <Icons.Monitor size={24} className="text-indigo-600" />
+        <Icons.Terminal size={24} className="text-indigo-600" />
       </div>
       <h2 className="font-display font-black text-2xl text-slate-900">Code Room: {id}</h2>
       <p className="text-slate-500 font-medium">Connecting to live synchronization server...</p>

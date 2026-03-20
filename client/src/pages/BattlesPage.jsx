@@ -96,7 +96,7 @@ export default function BattlesPage() {
 
       <div className="grid grid-cols-3 gap-6">
         {[
-          { label: 'Battles Fought', icon: Icons.Activity, value: battles.filter(b => b.status === 'COMPLETED').length },
+          { label: 'Battles Fought', icon: Icons.TrendingUp, value: battles.filter(b => b.status === 'COMPLETED').length },
           { label: 'Wins', icon: Icons.Trophy, value: battles.filter(b => b.status === 'COMPLETED' && b.winnerId === user?.id).length },
           { label: 'Win Rate', icon: Icons.Target, value: (() => {
             const done = battles.filter(b => b.status === 'COMPLETED');

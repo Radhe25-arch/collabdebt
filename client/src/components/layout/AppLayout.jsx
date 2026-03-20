@@ -13,7 +13,7 @@ const MAIN_LINKS = [
 ];
 
 const BOTTOM_LINKS = [
-  { to: '/support', label: 'Support', Icon: Icons.HelpCircle || Icons.Info },
+  { to: '/support', label: 'Support', Icon: Icons.Globe },
   { to: '/privacy', label: 'Privacy', Icon: Icons.Shield },
 ];
 
