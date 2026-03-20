@@ -2,162 +2,19 @@ import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import api from '@/lib/api';
 import Icons from '@/assets/icons';
-import { Spinner, BadgeTag } from '@/components/ui';
 
-// Professional, Minimalist SaaS Color Palette Mapping
-const LANG_META = {
-  javascript:     { icon: Icons.Code,       color: '#F7DF1E' },
-  typescript:     { icon: Icons.Code,       color: '#3178C6' },
-  python:         { icon: Icons.Code,       color: '#4B8BBE' },
-  html:           { icon: Icons.Code,       color: '#E34F26' },
-  css:            { icon: Icons.Code,       color: '#1572B6' },
-  java:           { icon: Icons.Code,       color: '#ED8B00' },
-  cpp:            { icon: Icons.Target,     color: '#6db3f2' },
-  c:              { icon: Icons.Terminal,   color: '#9e9e9e' },
-  csharp:         { icon: Icons.Code,       color: '#9B4F96' },
-  go:             { icon: Icons.Zap,        color: '#00ACD7' },
-  rust:           { icon: Icons.Target,     color: '#CE422B' },
-  kotlin:         { icon: Icons.Code,       color: '#7F52FF' },
-  swift:          { icon: Icons.Code,       color: '#FA7343' },
-  php:            { icon: Icons.Terminal,   color: '#8892BF' },
-  ruby:           { icon: Icons.Award,      color: '#CC342D' },
-  dart:           { icon: Icons.Code,       color: '#0175C2' },
-  bash:           { icon: Icons.Terminal,   color: '#4EAA25' },
-  sql:            { icon: Icons.Code,       color: '#E48E00' },
-  'web-dev':      { icon: Icons.Globe,      color: '#9D65F5' },
-  'data-science': { icon: Icons.TrendingUp, color: '#00D9B5' },
-  devops:         { icon: Icons.Settings,   color: '#FF6B35' },
-  cybersecurity:  { icon: Icons.Shield,     color: '#00FF88' },
-  'game-dev':     { icon: Icons.Play,       color: '#FF3366' },
-  'system-design':{ icon: Icons.Code,       color: '#F59E0B' },
-  blockchain:     { icon: Icons.Code,       color: '#F7931A' },
-  'ai-ml':        { icon: Icons.Target,     color: '#A855F7' },
-  'r':            { icon: Icons.TrendingUp, color: '#276DC3' },
-  'julia':        { icon: Icons.Zap,        color: '#9558B2' },
-  'scala':        { icon: Icons.Award,      color: '#DC322F' },
-  'elixir':       { icon: Icons.Zap,        color: '#4E2A8E' },
-  'haskell':      { icon: Icons.Target,     color: '#5D4F85' },
-  'lua':          { icon: Icons.Code,       color: '#000080' },
-  'perl':         { icon: Icons.Code,       color: '#39457E' },
-  'fortran':      { icon: Icons.Book,       color: '#734996' },
-  'cobol':        { icon: Icons.Terminal,   color: '#005CAB' },
-  'clojure':      { icon: Icons.Award,      color: '#5881D8' },
-  'erlang':       { icon: Icons.Zap,        color: '#A90533' },
-  'prolog':       { icon: Icons.Search,     color: '#74283C' },
-  'fsharp':       { icon: Icons.Code,       color: '#B845FC' },
-  'ocaml':        { icon: Icons.Target,     color: '#EC6813' },
-};
-
-// Core languages are these specific slugs, everything else is a "Domain Architecture"
-const CORE_LANG_SLUGS = [
-  'javascript', 'typescript', 'python', 'html', 'css', 'java', 'cpp', 'c', 
-  'csharp', 'go', 'rust', 'kotlin', 'swift', 'php', 'ruby', 'dart', 'bash', 'sql',
-  'r', 'julia', 'scala', 'elixir', 'haskell', 'lua', 'perl', 'fortran', 'cobol',
-  'clojure', 'erlang', 'prolog', 'fsharp', 'ocaml'
+const FALLBACK_IMAGES = [
+  'bg-blue-100', 'bg-indigo-100', 'bg-emerald-100', 'bg-amber-100', 'bg-rose-100', 'bg-cyan-100'
 ];
-
-function CategoryCard({ category, courseCount, onClick, isActive }) {
-  const meta = LANG_META[category.slug] || { 
-    icon: Icons[Object.keys(Icons).find(k => k.toLowerCase().includes(category.iconName?.toLowerCase()))] || Icons.Book, 
-    color: '#3B82F6' 
-  };
-  const IconComponent = meta.icon;
-
-  return (
-    <div 
-      onClick={() => onClick(category)}
-      className={`relative p-4 rounded-xl border cursor-pointer transition-all duration-200 flex flex-col justify-between h-28 animate-fade-in
-        ${isActive 
-          ? 'bg-[#111] border-arena-purple/50 shadow-[0_0_0_1px_rgba(124,58,237,0.3)]' 
-          : 'bg-[#0A0A0A] border-white/5 hover:border-white/10 hover:bg-[#0E0E0E]'
-        }
-      `}
-    >
-      <div className="flex justify-between items-start">
-        <div className="w-7 h-7 rounded-md bg-white/5 border border-white/10 flex items-center justify-center">
-          <IconComponent size={13} className="text-white/70" />
-        </div>
-        <div className="flex flex-col items-end gap-1">
-          <span className="font-mono text-[9px] text-white/30 uppercase tracking-tighter">{courseCount} paths</span>
-          <span className="font-mono text-[7px] text-arena-teal/40 uppercase tracking-widest hidden sm:block">SRC: /mnt/forge/{category.slug}</span>
-        </div>
-      </div>
-      <div>
-        <h3 className="font-body text-xs text-white/90 font-semibold tracking-tight leading-tight line-clamp-2">{category.name}</h3>
-      </div>
-    </div>
-  );
-}
-
-function CourseListCard({ course, onClick }) {
-  const enrolled  = course.isEnrolled;
-  const completed = course.enrollment?.completedAt != null || course.enrollment?.progress === 100;
-  const progress  = course.enrollment?.progress || 0;
-
-  return (
-    <div
-      onClick={() => onClick(course.slug)}
-      className={`group flex flex-col sm:flex-row sm:items-center justify-between p-5 rounded-xl cursor-pointer transition-all duration-200 gap-4 border ${
-        completed
-          ? 'bg-arena-teal/5 border-arena-teal/20 hover:border-arena-teal/35'
-          : 'bg-[#0A0A0A] border-white/5 hover:border-white/15'
-      }`}
-    >
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center flex-wrap gap-2 mb-2">
-          <h3 className="font-body text-base text-white/90 font-medium group-hover:text-white transition-colors">{course.title}</h3>
-          <span className={`font-mono text-[10px] px-1.5 py-0.5 rounded uppercase tracking-wider border ${
-            course.difficulty === 'BEGINNER'     ? 'text-green-400 border-green-400/25' :
-            course.difficulty === 'INTERMEDIATE' ? 'text-blue-400 border-blue-400/25' :
-            'text-purple-400 border-purple-400/25'
-          }`}>{course.difficulty}</span>
-          {completed
-            ? <span className="flex items-center gap-1 bg-arena-teal/15 text-arena-teal border border-arena-teal/25 font-mono text-[10px] px-2 py-0.5 rounded-full">✓ Completed</span>
-            : enrolled
-            ? <span className="bg-white/6 text-white/50 border border-white/10 font-mono text-[10px] px-2 py-0.5 rounded-full">{progress}% done</span>
-            : null
-          }
-        </div>
-        <p className="font-mono text-xs text-white/40 leading-relaxed line-clamp-1">{course.description}</p>
-        {enrolled && !completed && progress > 0 && (
-          <div className="mt-2.5 h-0.5 rounded-full bg-white/8 overflow-hidden max-w-xs">
-            <div className="h-full rounded-full bg-arena-teal/60" style={{ width: `${progress}%` }} />
-          </div>
-        )}
-      </div>
-
-      <div className="flex items-center gap-5 sm:pl-6 sm:border-l border-white/5 flex-shrink-0">
-        <div className="flex flex-col items-end gap-1">
-          <span className="font-mono text-[11px] text-white/35 flex items-center gap-1.5">
-            <Icons.Book size={11} /> {course._count?.lessons || 0} Lessons
-          </span>
-          <span className="font-mono text-[11px] text-white/35 flex items-center gap-1.5">
-            <Icons.Zap size={11} /> {course.xpReward} XP
-          </span>
-        </div>
-        <div className={`w-8 h-8 rounded-full flex flex-shrink-0 items-center justify-center transition-colors border ${
-          completed ? 'bg-arena-teal/15 border-arena-teal/30' : 'border-white/10 group-hover:bg-white/5'
-        }`}>
-          {completed
-            ? <Icons.Check size={13} className="text-arena-teal" />
-            : <Icons.ArrowRight size={13} className="text-white/50 group-hover:text-white transition-colors" />
-          }
-        </div>
-      </div>
-    </div>
-  );
-}
 
 export default function CoursesPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const type = searchParams.get('type') || 'languages'; // default to languages
-
   const [categories, setCategories] = useState([]);
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
-  
   const [activeCategory, setActiveCategory] = useState(null);
+  const [viewType, setViewType] = useState('all'); // 'all' or 'popular'
 
   useEffect(() => {
     const load = async () => {
@@ -167,15 +24,7 @@ export default function CoursesPage() {
           api.get('/courses?limit=500'),
         ]);
         setCategories(catRes.data.categories || []);
-        const coursesRaw = courseRes.data.courses || [];
-
-        let enrollMap = {};
-        try {
-          const enrollRes = await api.get('/courses/my-enrollments', { _silent: true });
-          (enrollRes.data.enrollments || []).forEach(e => { enrollMap[e.courseId] = e; });
-        } catch { /* ignored */ }
-
-        setCourses(coursesRaw.map(c => ({ ...c, enrollment: enrollMap[c.id] || null })));
+        setCourses(courseRes.data.courses || []);
       } catch (err) {
         console.error('Failed to load courses', err);
       } finally {
@@ -183,92 +32,152 @@ export default function CoursesPage() {
       }
     };
     load();
-    // Reset active category when switching view type
-    setActiveCategory(null);
-  }, [type]);
+  }, []);
 
-  const filteredCategories = useMemo(() => {
-    if (type === 'languages') {
-      return categories.filter(c => CORE_LANG_SLUGS.includes(c.slug));
-    } else {
-      return categories.filter(c => !CORE_LANG_SLUGS.includes(c.slug));
+  const filteredCourses = useMemo(() => {
+    let filtered = courses;
+    if (activeCategory) {
+      filtered = filtered.filter(c => c.categoryId === activeCategory.id || c.category?.id === activeCategory.id);
     }
-  }, [categories, type]);
-
-  const getCoursesByCategory = (catId) => courses.filter((c) => c.categoryId === catId || c.category?.id === catId);
-  const handleCourseClick = (slug) => navigate(`/courses/${slug}`);
+    if (viewType === 'popular') {
+      filtered = [...filtered].sort((a,b) => (b.xpReward || 0) - (a.xpReward || 0)); // mock sorting for popular
+    }
+    return filtered;
+  }, [courses, activeCategory, viewType]);
 
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
-        <Spinner size={24} className="text-white/40" />
-      </div>
-    );
-  }
-
-  if (activeCategory) {
-    const activeCourses = getCoursesByCategory(activeCategory.id).sort((a,b) => a.order - b.order);
-    return (
-      <div className="max-w-5xl mx-auto space-y-8 pb-16 animate-fade-in">
-        <button 
-          onClick={() => setActiveCategory(null)}
-          className="flex items-center gap-2 text-white/50 hover:text-white text-sm font-body transition-colors"
-        >
-          <Icons.ArrowLeft size={14} /> Back to {type === 'languages' ? 'Languages' : 'Domains'}
-        </button>
-
-        <div>
-          <h1 className="font-display text-3xl text-white font-semibold tracking-tight">{activeCategory.name}</h1>
-          <p className="font-body text-sm text-white/50 mt-2 max-w-2xl leading-relaxed">
-            {activeCategory.description || `Explore the complete zero-to-hero curriculum for ${activeCategory.name}. Advance your skills step-by-step.`}
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 gap-3">
-          {activeCourses.length > 0 ? (
-            activeCourses.map((course) => (
-              <CourseListCard key={course.id} course={course} onClick={handleCourseClick} />
-            ))
-          ) : (
-            <div className="p-8 text-center border border-white/5 rounded-xl border-dashed">
-              <p className="font-body text-sm text-white/40">No curriculums published in this track yet.</p>
-            </div>
-          )}
-        </div>
+        <div className="w-8 h-8 border-4 border-slate-200 border-t-blue-600 rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto pb-16 animate-fade-in">
-      <div className="mb-10">
-        <BadgeTag variant={type === 'languages' ? 'purple' : 'teal'} className="mb-3 uppercase tracking-widest text-[10px]">
-          {type === 'languages' ? 'Core Curriculum' : 'Expertise Paths'}
-        </BadgeTag>
-        <h1 className="font-display text-4xl text-white font-semibold tracking-tight mb-3">
-          {type === 'languages' ? 'Programming Languages' : 'Tech Architectures'}
-        </h1>
-        <p className="font-body text-base text-white/50 max-w-2xl">
-          {type === 'languages' 
-            ? 'Master the syntax and patterns of modern programming languages. From assembly to high-level logic.'
-            : 'Deep dive into specialized architecture domains. Scale systems, secure networks, and build hardware.'}
-        </p>
+    <div className="max-w-6xl mx-auto pb-20 animate-fade-in font-sans">
+      
+      {/* ─── HERO HEADER ─── */}
+      <div className="mb-12">
+        <span className="bg-blue-100 text-blue-700 text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-full mb-6 inline-block">
+          COURSE CATALOG
+        </span>
+        
+        <div className="flex flex-col md:flex-row justify-between items-end gap-6">
+          <div className="max-w-3xl">
+            <h1 className="font-display text-5xl md:text-6xl text-slate-900 font-extrabold tracking-tight leading-[1.1] mb-4">
+              Master the Future of <br className="hidden md:block" />
+              <span className="text-blue-600 italic">Technology</span>
+            </h1>
+            <p className="text-lg text-slate-600 max-w-2xl leading-relaxed">
+              Curated industry-leading courses, taught by experts. Completely free, forever. No credit card required.
+            </p>
+          </div>
+
+          <div className="bg-white rounded-full border border-slate-200 p-1 flex items-center shadow-sm">
+            <button 
+              onClick={() => setViewType('all')} 
+              className={`px-6 py-2.5 rounded-full text-sm font-semibold transition-all ${viewType === 'all' ? 'bg-blue-600 text-white shadow' : 'text-slate-600 hover:bg-slate-50'}`}
+            >
+              All Courses
+            </button>
+            <button 
+              onClick={() => setViewType('popular')} 
+              className={`px-6 py-2.5 rounded-full text-sm font-semibold transition-all ${viewType === 'popular' ? 'bg-blue-600 text-white shadow' : 'text-slate-600 hover:bg-slate-50'}`}
+            >
+              Popular
+            </button>
+          </div>
+        </div>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
-        {filteredCategories.map((cat) => (
-          <CategoryCard 
-            key={cat.id} 
-            category={cat} 
-            courseCount={getCoursesByCategory(cat.id).length} 
-            onClick={setActiveCategory} 
-          />
+      {/* ─── CATEGORY PILLS ─── */}
+      <div className="flex overflow-x-auto gap-3 pb-4 mb-8 scrollbar-hide">
+        <button 
+          onClick={() => setActiveCategory(null)}
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-full whitespace-nowrap text-sm font-semibold transition-all ${
+            !activeCategory ? 'bg-blue-500 text-white shadow' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+          }`}
+        >
+          <Icons.Grid size={16} /> All Subjects
+        </button>
+        {categories.map(cat => (
+          <button 
+            key={cat.id}
+            onClick={() => setActiveCategory(cat)}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-full whitespace-nowrap text-sm font-semibold transition-all ${
+              activeCategory?.id === cat.id ? 'bg-blue-500 text-white shadow' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+            }`}
+          >
+            <Icons.Code size={16} className={activeCategory?.id === cat.id ? 'text-white' : 'text-slate-500'} />
+            {cat.name}
+          </button>
         ))}
       </div>
-      
-      {filteredCategories.length === 0 && (
-        <div className="py-20 text-center border border-white/5 border-dashed rounded-2xl">
-          <p className="font-mono text-sm text-white/30">No tracks found in this section.</p>
+
+      {/* ─── COURSE GRID ─── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {filteredCourses.map((course, i) => {
+          const diffColor = 
+            course.difficulty === 'BEGINNER' ? 'bg-green-100 text-green-700' :
+            course.difficulty === 'INTERMEDIATE' ? 'bg-blue-100 text-blue-700' :
+            'bg-purple-100 text-purple-700';
+          
+          const bgClass = FALLBACK_IMAGES[i % FALLBACK_IMAGES.length];
+
+          return (
+            <div 
+              key={course.id} 
+              onClick={() => navigate(`/courses/${course.slug}`)}
+              className="bg-white border border-slate-200 rounded-3xl overflow-hidden cursor-pointer hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col group p-2"
+            >
+              {/* Thumbnail Area */}
+              <div className={`relative h-48 rounded-2xl ${bgClass} w-full overflow-hidden flex items-center justify-center p-6`}>
+                <span className="absolute top-4 left-4 bg-white/90 backdrop-blur text-blue-700 text-[10px] font-black uppercase px-2.5 py-1 rounded shadow-sm">
+                  FREE
+                </span>
+                <h3 className="font-display font-black text-2xl text-slate-800/20 text-center leading-none uppercase">
+                  {course.title.split(' ')[0]}<br/>{course.title.split(' ').slice(1).join(' ')}
+                </h3>
+              </div>
+
+              {/* Content Area */}
+              <div className="p-4 flex flex-col flex-1">
+                <div className="flex items-center gap-3 mb-3">
+                  <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${diffColor}`}>
+                    {course.difficulty}
+                  </span>
+                  <span className="text-[11px] font-medium text-slate-500 flex items-center gap-1">
+                    <Icons.Clock size={12} /> {(course.duration || 60) / 60} Hours
+                  </span>
+                </div>
+
+                <h3 className="font-bold text-lg text-slate-900 leading-tight mb-2 group-hover:text-blue-600 transition-colors line-clamp-2">
+                  {course.title}
+                </h3>
+                
+                <p className="text-sm text-slate-500 line-clamp-2 mb-6">
+                  {course.description || "Master the fundamentals and build responsive, accessible web applications."}
+                </p>
+
+                <div className="mt-auto flex items-center justify-between pt-4 border-t border-slate-100">
+                  <div className="flex items-center -space-x-2">
+                    <div className="w-6 h-6 rounded-full bg-blue-100 border border-white flex items-center justify-center text-[8px] font-bold text-blue-700">JS</div>
+                    <div className="w-6 h-6 rounded-full bg-emerald-100 border border-white flex items-center justify-center text-[8px] font-bold text-emerald-700">TS</div>
+                    <div className="w-6 h-6 rounded-full bg-purple-100 border border-white flex items-center justify-center text-[8px] font-bold text-purple-700">PR</div>
+                  </div>
+                  <span className="text-sm font-semibold text-blue-600 group-hover:text-blue-700 flex items-center gap-1">
+                    View Details <Icons.ArrowRight size={14} />
+                  </span>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {filteredCourses.length === 0 && (
+        <div className="py-24 text-center">
+          <p className="text-slate-500 font-medium">No courses found matching this criteria.</p>
         </div>
       )}
     </div>

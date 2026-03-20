@@ -54,7 +54,6 @@ export default function BattlesPage() {
     setSending(false);
   };
 
-  // Separate incoming pending challenges
   const pendingIncoming = battles.filter(b => b.status === 'PENDING' && b.challengedId === user?.id);
   const configuringBattles = battles.filter(b => b.status === 'CONFIGURING' && b.challengerId === user?.id);
   const otherBattles = battles.filter(b => !pendingIncoming.includes(b) && !configuringBattles.includes(b));
@@ -63,7 +62,6 @@ export default function BattlesPage() {
     try {
       await api.post(`/battles/${battleId}/respond`, { accept });
       toast.success(accept ? 'Accepted! Waiting for host to configure.' : 'Challenge declined.');
-      // Refresh
       const r = await api.get('/battles');
       setBattles(r.data.battles || []);
       if (accept) navigate(`/battles/${battleId}`);
@@ -73,61 +71,67 @@ export default function BattlesPage() {
   };
 
   const statusColor = {
-    PENDING:     'purple',
-    CONFIGURING: 'blue',
-    ACTIVE:      'teal',
-    COMPLETED:   'gray',
-    DECLINED:    'red',
-    EXPIRED:     'gray',
+    PENDING:     'bg-amber-100 text-amber-700 border-amber-200',
+    CONFIGURING: 'bg-indigo-100 text-indigo-700 border-indigo-200',
+    ACTIVE:      'bg-emerald-100 text-emerald-700 border-emerald-200',
+    COMPLETED:   'bg-slate-100 text-slate-700 border-slate-200',
+    DECLINED:    'bg-red-100 text-red-700 border-red-200',
+    EXPIRED:     'bg-slate-100 text-slate-500 border-slate-200',
   };
 
   return (
-    <div className="space-y-6 max-w-3xl mx-auto">
-      <div className="flex items-center justify-between">
+    <div className="space-y-8 max-w-4xl mx-auto pb-20 font-sans animate-fade-in">
+      <div className="flex items-end justify-between border-b border-slate-200 pb-6 pt-4">
         <div>
-          <h1 className="font-display font-black text-2xl mb-1">1v1 Battles</h1>
-          <p className="font-mono text-xs text-arena-dim">Challenge any developer. Full report after every battle.</p>
+           <span className="bg-blue-100 text-blue-700 text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-full mb-4 inline-block">
+            1V1 ARENA
+          </span>
+          <h1 className="font-display font-black text-4xl text-slate-900 mb-2 tracking-tight">Battles</h1>
+          <p className="text-lg text-slate-600">Challenge any developer in real-time. Prove your speed and syntax.</p>
         </div>
-        <Button onClick={() => setModal(true)} variant="primary">
-          <Icons.Zap size={14} /> Challenge
-        </Button>
+        <button onClick={() => setModal(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-sm flex items-center justify-center gap-2">
+          <Icons.Zap size={16} /> Challenge
+        </button>
       </div>
 
-      {/* Stats strip */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-6">
         {[
-          { label: 'Battles Fought', value: battles.filter(b => b.status === 'COMPLETED').length },
-          { label: 'Wins', value: battles.filter(b => b.status === 'COMPLETED' && b.winnerId === user?.id).length },
-          { label: 'Win Rate', value: (() => {
+          { label: 'Battles Fought', icon: Icons.Activity, value: battles.filter(b => b.status === 'COMPLETED').length },
+          { label: 'Wins', icon: Icons.Trophy, value: battles.filter(b => b.status === 'COMPLETED' && b.winnerId === user?.id).length },
+          { label: 'Win Rate', icon: Icons.Target, value: (() => {
             const done = battles.filter(b => b.status === 'COMPLETED');
             const wins = done.filter(b => b.winnerId === user?.id).length;
             return done.length ? `${Math.round((wins/done.length)*100)}%` : '—';
           })() },
-        ].map(({ label, value }) => (
-          <div key={label} className="arena-card p-4 text-center">
-            <div className="font-display font-bold text-xl text-arena-text">{value}</div>
-            <div className="font-mono text-xs text-arena-dim mt-1">{label}</div>
+        ].map(({ label, icon: Ic, value }) => (
+          <div key={label} className="bg-white border border-slate-200 rounded-3xl p-6 text-center shadow-sm">
+            <div className="w-10 h-10 mx-auto rounded-full bg-slate-50 flex items-center justify-center mb-3">
+              <Ic size={18} className="text-blue-600" />
+            </div>
+            <div className="font-display font-black text-3xl text-slate-900 mb-1 leading-none tracking-tight">{value}</div>
+            <div className="text-sm font-semibold text-slate-500 uppercase tracking-widest">{label}</div>
           </div>
         ))}
       </div>
 
-      {/* Incoming Challenges */}
       {pendingIncoming.length > 0 && (
-        <div className="arena-card overflow-hidden">
-          <div className="px-5 py-3 border-b border-arena-border bg-arena-purple/5">
-            <span className="font-mono text-xs text-arena-purple2 uppercase tracking-widest">Incoming Challenges</span>
+        <div className="bg-white border border-amber-200 rounded-3xl overflow-hidden shadow-lg shadow-amber-900/5">
+          <div className="px-6 py-4 border-b border-amber-100 bg-amber-50">
+            <span className="font-bold text-sm text-amber-700 uppercase tracking-widest flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" /> Incoming Challenges
+            </span>
           </div>
-          <div className="divide-y divide-arena-border/40">
+          <div className="divide-y divide-amber-50/50">
             {pendingIncoming.map(b => (
-              <div key={b.id} className="flex items-center gap-4 px-5 py-4">
-                <Avatar user={b.challenger} size={36} />
+              <div key={b.id} className="flex items-center gap-5 px-6 py-5 bg-white">
+                <Avatar user={b.challenger} size={48} className="border-2 border-slate-100 shadow-sm" />
                 <div className="flex-1 min-w-0">
-                  <span className="font-mono text-sm font-bold text-arena-text">{b.challenger?.username}</span>
-                  <p className="font-mono text-xs text-arena-dim">wants to battle you!</p>
+                  <span className="font-bold text-lg text-slate-900 leading-tight">{b.challenger?.username}</span>
+                  <p className="text-sm font-medium text-slate-500">wants to battle you in a live match!</p>
                 </div>
-                <div className="flex gap-2">
-                  <button onClick={() => handleRespond(b.id, true)} className="px-3 py-1.5 rounded-lg text-xs font-mono font-bold bg-arena-teal/20 text-arena-teal border border-arena-teal/30 hover:bg-arena-teal/30 transition-colors">Accept</button>
-                  <button onClick={() => handleRespond(b.id, false)} className="px-3 py-1.5 rounded-lg text-xs font-mono font-bold bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 transition-colors">Decline</button>
+                <div className="flex gap-3">
+                  <button onClick={() => handleRespond(b.id, true)} className="px-5 py-2.5 rounded-xl text-sm font-bold bg-amber-500 text-white hover:bg-amber-600 transition-colors shadow-sm">Accept Match</button>
+                  <button onClick={() => handleRespond(b.id, false)} className="px-5 py-2.5 rounded-xl text-sm font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors">Decline</button>
                 </div>
               </div>
             ))}
@@ -135,7 +139,6 @@ export default function BattlesPage() {
         </div>
       )}
 
-      {/* Configuring Battles (Host must configure) */}
       {configuringBattles.map(b => (
         <HostConfigPanel key={b.id} battle={b} onStart={() => navigate(`/battles/${b.id}`)} onRefresh={async () => {
           const r = await api.get('/battles');
@@ -144,22 +147,24 @@ export default function BattlesPage() {
       ))}
 
       {loading ? (
-        <div className="flex justify-center py-12"><Spinner size={24} className="text-arena-purple2" /></div>
+        <div className="flex justify-center py-20"><div className="w-8 h-8 border-4 border-slate-200 border-t-blue-600 rounded-full animate-spin" /></div>
       ) : otherBattles.length === 0 && pendingIncoming.length === 0 && configuringBattles.length === 0 ? (
-        <div className="arena-card p-16 text-center">
-          <Icons.Zap size={32} className="text-arena-dim mx-auto mb-4" />
-          <p className="font-display font-bold mb-2">No battles yet</p>
-          <p className="font-mono text-xs text-arena-dim mb-6">Challenge a friend to your first 1v1</p>
-          <Button onClick={() => setModal(true)} variant="primary">
-            <Icons.Zap size={14} /> Start a Battle
-          </Button>
+        <div className="border border-slate-200 border-dashed rounded-3xl p-20 text-center bg-slate-50/50">
+          <div className="w-20 h-20 rounded-full bg-white shadow-sm flex items-center justify-center mx-auto mb-6">
+            <Icons.Zap size={32} className="text-slate-300" />
+          </div>
+          <h3 className="font-display font-black text-2xl text-slate-900 mb-2">No Battle History</h3>
+          <p className="text-slate-500 text-lg max-w-sm mx-auto mb-8">Ready to test your skills? Challenge a friend to your first 1v1 match.</p>
+          <button onClick={() => setModal(true)} className="bg-blue-600 text-white font-bold px-8 py-3.5 rounded-xl hover:bg-blue-700 shadow-sm">
+            Start a Battle
+          </button>
         </div>
       ) : otherBattles.length > 0 && (
-        <div className="arena-card overflow-hidden">
-          <div className="px-5 py-3 border-b border-arena-border">
-            <span className="font-mono text-xs text-arena-dim uppercase tracking-widest">Battle History</span>
+        <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm">
+          <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+            <span className="font-bold text-sm text-slate-500 uppercase tracking-widest">Match History</span>
           </div>
-          <div className="divide-y divide-arena-border/40">
+          <div className="divide-y divide-slate-100">
             {otherBattles.map((b) => {
               const opp = b.challengerId === user?.id ? b.challenged : b.challenger;
               const isWinner = b.winnerId === user?.id;
@@ -170,36 +175,36 @@ export default function BattlesPage() {
               return (
                 <div
                   key={b.id}
-                  className="flex items-center gap-4 px-5 py-3.5 cursor-pointer hover:bg-arena-bg3/50 transition-colors"
+                  className="flex items-center gap-5 px-6 py-4 cursor-pointer hover:bg-slate-50 transition-colors group"
                   onClick={() => navigate(`/battles/${b.id}`)}
                 >
-                  <Avatar user={opp} size={36} />
+                  <Avatar user={opp} size={44} className="border border-slate-200 shadow-sm" />
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-sm font-bold text-arena-text">{opp?.username}</span>
-                      <BadgeTag variant={statusColor[b.status] || 'gray'}>
+                    <div className="flex items-center gap-3">
+                      <span className="font-bold text-lg text-slate-900">{opp?.username}</span>
+                      <span className={`text-[10px] font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-full border ${statusColor[b.status] || 'bg-slate-100 text-slate-500 border-slate-200'}`}>
                         {b.status}
-                      </BadgeTag>
+                      </span>
                     </div>
-                    <span className="font-mono text-xs text-arena-dim">
+                    <span className="text-xs font-semibold text-slate-400 mt-1 block uppercase tracking-wider">
                       {formatDistanceToNow(new Date(b.createdAt), { addSuffix: true })}
                     </span>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-4">
                     {b.status === 'COMPLETED' && (
-                      <span className={`font-mono font-bold text-sm ${isWinner ? 'text-yellow-400' : isDraw ? 'text-arena-purple2' : 'text-red-400'}`}>
-                        {isWinner ? 'WON' : isDraw ? 'DRAW' : 'LOST'}
+                      <span className={`font-black text-sm px-3 py-1 rounded-full ${isWinner ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : isDraw ? 'bg-slate-100 text-slate-500 border border-slate-200' : 'bg-red-50 text-red-600 border border-red-100'}`}>
+                        {isWinner ? 'VICTORY' : isDraw ? 'DRAW' : 'DEFEAT'}
                       </span>
                     )}
                     {isActive && (
-                      <span className="flex items-center gap-1 font-mono text-xs text-arena-teal">
-                        <span className="w-1.5 h-1.5 rounded-full bg-arena-teal animate-pulse" /> LIVE
+                      <span className="flex items-center gap-1.5 font-bold text-xs text-emerald-600 tracking-widest uppercase bg-emerald-50 px-3 py-1 border border-emerald-100 rounded-full">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> LIVE
                       </span>
                     )}
                     {isConfig && (
-                      <span className="font-mono text-xs text-blue-400">Configuring</span>
+                      <span className="font-bold text-xs text-indigo-600 tracking-widest uppercase bg-indigo-50 px-3 py-1 border border-indigo-100 rounded-full">Configuring</span>
                     )}
-                    <Icons.ChevronRight size={14} className="text-arena-dim" />
+                    <Icons.ChevronRight size={18} className="text-slate-300 group-hover:text-blue-600 transition-colors" />
                   </div>
                 </div>
               );
@@ -208,23 +213,28 @@ export default function BattlesPage() {
         </div>
       )}
 
-      {/* Challenge Modal */}
-      <Modal open={modal} onClose={() => setModal(false)} title="Challenge a Developer">
-        <div className="space-y-4">
-          <p className="font-mono text-xs text-arena-muted">Enter the username of the developer you want to challenge to a 1v1 coding battle.</p>
-          <Input
-            label="Opponent Username"
-            placeholder="e.g. sarthak_k"
-            value={opponent}
-            onChange={(e) => setOpponent(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleChallenge()}
-            icon={<Icons.Terminal size={14} />}
-          />
-          <div className="flex gap-3 pt-2">
-            <Button onClick={() => setModal(false)} variant="secondary" className="flex-1">Cancel</Button>
-            <Button onClick={handleChallenge} variant="teal" className="flex-1" loading={sending}>
-              <Icons.Zap size={14} /> Send Challenge
-            </Button>
+      <Modal open={modal} onClose={() => setModal(false)} title="Challenge Developer">
+        <div className="space-y-6">
+          <p className="text-sm text-slate-600">Enter the exact username of the developer you want to challenge to a 1v1 coding battle.</p>
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Username</label>
+            <div className="relative">
+              <Icons.Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+              <input
+                type="text"
+                placeholder="e.g. sarthak_k"
+                value={opponent}
+                onChange={(e) => setOpponent(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleChallenge()}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-10 pr-4 text-sm font-semibold focus:outline-none focus:ring-2 ring-blue-500/20 focus:border-blue-500 transition-all font-mono"
+              />
+            </div>
+          </div>
+          <div className="flex gap-3 pt-4 border-t border-slate-100">
+            <button onClick={() => setModal(false)} className="flex-1 px-4 py-2.5 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors text-sm">Cancel</button>
+            <button onClick={handleChallenge} disabled={sending} className="flex-1 px-4 py-2.5 rounded-xl font-bold text-white bg-blue-600 hover:bg-blue-700 transition-colors text-sm flex items-center justify-center gap-2">
+              <Icons.Zap size={16} /> <span>{sending ? 'Sending...' : 'Issue Challenge'}</span>
+            </button>
           </div>
         </div>
       </Modal>
@@ -232,7 +242,6 @@ export default function BattlesPage() {
   );
 }
 
-// ─── HOST CONFIGURATION PANEL ──────────────────────────────
 function HostConfigPanel({ battle, onStart, onRefresh }) {
   const [mode, setMode]         = useState('system');
   const [language, setLanguage] = useState('javascript');
@@ -256,85 +265,80 @@ function HostConfigPanel({ battle, onStart, onRefresh }) {
   };
 
   return (
-    <div className="arena-card overflow-hidden">
-      <div className="px-5 py-3 border-b border-arena-border bg-blue-500/5">
+    <div className="bg-white border-2 border-indigo-500 rounded-3xl overflow-hidden shadow-xl shadow-indigo-500/10">
+      <div className="px-6 py-4 border-b border-indigo-100 bg-indigo-50">
         <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
-          <span className="font-mono text-xs text-blue-400 uppercase tracking-widest">Configure Match — You Are The Host</span>
+          <span className="w-2 h-2 rounded-full bg-indigo-600 animate-pulse" />
+          <span className="font-bold text-xs text-indigo-700 uppercase tracking-widest">Configuration Required — You Are Host</span>
         </div>
       </div>
 
-      <div className="p-5 space-y-5">
-        <div className="flex items-center gap-3 p-3 rounded-xl bg-arena-bg3 border border-arena-border">
-          <Avatar user={battle.challenged} size={32} />
+      <div className="p-8 space-y-8">
+        <div className="flex items-center gap-4 p-4 rounded-xl bg-slate-50 border border-slate-200">
+          <Avatar user={battle.challenged} size={40} className="border border-white shadow-sm" />
           <div>
-            <p className="font-mono text-sm font-bold text-white">{battle.challenged?.username}</p>
-            <p className="font-mono text-xs text-arena-dim">Opponent accepted. Configure and start the match.</p>
+            <p className="font-bold text-base text-slate-900">{battle.challenged?.username}</p>
+            <p className="text-sm font-medium text-slate-500">has accepted! Configure the match rules to begin.</p>
           </div>
         </div>
 
-        {/* Problem Mode */}
         <div>
-          <label className="font-mono text-xs text-arena-dim uppercase tracking-widest block mb-2">Problem Mode</label>
-          <div className="grid grid-cols-2 gap-3">
+          <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-3">Problem Mode</label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {MODE_OPTIONS.map(opt => (
               <button
                 key={opt.id}
                 onClick={() => setMode(opt.id)}
-                className={`p-3 rounded-xl text-left border transition-all ${mode === opt.id ? 'bg-arena-purple/10 border-arena-purple/40' : 'bg-arena-bg3 border-arena-border hover:border-white/20'}`}
+                className={`p-4 rounded-2xl text-left border-2 transition-all ${mode === opt.id ? 'bg-indigo-50 border-indigo-500 shadow-sm' : 'bg-white border-slate-200 hover:border-indigo-300 hover:bg-slate-50'}`}
               >
-                <p className="font-mono text-xs font-bold text-white">{opt.label}</p>
-                <p className="font-mono text-[10px] text-arena-dim mt-1">{opt.desc}</p>
+                <p className={`font-bold text-sm mb-1 ${mode === opt.id ? 'text-indigo-900' : 'text-slate-900'}`}>{opt.label}</p>
+                <p className="font-medium text-xs text-slate-500">{opt.desc}</p>
               </button>
             ))}
           </div>
         </div>
 
-        {/* Custom problem input */}
         {mode === 'custom' && (
-          <div>
-            <label className="font-mono text-xs text-arena-dim uppercase tracking-widest block mb-2">Problem Description</label>
+          <div className="animate-fade-in">
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-3">Problem Statement</label>
             <textarea
-              className="w-full arena-input p-3 text-sm min-h-[100px] resize-y"
-              placeholder="Write the problem statement for your opponent..."
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 ring-indigo-500/20 focus:border-indigo-500 min-h-[120px]"
+              placeholder="Describe the challenge parameters, example inputs, constraints..."
               value={customProblem}
               onChange={(e) => setCustomProblem(e.target.value)}
             />
           </div>
         )}
 
-        {/* Language */}
         <div>
-          <label className="font-mono text-xs text-arena-dim uppercase tracking-widest block mb-2">Language</label>
+          <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-3">Language</label>
           <div className="flex flex-wrap gap-2">
             {LANGUAGES.map(lang => (
               <button
                 key={lang}
                 onClick={() => setLanguage(lang)}
-                className={`px-3 py-1.5 rounded-lg font-mono text-xs transition-all ${language === lang ? 'bg-arena-purple text-white' : 'bg-arena-bg3 text-arena-dim border border-arena-border hover:text-white'}`}
+                className={`px-4 py-2 rounded-xl font-bold text-xs uppercase tracking-wider transition-all border ${language === lang ? 'bg-slate-900 text-white border-slate-900 shadow-md' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}
               >{lang}</button>
             ))}
           </div>
         </div>
 
-        {/* Timer */}
         <div>
-          <label className="font-mono text-xs text-arena-dim uppercase tracking-widest block mb-2">Timer</label>
+          <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-3">Time Limit</label>
           <div className="flex flex-wrap gap-2">
             {TIMER_OPTIONS.map(t => (
               <button
                 key={t.value}
                 onClick={() => setTimeLimit(t.value)}
-                className={`px-4 py-2 rounded-lg font-mono text-xs transition-all ${timeLimit === t.value ? 'bg-arena-teal text-black font-bold' : 'bg-arena-bg3 text-arena-dim border border-arena-border hover:text-white'}`}
+                className={`px-4 py-2 rounded-xl font-bold text-sm transition-all border ${timeLimit === t.value ? 'bg-blue-50 text-blue-700 border-blue-600 shadow-sm' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}
               >{t.label}</button>
             ))}
           </div>
         </div>
 
-        {/* Start */}
-        <Button onClick={handleStart} variant="primary" className="w-full" loading={configuring}>
-          <Icons.Zap size={14} /> Start Battle Now
-        </Button>
+        <button onClick={handleStart} disabled={configuring} className="w-full bg-indigo-600 text-white font-bold py-4 rounded-xl text-base shadow-sm hover:bg-indigo-700 hover:shadow-md transition-all flex items-center justify-center gap-2">
+          <Icons.Play size={18} /> {configuring ? 'Configuring...' : 'Begin Match'}
+        </button>
       </div>
     </div>
   );

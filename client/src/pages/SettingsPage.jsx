@@ -1,107 +1,133 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuthStore } from '@/store';
-import { Button, Input, Avatar, BadgeTag } from '@/components/ui';
+import { Button, Input, toast } from '@/components/ui';
 import Icons from '@/assets/icons';
 import api from '@/lib/api';
-import toast from 'react-hot-toast';
 
 export default function SettingsPage() {
-  const { user, updateUser, logout } = useAuthStore();
-  const [form, setForm] = useState({
+  const { user, fetchUser } = useAuthStore();
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
     fullName: user?.fullName || '',
     bio: user?.bio || '',
-    avatarUrl: user?.avatarUrl || '',
+    website: user?.website || '',
+    location: user?.location || '',
   });
-  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        fullName: user.fullName || '',
+        bio: user.bio || '',
+        website: user.website || '',
+        location: user.location || '',
+      });
+    }
+  }, [user]);
 
   const handleSave = async () => {
-    setSaving(true);
+    setLoading(true);
     try {
-      const r = await api.put('/users/me', form);
-      updateUser(r.data.user);
-      toast.success('Profile updated');
-    } catch (_) { toast.error('Update failed'); }
-    setSaving(false);
+      await api.put('/users/me', formData);
+      await fetchUser();
+      toast.success('Settings updated successfully');
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to update settings');
+    }
+    setLoading(false);
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="max-w-3xl mx-auto pb-20 font-sans animate-fade-in space-y-8 pt-4">
+      {/* Header */}
       <div>
-        <h1 className="font-display font-black text-2xl mb-1">Settings</h1>
-        <p className="font-mono text-xs text-arena-dim">// manage your account</p>
+        <span className="bg-slate-100 text-slate-600 text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-full mb-4 inline-block shadow-sm">
+          PREFERENCES
+        </span>
+        <h1 className="font-display font-black text-4xl text-slate-900 mb-2 tracking-tight">Account Settings</h1>
+        <p className="text-lg text-slate-600">Manage your profile details, platform preferences, and integrations.</p>
       </div>
 
-      {/* Profile settings */}
-      <div className="arena-card p-6 space-y-5">
-        <span className="font-mono text-xs text-arena-dim uppercase tracking-widest block">Profile</span>
-        <div className="flex items-center gap-4">
-          <Avatar user={user} size={56} />
-          <div>
-            <p className="font-mono text-sm text-arena-text font-bold">@{user?.username}</p>
-            <BadgeTag variant="purple" className="mt-1">{user?.role}</BadgeTag>
+      <div className="bg-white border border-slate-200 rounded-3xl p-8 shadow-sm">
+        <h3 className="font-display font-bold text-xl text-slate-900 mb-6 flex items-center gap-3 border-b border-slate-100 pb-4">
+          <Icons.User size={20} className="text-blue-600" /> Public Profile
+        </h3>
+        
+        <div className="space-y-6 max-w-xl">
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block">Full Name</label>
+            <input
+              type="text"
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-sans"
+              placeholder="e.g. Satoshi Nakamoto"
+              value={formData.fullName}
+              onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block">Biography</label>
+            <textarea
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-sans resize-y min-h-[100px]"
+              placeholder="Tell the community about your engineering journey..."
+              value={formData.bio}
+              onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block">Website / Portfolio</label>
+              <div className="relative">
+                <Icons.Link size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="url"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-11 pr-4 py-3 text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-sans"
+                  placeholder="https://"
+                  value={formData.website}
+                  onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+                />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block">Location</label>
+               <div className="relative">
+                <Icons.MapPin size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-11 pr-4 py-3 text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-sans"
+                  placeholder="e.g. San Francisco, CA"
+                  value={formData.location}
+                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                />
+              </div>
+            </div>
           </div>
         </div>
-        <Input label="Full Name" value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} />
-        <Input label="Avatar URL" value={form.avatarUrl} onChange={(e) => setForm({ ...form, avatarUrl: e.target.value })} placeholder="https://..." />
-        <div>
-          <label className="arena-label">Bio</label>
-          <textarea className="arena-input resize-none" rows={3} value={form.bio} onChange={(e) => setForm({ ...form, bio: e.target.value })} placeholder="Tell the arena who you are..." />
-        </div>
-        <Button onClick={handleSave} variant="primary" loading={saving}>
-          <Icons.Check size={14} /> Save Changes
-        </Button>
-      </div>
 
-      {/* Account info */}
-      <div className="arena-card p-6 space-y-3">
-        <span className="font-mono text-xs text-arena-dim uppercase tracking-widest block">Account</span>
-        <div className="flex justify-between py-2 border-b border-arena-border/40">
-          <span className="font-mono text-xs text-arena-dim">Email</span>
-          <span className="font-mono text-xs text-arena-text">{user?.email}</span>
-        </div>
-        <div className="flex justify-between py-2 border-b border-arena-border/40">
-          <span className="font-mono text-xs text-arena-dim">Role</span>
-          <span className="font-mono text-xs text-arena-text">{user?.role}</span>
-        </div>
-        <div className="flex justify-between py-2">
-          <span className="font-mono text-xs text-arena-dim">Member since</span>
-          <span className="font-mono text-xs text-arena-text">
-            {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : '—'}
-          </span>
-        </div>
-      </div>
-
-      {/* Danger zone */}
-      <div className="arena-card p-6 border-red-500/20 space-y-4">
-        <div>
-          <span className="font-mono text-xs text-red-400 uppercase tracking-widest block mb-1">Danger Zone</span>
-          <p className="font-mono text-[10px] text-arena-dim uppercase tracking-tighter">// permanent actions block</p>
-        </div>
-        
-        <div className="flex flex-col sm:flex-row gap-3">
-          <Button onClick={() => logout()} variant="secondary" className="flex-1 opacity-70 hover:opacity-100">
-            <Icons.LogOut size={14} /> Sign Out
-          </Button>
-          
-          <Button 
-            onClick={async () => {
-              if (window.confirm("CRITICAL: This will permanently erase your entire SkillForge history, XP, and progress. This action is irreversible. Proceed?")) {
-                try {
-                  await api.delete('/users/me');
-                  logout();
-                  window.location.href = '/';
-                } catch {
-                  toast.error("Erasure failed. Access level insufficient?");
-                }
-              }
-            }} 
-            variant="danger" 
-            className="flex-1"
+        <div className="mt-8 pt-6 border-t border-slate-100 flex justify-end">
+          <button
+            onClick={handleSave}
+            disabled={loading}
+            className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-8 py-3 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2"
           >
-            <Icons.Trash size={14} /> Erase Account Memory
-          </Button>
+            {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Icons.Save size={18} />}
+            {loading ? 'Saving...' : 'Save Changes'}
+          </button>
         </div>
       </div>
+
+      <div className="bg-red-50 border border-red-200 rounded-3xl p-8">
+        <h3 className="font-display font-bold text-xl text-red-900 mb-2 flex items-center gap-3">
+          <Icons.Shield size={20} className="text-red-600" /> Danger Zone
+        </h3>
+        <p className="text-red-700 text-sm mb-6 max-w-xl">Permanently delete your account and all associated data. This action is irreversible.</p>
+        <button className="bg-white border border-red-200 text-red-600 font-bold px-6 py-2.5 rounded-xl transition-all hover:bg-red-100 shadow-sm text-sm">
+          Delete Account
+        </button>
+      </div>
+
     </div>
   );
 }

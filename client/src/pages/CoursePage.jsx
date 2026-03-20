@@ -2,9 +2,6 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '@/lib/api';
 import Icons from '@/assets/icons';
-import { Spinner, BadgeTag, ProgressBar } from '@/components/ui';
-
-const DIFF_COLORS = { BEGINNER: 'green', INTERMEDIATE: 'blue', ADVANCED: 'purple' };
 
 export default function CoursePage() {
   const { slug } = useParams();
@@ -12,16 +9,15 @@ export default function CoursePage() {
   
   const [course, setCourse] = useState(null);
   const [enrollment, setEnrollment] = useState(null);
-  const [completedLessonIds, setCompletedLessonIds] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
+  const [expandedSection, setExpandedSection] = useState('0');
 
   const fetchCourse = async () => {
     try {
       const res = await api.get(`/courses/${slug}`);
       setCourse(res.data.course);
       setEnrollment(res.data.enrollment || null);
-      setCompletedLessonIds(res.data.completedLessonIds || []);
     } catch (err) {
       console.error("Failed to load course", err);
       navigate('/courses');
@@ -37,7 +33,7 @@ export default function CoursePage() {
     try {
       setActionLoading(true);
       await api.post(`/courses/${slug}/enroll`);
-      await fetchCourse(); // refresh to get enrollment object
+      await fetchCourse();
     } catch (error) {
       console.error('Enrollment failed', error);
     } finally {
@@ -45,14 +41,10 @@ export default function CoursePage() {
     }
   };
 
-  const handleStartLesson = (lessonSlug) => {
-    navigate(`/courses/${slug}/${lessonSlug}`);
-  };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
-        <Spinner size={24} className="text-white/40" />
+        <div className="w-8 h-8 border-4 border-slate-200 border-t-blue-600 rounded-full animate-spin" />
       </div>
     );
   }
@@ -60,149 +52,179 @@ export default function CoursePage() {
   if (!course) return null;
 
   const isEnrolled = !!enrollment;
-  const progress = enrollment?.progress || 0;
   const lessons = course.lessons || [];
 
-  // Find first incomplete lesson
-  const nextLesson = lessons.find(l => !completedLessonIds.includes(l.id)) || lessons[0];
-
   return (
-    <div className="max-w-4xl mx-auto space-y-12 pb-24">
-      {/* ── Back Navigation ────────────────────────────── */}
-      <button 
-        onClick={() => navigate('/courses')}
-        className="flex items-center gap-2 text-white/40 hover:text-white text-sm font-mono transition-colors mt-4"
-      >
-        ← Back to Library
-      </button>
-
-      {/* ── Header Section ─────────────────────────────── */}
-      <div className="space-y-6 lg:mr-32">
-        <div className="flex flex-wrap items-center gap-3">
-          {course.category && (
-            <span className="font-mono text-xs uppercase tracking-widest text-arena-purple2">
-              {course.category.name}
-            </span>
-          )}
-          {course.category && <span className="text-white/20">•</span>}
-          <span className={`font-mono text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider border ${
-            course.difficulty === 'BEGINNER' ? 'text-green-400 border-green-400/30' :
-            course.difficulty === 'INTERMEDIATE' ? 'text-blue-400 border-blue-400/30' :
-            'text-purple-400 border-purple-400/30'
-          }`}>
-            {course.difficulty}
-          </span>
-        </div>
-
-        <h1 className="font-display text-4xl sm:text-5xl text-white font-semibold tracking-tight leading-tight">
+    <div className="max-w-6xl mx-auto pb-24 font-sans animate-fade-in">
+      
+      {/* ── Header Titles ── */}
+      <div className="mb-8">
+        <h1 className="font-display text-4xl text-slate-900 font-extrabold tracking-tight mb-3">
           {course.title}
         </h1>
-
-        <p className="font-mono text-sm text-white/60 leading-relaxed">
-          {course.description}
+        <p className="text-lg text-slate-600 max-w-3xl leading-relaxed">
+          {course.description} Build scalable, themeable, and accessible applications with modern architecture.
         </p>
+      </div>
 
-        <div className="flex items-center gap-6 pt-2">
-          <div className="flex flex-col gap-1">
-            <span className="font-mono text-[10px] text-white/40 uppercase tracking-widest">Lessons</span>
-            <span className="font-mono text-sm text-white font-medium flex items-center gap-2">
-              📚 {lessons.length}
-            </span>
+      <div className="flex flex-col lg:flex-row gap-10">
+        
+        {/* ── Left Column (70%) ── */}
+        <div className="lg:w-2/3 space-y-8">
+          
+          {/* Video Placeholder */}
+          <div className="relative aspect-video bg-teal-50 rounded-3xl border border-slate-200 overflow-hidden flex items-center justify-center group cursor-pointer shadow-sm">
+            <div className="absolute inset-0 bg-gradient-to-tr from-teal-100/50 to-emerald-50/50 mix-blend-multiply" />
+            <div className="w-20 h-20 bg-white rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex items-center justify-center z-10 group-hover:scale-110 transition-transform">
+              <Icons.Play size={32} className="text-blue-600 ml-2" />
+            </div>
           </div>
-          <div className="w-px h-8 bg-white/10" />
-          <div className="flex flex-col gap-1">
-            <span className="font-mono text-[10px] text-white/40 uppercase tracking-widest">Reward</span>
-            <span className="font-mono text-sm text-white font-medium flex items-center gap-2">
-              ⚡ {course.xpReward} XP
-            </span>
+
+          {/* Actions & Enrolled Count */}
+          <div className="flex items-center justify-between border-b border-slate-200 pb-6">
+            <button className="flex items-center gap-2 px-5 py-2.5 bg-slate-100 hover:bg-slate-200 rounded-full text-sm font-semibold text-slate-700 transition-colors">
+              <Icons.Heart size={16} /> Add to Wishlist
+            </button>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center -space-x-2">
+                <div className="w-8 h-8 rounded-full bg-slate-200 border-2 border-white" />
+                <div className="w-8 h-8 rounded-full bg-slate-300 border-2 border-white" />
+                <div className="w-8 h-8 rounded-full bg-slate-400 border-2 border-white" />
+              </div>
+              <span className="text-sm font-medium text-slate-600">
+                <strong className="text-slate-900">{(course._count?.enrollments || 1240).toLocaleString()}</strong> students enrolled
+              </span>
+            </div>
           </div>
-          <div className="w-px h-8 bg-white/10" />
-          <div className="flex flex-col gap-1">
-            <span className="font-mono text-[10px] text-white/40 uppercase tracking-widest">Enrolled</span>
-            <span className="font-mono text-sm text-white font-medium">
-              {course._count?.enrollments || 0} students
-            </span>
+
+          {/* Description Body */}
+          <div className="prose prose-slate max-w-none text-slate-600">
+            <p>Designed for junior developers and lead designers who want to bridge the gap between code and design. Explore how to architect a Design System that survives the transition from Figma to Production.</p>
+            <p>Through hands-on projects, you'll learn to manage complex state transitions, implement accessible component libraries, and automate your workflow with CI/CD integrations for styling assets.</p>
+          </div>
+
+          {/* Syllabus Accordion */}
+          <div className="pt-8">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-slate-900">Syllabus</h2>
+              <button className="text-sm font-semibold text-blue-600">Expand All</button>
+            </div>
+            
+            <div className="space-y-4">
+              {lessons.length === 0 ? (
+                <p className="text-slate-500 italic p-6 bg-slate-50 rounded-2xl border border-slate-200 border-dashed text-center">Syllabus is being finalized.</p>
+              ) : (
+                lessons.map((lesson, idx) => {
+                  const isExpanded = expandedSection === String(idx);
+                  return (
+                    <div key={lesson.id} className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+                      <button 
+                        onClick={() => setExpandedSection(isExpanded ? null : String(idx))}
+                        className="w-full flex items-center justify-between p-5 hover:bg-slate-50 transition-colors text-left"
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 font-bold flex items-center justify-center text-sm">
+                            {String(idx + 1).padStart(2, '0')}
+                          </div>
+                          <div>
+                            <h3 className="font-bold text-slate-900">{lesson.title}</h3>
+                            <p className="text-xs font-medium text-slate-500 mt-0.5">1 Lesson • {lesson.duration || 15} mins</p>
+                          </div>
+                        </div>
+                        <Icons.ChevronDown size={20} className={`text-slate-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                      </button>
+                      
+                      {isExpanded && (
+                        <div className="px-5 pb-5 pt-2 border-t border-slate-100 bg-slate-50/50">
+                          <div className="py-3 flex items-center justify-between text-sm group cursor-pointer" onClick={() => navigate(`/courses/${slug}/${lesson.slug}`)}>
+                            <div className="flex items-center gap-3 text-slate-600 group-hover:text-blue-600 font-medium">
+                              <Icons.Play size={16} className="text-slate-400 group-hover:text-blue-600" />
+                              {lesson.title}
+                            </div>
+                            <span className="text-slate-400 text-xs font-mono">{lesson.duration || 15}:00</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Action Button & Progress */}
-        <div className="pt-8">
-          {isEnrolled ? (
+        {/* ── Right Column (30%) ── */}
+        <div className="lg:w-1/3 space-y-6">
+          
+          {/* Details Card */}
+          <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+            <h3 className="font-bold text-slate-900 mb-6 flex items-center gap-2">Course Details</h3>
+            
             <div className="space-y-4">
-              <div className="flex items-center gap-4">
-                <button 
-                  onClick={() => nextLesson && handleStartLesson(nextLesson.slug)}
-                  className="bg-white text-black px-6 py-2.5 rounded-lg font-mono text-sm font-bold hover:bg-white/90 transition-colors flex items-center gap-2"
-                >
-                  ▶ {progress > 0 ? 'Continue Learning' : 'Start Learning'}
-                </button>
-                <span className="font-mono text-sm text-arena-teal font-medium">{progress}% Complete</span>
-              </div>
-              {progress > 0 && (
-                <div className="max-w-xs">
-                  <div className="h-1 rounded-full bg-white/10 overflow-hidden">
-                    <div className="h-full rounded-full bg-arena-teal transition-all" style={{ width: `${progress}%` }} />
-                  </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3 text-slate-600">
+                  <Icons.Clock size={16} className="text-blue-600"/>
+                  <span className="text-sm font-medium">Duration</span>
                 </div>
-              )}
+                <span className="text-sm font-bold text-slate-900 tracking-tight">{(course.duration || 120) / 60} Hours</span>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3 text-slate-600">
+                  <Icons.Zap size={16} className="text-blue-600"/>
+                  <span className="text-sm font-medium">Level</span>
+                </div>
+                <span className="text-sm font-bold text-slate-900 tracking-tight capitalize">{course.difficulty?.toLowerCase() || 'Advanced'}</span>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3 text-slate-600">
+                  <Icons.Globe size={16} className="text-blue-600"/>
+                  <span className="text-sm font-medium">Language</span>
+                </div>
+                <span className="text-sm font-bold text-slate-900 tracking-tight">English</span>
+              </div>
             </div>
-          ) : (
+
+            <div className="mt-8 pt-6 border-t border-slate-100">
+              <h4 className="text-sm font-bold text-slate-900 mb-4">Instructor</h4>
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full border border-slate-200 bg-slate-100 flex items-center justify-center overflow-hidden">
+                  <span className="font-bold text-slate-400">AJ</span>
+                </div>
+                <div>
+                  <p className="font-bold text-slate-900 text-sm">Alex Johnson</p>
+                  <p className="text-xs text-slate-500 font-medium">Senior Architect</p>
+                </div>
+              </div>
+              <p className="text-xs text-slate-600 mt-4 leading-relaxed">
+                Alex has built scalable systems for Fortune 500 tech firms and is a regular speaker at UI conferences worldwide.
+              </p>
+              <button className="w-full mt-5 py-2.5 rounded-full border border-slate-200 text-slate-700 font-semibold text-sm hover:bg-slate-50 transition-colors">
+                View Profile
+              </button>
+            </div>
+          </div>
+
+          {/* Action CTA */}
+          {!isEnrolled ? (
             <button 
               onClick={handleEnroll}
               disabled={actionLoading}
-              className="bg-white text-black px-6 py-2.5 rounded-lg font-mono text-sm font-bold hover:bg-white/90 transition-colors flex items-center gap-2 disabled:opacity-50"
+              className="w-full bg-blue-600 text-white font-bold py-4 rounded-2xl shadow-[0_8px_30px_rgb(37,99,235,0.2)] hover:bg-blue-700 hover:-translate-y-0.5 transition-all flex justify-center items-center gap-2"
             >
-              {actionLoading ? '...' : '⚡'} Enroll Now — Free
+              {actionLoading ? 'Enrolling...' : 'Enroll Now for Free'}
+            </button>
+          ) : (
+            <button 
+              onClick={() => navigate(`/courses/${slug}/${course.lessons?.[0]?.slug || ''}`)}
+              className="w-full bg-slate-900 text-white font-bold py-4 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.15)] hover:bg-slate-800 hover:-translate-y-0.5 transition-all flex justify-center items-center gap-2"
+            >
+              <Icons.Play size={18} /> Continue Learning
             </button>
           )}
-        </div>
-      </div>
 
-      {/* ── Curriculum Syllabus ────────────────────────── */}
-      <div className="pt-8 border-t border-white/10">
-        <h2 className="font-display text-xl text-white font-semibold tracking-tight mb-8">Course Syllabus</h2>
-        
-        {lessons.length === 0 ? (
-          <div className="p-8 text-center border border-white/5 rounded-xl border-dashed">
-            <p className="font-mono text-sm text-white/40">Syllabus is being prepared for this course.</p>
-          </div>
-        ) : (
-          <div className="space-y-1">
-            {lessons.map((lesson, index) => {
-              const isCompleted = completedLessonIds.includes(lesson.id);
-              return (
-                <div 
-                  key={lesson.id}
-                  onClick={() => isEnrolled ? handleStartLesson(lesson.slug) : null}
-                  className={`group flex items-start gap-4 p-4 rounded-xl border border-transparent transition-all
-                    ${isEnrolled ? 'cursor-pointer hover:bg-white/5 hover:border-white/10' : 'opacity-70'}
-                  `}
-                >
-                  <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center font-mono text-xs mt-0.5 ${
-                    isCompleted ? 'bg-arena-teal/20 border border-arena-teal/40 text-arena-teal' : 'bg-white/5 border border-white/10 text-white/40'
-                  }`}>
-                    {isCompleted ? '✓' : index + 1}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-4 mb-1">
-                      <h3 className={`font-mono text-sm font-medium ${isCompleted ? 'text-arena-teal line-through opacity-70' : isEnrolled ? 'text-white/90 group-hover:text-white' : 'text-white/70'}`}>
-                        {lesson.title}
-                      </h3>
-                      <div className="flex items-center gap-3">
-                        <span className="font-mono text-[11px] text-white/30 flex items-center gap-1 shrink-0">
-                          ⚡ {lesson.xpReward} XP
-                        </span>
-                        {isEnrolled && (
-                          <span className="text-white/40 group-hover:text-white/80 transition-colors">→</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
+        </div>
       </div>
     </div>
   );
