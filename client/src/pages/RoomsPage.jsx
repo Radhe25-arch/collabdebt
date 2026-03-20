@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useAuthStore } from '@/store';
 import { Avatar, BadgeTag, Modal, Spinner } from '@/components/ui';
 import Icons from '@/assets/icons';
@@ -127,6 +127,20 @@ export default function RoomsPage() {
           </div>
         </div>
       </Modal>
+    </div>
+  );
+}
+
+export function RoomPage() {
+  const { id } = useParams();
+  return (
+    <div className="flex flex-col items-center justify-center py-24 animate-fade-in space-y-4">
+      <div className="w-16 h-16 rounded-full bg-indigo-50 flex items-center justify-center mb-4">
+        <Icons.Monitor size={24} className="text-indigo-600" />
+      </div>
+      <h2 className="font-display font-black text-2xl text-slate-900">Code Room: {id}</h2>
+      <p className="text-slate-500 font-medium">Connecting to live synchronization server...</p>
+      <div className="w-6 h-6 border-4 border-slate-200 border-t-indigo-600 rounded-full animate-spin mt-4" />
     </div>
   );
 }

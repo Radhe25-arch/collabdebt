@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuthStore } from '@/store';
-import { Button, Input, toast } from '@/components/ui';
+import { Button, Input } from '@/components/ui';
+import toast from 'react-hot-toast';
 import Icons from '@/assets/icons';
 import api from '@/lib/api';
 
