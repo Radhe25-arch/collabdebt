@@ -1,21 +1,32 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import api from '@/lib/api';
 import Icons from '@/assets/icons';
-
-const FALLBACK_IMAGES = [
-  'bg-blue-100', 'bg-indigo-100', 'bg-emerald-100', 'bg-amber-100', 'bg-rose-100', 'bg-cyan-100'
+ 
+const BG_PALETTES = [
+  { bg: 'bg-blue-50',   icon: 'bg-blue-500',   dot: 'bg-blue-300'   },
+  { bg: 'bg-green-50',  icon: 'bg-green-500',  dot: 'bg-green-300'  },
+  { bg: 'bg-amber-50',  icon: 'bg-amber-500',  dot: 'bg-amber-300'  },
+  { bg: 'bg-purple-50', icon: 'bg-purple-500', dot: 'bg-purple-300' },
+  { bg: 'bg-rose-50',   icon: 'bg-rose-500',   dot: 'bg-rose-300'   },
+  { bg: 'bg-cyan-50',   icon: 'bg-cyan-500',   dot: 'bg-cyan-300'   },
 ];
-
+ 
+function getInitials(title = '') {
+  const words = title.trim().split(/\s+/);
+  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
+  return (words[0][0] + words[1][0]).toUpperCase();
+}
+ 
 export default function CoursesPage() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const [categories, setCategories] = useState([]);
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState(null);
-  const [viewType, setViewType] = useState('all'); // 'all' or 'popular'
-
+  const [viewType, setViewType] = useState('all');
+  const [search, setSearch] = useState('');
+ 
   useEffect(() => {
     const load = async () => {
       try {
@@ -33,18 +44,28 @@ export default function CoursesPage() {
     };
     load();
   }, []);
-
+ 
   const filteredCourses = useMemo(() => {
     let filtered = courses;
     if (activeCategory) {
-      filtered = filtered.filter(c => c.categoryId === activeCategory.id || c.category?.id === activeCategory.id);
+      filtered = filtered.filter(
+        c => c.categoryId === activeCategory.id || c.category?.id === activeCategory.id
+      );
+    }
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      filtered = filtered.filter(
+        c => c.title.toLowerCase().includes(q) || c.description?.toLowerCase().includes(q)
+      );
     }
     if (viewType === 'popular') {
-      filtered = [...filtered].sort((a,b) => (b.xpReward || 0) - (a.xpReward || 0)); // mock sorting for popular
+      filtered = [...filtered].sort(
+        (a, b) => (b._count?.enrollments || 0) - (a._count?.enrollments || 0)
+      );
     }
     return filtered;
-  }, [courses, activeCategory, viewType]);
-
+  }, [courses, activeCategory, viewType, search]);
+ 
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
@@ -52,132 +73,148 @@ export default function CoursesPage() {
       </div>
     );
   }
-
+ 
   return (
     <div className="max-w-6xl mx-auto pb-20 animate-fade-in font-sans">
-      
-      {/* ─── HERO HEADER ─── */}
-      <div className="mb-12">
-        <span className="bg-blue-100 text-blue-700 text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-full mb-6 inline-block">
+ 
+      {/* ─── HERO ─── */}
+      <div className="mb-10">
+        <span className="bg-blue-100 text-blue-700 text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-full mb-5 inline-block">
           COURSE CATALOG
         </span>
-        
-        <div className="flex flex-col md:flex-row justify-between items-end gap-6">
-          <div className="max-w-3xl">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+          <div>
             <h1 className="font-display text-5xl md:text-6xl text-slate-900 font-extrabold tracking-tight leading-[1.1] mb-4">
-              Master the Future of <br className="hidden md:block" />
+              Master the Future of{' '}
               <span className="text-blue-600 italic">Technology</span>
             </h1>
-            <p className="text-lg text-slate-600 max-w-2xl leading-relaxed">
-              Curated industry-leading courses, taught by experts. Completely free, forever. No credit card required.
+            <p className="text-lg text-slate-500 max-w-xl leading-relaxed">
+              Curated industry-leading courses, taught by experts. Completely free, forever.
             </p>
           </div>
-
-          <div className="bg-white rounded-full border border-slate-200 p-1 flex items-center shadow-sm">
-            <button 
-              onClick={() => setViewType('all')} 
-              className={`px-6 py-2.5 rounded-full text-sm font-semibold transition-all ${viewType === 'all' ? 'bg-blue-600 text-white shadow' : 'text-slate-600 hover:bg-slate-50'}`}
+          <div className="bg-white rounded-full border border-slate-200 p-1 flex items-center shadow-sm shrink-0">
+            <button
+              onClick={() => setViewType('all')}
+              className={`px-6 py-2.5 rounded-full text-sm font-semibold transition-all ${
+                viewType === 'all' ? 'bg-blue-600 text-white shadow' : 'text-slate-600 hover:bg-slate-50'
+              }`}
             >
               All Courses
             </button>
-            <button 
-              onClick={() => setViewType('popular')} 
-              className={`px-6 py-2.5 rounded-full text-sm font-semibold transition-all ${viewType === 'popular' ? 'bg-blue-600 text-white shadow' : 'text-slate-600 hover:bg-slate-50'}`}
+            <button
+              onClick={() => setViewType('popular')}
+              className={`px-6 py-2.5 rounded-full text-sm font-semibold transition-all ${
+                viewType === 'popular' ? 'bg-blue-600 text-white shadow' : 'text-slate-600 hover:bg-slate-50'
+              }`}
             >
               Popular
             </button>
           </div>
         </div>
       </div>
-
+ 
+      {/* ─── SEARCH ─── */}
+      <div className="relative mb-6">
+        <Icons.Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+        <input
+          type="text"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          placeholder="Search courses..."
+          className="w-full max-w-md pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-white text-sm text-slate-800 placeholder:text-slate-400 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all"
+        />
+      </div>
+ 
       {/* ─── CATEGORY PILLS ─── */}
-      <div className="flex overflow-x-auto gap-3 pb-4 mb-8 scrollbar-hide">
-        <button 
+      <div className="flex overflow-x-auto gap-3 pb-4 mb-5 scrollbar-hide">
+        <button
           onClick={() => setActiveCategory(null)}
           className={`flex items-center gap-2 px-5 py-2.5 rounded-full whitespace-nowrap text-sm font-semibold transition-all ${
             !activeCategory ? 'bg-blue-500 text-white shadow' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
           }`}
         >
-          <Icons.Book size={16} /> All Subjects
+          <Icons.Book size={15} /> All Subjects
         </button>
         {categories.map(cat => (
-          <button 
+          <button
             key={cat.id}
             onClick={() => setActiveCategory(cat)}
             className={`flex items-center gap-2 px-5 py-2.5 rounded-full whitespace-nowrap text-sm font-semibold transition-all ${
-              activeCategory?.id === cat.id ? 'bg-blue-500 text-white shadow' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+              activeCategory?.id === cat.id
+                ? 'bg-blue-500 text-white shadow'
+                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
             }`}
           >
-            <Icons.Code size={16} className={activeCategory?.id === cat.id ? 'text-white' : 'text-slate-500'} />
+            <Icons.Code size={15} className={activeCategory?.id === cat.id ? 'text-white' : 'text-slate-500'} />
             {cat.name}
           </button>
         ))}
       </div>
-
-      {/* ─── COURSE GRID ─── */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+ 
+      {/* ─── COUNT ─── */}
+      <p className="text-sm font-medium text-slate-400 mb-6">
+        {filteredCourses.length} course{filteredCourses.length !== 1 ? 's' : ''}
+      </p>
+ 
+      {/* ─── GRID ─── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
         {filteredCourses.map((course, i) => {
-          const diffColor = 
-            course.difficulty === 'BEGINNER' ? 'bg-green-100 text-green-700' :
-            course.difficulty === 'INTERMEDIATE' ? 'bg-blue-100 text-blue-700' :
-            'bg-purple-100 text-purple-700';
-          
-          const bgClass = FALLBACK_IMAGES[i % FALLBACK_IMAGES.length];
-
+          const palette = BG_PALETTES[i % BG_PALETTES.length];
+          const initials = getInitials(course.title);
+          const diffColor =
+            course.difficulty === 'BEGINNER'     ? 'bg-green-100 text-green-700' :
+            course.difficulty === 'INTERMEDIATE' ? 'bg-blue-100 text-blue-700'  :
+                                                   'bg-purple-100 text-purple-700';
+ 
           return (
-            <div 
-              key={course.id} 
+            <div
+              key={course.id}
               onClick={() => navigate(`/courses/${course.slug}`)}
-              className="bg-white border border-slate-200 rounded-3xl overflow-hidden cursor-pointer hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col group p-2"
+              className="bg-white border border-slate-200 rounded-3xl overflow-hidden cursor-pointer hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col group"
             >
-              {/* Thumbnail Area */}
-              <div className={`relative h-48 rounded-2xl ${bgClass} w-full overflow-hidden flex items-center justify-center p-6`}>
-                <span className="absolute top-4 left-4 bg-white/90 backdrop-blur text-blue-700 text-[10px] font-black uppercase px-2.5 py-1 rounded shadow-sm">
+              {/* Thumbnail */}
+              <div className={`relative h-44 ${palette.bg} flex items-center justify-center p-6 overflow-hidden`}>
+                <span className="absolute top-3 left-3 bg-white/90 text-blue-700 text-[10px] font-black uppercase px-2.5 py-1 rounded-lg shadow-sm">
                   FREE
                 </span>
-                <h3 className="font-display font-black text-2xl text-slate-800/20 text-center leading-none uppercase">
-                  {course.title.split(' ')[0]}<br/>{course.title.split(' ').slice(1).join(' ')}
-                </h3>
+                {/* Decorative dots */}
+                <div className={`absolute top-5 right-6 w-2 h-2 rounded-full ${palette.dot} opacity-60`} />
+                <div className={`absolute bottom-8 left-6 w-1.5 h-1.5 rounded-full ${palette.dot} opacity-40`} />
+                <div className={`absolute bottom-4 right-10 w-1 h-1 rounded-full ${palette.dot} opacity-30`} />
+                {/* Icon */}
+                <div className={`relative w-16 h-16 ${palette.icon} rounded-2xl flex items-center justify-center shadow-lg`}>
+                  <span className="text-white font-black text-xl tracking-tight">{initials}</span>
+                  <div className="absolute -bottom-1.5 -right-1.5 w-6 h-6 bg-white rounded-lg flex items-center justify-center shadow">
+                    <Icons.Code size={12} className="text-slate-500" />
+                  </div>
+                </div>
               </div>
-
-              {/* Content Area */}
+ 
+              {/* Content */}
               <div className="p-4 flex flex-col flex-1">
-                <div className="flex items-center gap-3 mb-3">
-                  <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${diffColor}`}>
+                <div className="flex items-center gap-2 mb-3">
+                  <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${diffColor}`}>
                     {course.difficulty}
                   </span>
-                  <span className="text-[11px] font-medium text-slate-500 flex items-center gap-1">
-                    <Icons.Clock size={12} /> {(course.duration || 60) / 60} Hours
+                  <span className="text-[11px] font-medium text-slate-400 flex items-center gap-1">
+                    <Icons.Clock size={11} /> {Math.round((course.duration || 120) / 60)}h
                   </span>
                 </div>
-
-                <h3 className="font-bold text-lg text-slate-900 leading-tight mb-2 group-hover:text-blue-600 transition-colors line-clamp-2">
+                <h3 className="font-bold text-base text-slate-900 leading-tight mb-1.5 group-hover:text-blue-600 transition-colors line-clamp-2">
                   {course.title}
                 </h3>
-                
-                <p className="text-sm text-slate-500 line-clamp-2 mb-6">
-                  {course.description || "Master the fundamentals and build responsive, accessible web applications."}
+                <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">
+                  {course.description || 'Master the essential principles and modern architecture.'}
                 </p>
-
-                <div className="mt-auto flex items-center justify-between pt-4 border-t border-slate-100">
-                  <div className="flex items-center -space-x-2">
-                    <div className="w-6 h-6 rounded-full bg-blue-100 border border-white flex items-center justify-center text-[8px] font-bold text-blue-700">JS</div>
-                    <div className="w-6 h-6 rounded-full bg-emerald-100 border border-white flex items-center justify-center text-[8px] font-bold text-emerald-700">TS</div>
-                    <div className="w-6 h-6 rounded-full bg-purple-100 border border-white flex items-center justify-center text-[8px] font-bold text-purple-700">PR</div>
-                  </div>
-                  <span className="text-sm font-semibold text-blue-600 group-hover:text-blue-700 flex items-center gap-1">
-                    View Details <Icons.ArrowRight size={14} />
-                  </span>
-                </div>
               </div>
             </div>
           );
         })}
       </div>
-
+ 
       {filteredCourses.length === 0 && (
         <div className="py-24 text-center">
-          <p className="text-slate-500 font-medium">No courses found matching this criteria.</p>
+          <p className="text-slate-400 font-medium">No courses found.</p>
         </div>
       )}
     </div>
