@@ -278,8 +278,63 @@ code,pre,kbd { font-family: 'JetBrains Mono', monospace; }
 .animate-bounce     { animation: bounce 1s ease-in-out infinite; }
 .animate-pulse      { animation: pulse 2s ease-in-out infinite; }
 
-.delay-100 { animation-delay: 0.1s; }
-.delay-200 { animation-delay: 0.2s; }
-.delay-300 { animation-delay: 0.3s; }
-.delay-400 { animation-delay: 0.4s; }
-.delay-500 { animation-delay: 0.5s; }
+/* ─── COCKPIT DENSITY & EXPERIENCE FLOW ──────────────────── */
+.cockpit-grid {
+  display: grid;
+  grid-template-columns: repeat(20, 1fr);
+  grid-template-rows: repeat(20, 1fr);
+  gap: 0.5rem;
+}
+
+.asymmetric-layout {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(2rem, 8vw, 6rem);
+}
+
+.humanized-spacing {
+  margin-left: clamp(1rem, 5vw, 4rem);
+  margin-right: clamp(1rem, 3vw, 2rem);
+}
+
+/* Glass Panels with depth */
+.glass-depth-1 { @apply bg-white/[0.03] backdrop-blur-md border-white/5 shadow-2xl shadow-black/40; }
+.glass-depth-2 { @apply bg-white/[0.06] backdrop-blur-lg border-white/10 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)]; }
+
+/* Neon Accents */
+.text-neon-teal { color: #00f5d4; text-shadow: 0 0 12px rgba(0,245,212,0.4); }
+.text-neon-purple { color: #9b5de5; text-shadow: 0 0 12px rgba(155,93,229,0.4); }
+
+.bg-neon-teal { background: #00f5d4; box-shadow: 0 0 20px rgba(0,245,212,0.4); }
+.bg-neon-purple { background: #9b5de5; box-shadow: 0 0 20px rgba(155,93,229,0.4); }
+
+/* Blinking cursor emulation */
+.cursor-blink::after {
+  content: '|';
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  from, to { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* Morphing transition utilities */
+.morph-target { transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+
+.skew-grid {
+  transform: skewX(-1.5deg);
+}
+
+.text-justify-human {
+  text-align: justify;
+  text-justify: inter-word;
+  hyphens: auto;
+}
+
+/* Delay modifiers for staggered entry */
+.delay-600 { animation-delay: 0.6s; }
+.delay-700 { animation-delay: 0.7s; }
+.delay-800 { animation-delay: 0.8s; }
+.delay-900 { animation-delay: 0.9s; }
+.delay-1000 { animation-delay: 1.0s; }
