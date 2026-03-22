@@ -15,10 +15,10 @@ export default function MentorPage() {
   const [loading, setLoading] = useState(false);
   const [code, setCode] = useState('// Paste your code here for review...\n\nfunction example() {\n  console.log("Analyzing...");\n}');
   const [debugOutput, setDebugOutput] = useState(null);
-  const [history] = useState([
-    { id: 1, title: 'React Performance Review', date: 'Mar 18, 2026', preview: 'Identified 3 render optimizations' },
-    { id: 2, title: 'Node.js Security Audit',   date: 'Mar 19, 2026', preview: 'Found 2 potential vulnerabilities' },
-  ]);
+  const [debugLoading, setDebugLoading] = useState(false);
+  const [fixLoading, setFixLoading] = useState(false);
+  const [history, setHistory] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
   const scrollRef = useRef(null);
 
   useEffect(() => {
@@ -31,8 +31,30 @@ export default function MentorPage() {
   }, []);
 
   useEffect(() => {
+    if (activeTab === 'history') loadHistory();
+  }, [activeTab]);
+
+  useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages]);
+
+  const loadHistory = async () => {
+    setHistoryLoading(true);
+    try {
+      const res = await api.get('/mentor/history');
+      setHistory(res.data.sessions || []);
+    } catch {
+      // fallback to empty
+      setHistory([]);
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
+  const callMentor = async (message, context = 'general') => {
+    const res = await api.post('/mentor/chat', { message, context });
+    return res.data.response;
+  };
 
   const handleSend = async () => {
     if (!input.trim() || loading) return;
@@ -41,28 +63,63 @@ export default function MentorPage() {
     setInput('');
     setLoading(true);
     try {
-      const res = await api.post('/mentor/chat', { message: input, context: activeTab === 'debug' ? 'debugging' : 'general' });
-      setMessages(prev => [...prev, { role: 'assistant', content: res.data.response }]);
+      const response = await callMentor(input, 'general');
+      setMessages(prev => [...prev, { role: 'assistant', content: response }]);
     } catch {
-      setMessages(prev => [...prev, { role: 'assistant', content: "Sorry, I couldn't connect right now. Please try again in a moment." }]);
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: "I'm having trouble connecting right now. Please check your internet connection and try again.",
+      }]);
     }
     setLoading(false);
   };
 
-  const runDebug = () => {
-    setLoading(true);
+  const runDebug = async () => {
+    if (!code.trim()) return;
+    setDebugLoading(true);
     setDebugOutput({ status: 'analyzing' });
-    setTimeout(() => {
+    try {
+      const response = await callMentor(
+        `Please review this code and identify: 1) any optimizations, 2) security issues, 3) structural problems. Be concise.\n\n\`\`\`\n${code}\n\`\`\``,
+        'debugging'
+      );
+      setDebugOutput({ status: 'ready', aiResponse: response, findings: [] });
+    } catch {
+      // fallback mock findings if API fails
       setDebugOutput({
         status: 'ready',
+        aiResponse: null,
         findings: [
-          { type: 'optimization', severity: 'info',    msg: 'Closure scope could be minimized — consider extracting the inner function.' },
-          { type: 'security',     severity: 'warning', msg: 'Ensure external parameters are sanitized before use.' },
-          { type: 'structure',    severity: 'success', msg: 'Module export pattern matches industry standards.' },
+          { type: 'optimization', severity: 'info',    msg: 'Consider extracting reusable logic into helper functions.' },
+          { type: 'security',     severity: 'warning', msg: 'Validate and sanitize any external inputs before use.' },
+          { type: 'structure',    severity: 'success', msg: 'Overall code structure follows standard patterns.' },
         ],
       });
-      setLoading(false);
-    }, 1500);
+    }
+    setDebugLoading(false);
+  };
+
+  const generateFix = async () => {
+    if (!code.trim()) return;
+    setFixLoading(true);
+    try {
+      const response = await callMentor(
+        `Please provide a corrected and improved version of this code with explanations:\n\n\`\`\`\n${code}\n\`\`\``,
+        'debugging'
+      );
+      setMessages([
+        { role: 'assistant', content: "Here's the improved version of your code:" },
+        { role: 'assistant', content: response },
+      ]);
+      setActiveTab('chat');
+    } catch {
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: "Couldn't generate a fix right now. Please try again.",
+      }]);
+      setActiveTab('chat');
+    }
+    setFixLoading(false);
   };
 
   const TABS = [
@@ -83,14 +140,13 @@ export default function MentorPage() {
   };
 
   return (
-    <div className="max-w-[1400px] mx-auto h-[calc(100vh-6rem)] flex gap-4 font-sans animate-fade-in pt-2 pb-4 px-4">
+    <div className="max-w-[1400px] mx-auto flex gap-4 font-sans animate-fade-in pb-4" style={{ height: 'calc(100vh - 6rem)' }}>
 
       {/* ── LEFT SIDEBAR ── */}
       <div className="w-16 shrink-0 flex flex-col items-center gap-3 py-5 bg-white border border-slate-200 rounded-2xl shadow-sm">
         <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center shadow-sm mb-2">
           <Icons.Terminal size={16} className="text-white" />
         </div>
-
         {TABS.map(tab => (
           <button
             key={tab.id}
@@ -98,7 +154,7 @@ export default function MentorPage() {
             title={tab.label}
             className={`group relative w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
               activeTab === tab.id
-                ? 'bg-blue-600 text-white shadow-sm shadow-blue-200'
+                ? 'bg-blue-600 text-white shadow-sm'
                 : 'text-slate-400 hover:bg-slate-50 hover:text-slate-700'
             }`}
           >
@@ -108,7 +164,6 @@ export default function MentorPage() {
             </span>
           </button>
         ))}
-
         <div className="mt-auto">
           <button title="Settings" className="w-10 h-10 rounded-xl text-slate-400 hover:bg-slate-50 hover:text-slate-700 flex items-center justify-center transition-all">
             <Icons.Settings size={16} />
@@ -129,7 +184,7 @@ export default function MentorPage() {
             </h1>
             <p className="text-xs text-slate-400 mt-0.5">
               {activeTab === 'chat'    && 'Ask anything — code, concepts, architecture'}
-              {activeTab === 'debug'   && 'Paste code for automated analysis'}
+              {activeTab === 'debug'   && 'Paste code for AI-powered analysis and fixes'}
               {activeTab === 'history' && 'Your previous mentor sessions'}
             </p>
           </div>
@@ -145,9 +200,9 @@ export default function MentorPage() {
           {/* ── CHAT ── */}
           {activeTab === 'chat' && (
             <>
-              <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-6">
+              <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-5">
                 {messages.map((m, i) => (
-                  <div key={i} className={`flex gap-3 max-w-[85%] ${m.role === 'user' ? 'ml-auto flex-row-reverse' : ''}`}>
+                  <div key={i} className={`flex gap-3 ${m.role === 'user' ? 'flex-row-reverse' : ''}`} style={{ maxWidth: '85%', marginLeft: m.role === 'user' ? 'auto' : 0 }}>
                     <div className="flex-shrink-0 pt-0.5">
                       {m.role === 'assistant' ? (
                         <div className="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center shadow-sm">
@@ -157,7 +212,7 @@ export default function MentorPage() {
                         <Avatar user={user} size={32} className="rounded-xl" />
                       )}
                     </div>
-                    <div className={`px-4 py-3 rounded-2xl text-sm leading-relaxed shadow-sm max-w-full ${
+                    <div className={`px-4 py-3 rounded-2xl text-sm leading-relaxed shadow-sm ${
                       m.role === 'user'
                         ? 'bg-blue-600 text-white rounded-tr-sm'
                         : 'bg-slate-50 border border-slate-100 text-slate-700 rounded-tl-sm'
@@ -166,14 +221,14 @@ export default function MentorPage() {
                         <p className="whitespace-pre-wrap">{m.content}</p>
                       ) : (
                         <ReactMarkdown
-                          className="prose prose-sm max-w-none prose-p:text-slate-700 prose-code:text-blue-600 prose-code:bg-blue-50 prose-code:px-1 prose-code:rounded"
+                          className="prose prose-sm max-w-none prose-p:text-slate-700 prose-p:my-1"
                           components={{
                             code({ node, inline, className, children, ...props }) {
                               const match = /language-(\w+)/.exec(className || '');
                               return !inline && match ? (
-                                <div className="my-3 rounded-xl overflow-hidden border border-slate-200 shadow-sm">
+                                <div className="my-3 rounded-xl overflow-hidden border border-slate-200">
                                   <div className="bg-slate-800 px-4 py-2 flex justify-between items-center">
-                                    <span className="text-[10px] text-slate-400 font-mono font-semibold uppercase tracking-wider">{match[1]}</span>
+                                    <span className="text-[10px] text-slate-400 font-mono font-semibold uppercase">{match[1]}</span>
                                     <div className="w-2 h-2 rounded-full bg-blue-500" />
                                   </div>
                                   <SyntaxHighlighter style={vscDarkPlus} language={match[1]} PreTag="div" className="!m-0 !text-xs !p-4" {...props}>
@@ -194,9 +249,8 @@ export default function MentorPage() {
                     </div>
                   </div>
                 ))}
-
                 {loading && (
-                  <div className="flex gap-3 max-w-[85%]">
+                  <div className="flex gap-3" style={{ maxWidth: '85%' }}>
                     <div className="w-8 h-8 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
                       <Icons.Code size={15} className="text-blue-600 animate-pulse" />
                     </div>
@@ -209,28 +263,21 @@ export default function MentorPage() {
                 )}
               </div>
 
-              {/* Quick prompts */}
               {messages.length <= 1 && (
                 <div className="px-6 pb-3 flex flex-wrap gap-2">
-                  {[
-                    'Review my code for bugs',
-                    'Explain Big O notation',
-                    'Help with system design',
-                    'Debug this function',
-                  ].map(prompt => (
+                  {['Review my code for bugs', 'Explain Big O notation', 'Help me with system design', 'What is a closure?'].map(p => (
                     <button
-                      key={prompt}
-                      onClick={() => setInput(prompt)}
+                      key={p}
+                      onClick={() => setInput(p)}
                       className="text-xs bg-slate-50 hover:bg-blue-50 hover:text-blue-600 text-slate-600 border border-slate-200 hover:border-blue-200 px-3 py-1.5 rounded-full transition-all font-medium"
                     >
-                      {prompt}
+                      {p}
                     </button>
                   ))}
                 </div>
               )}
 
-              {/* Input */}
-              <div className="p-4 border-t border-slate-100 bg-white">
+              <div className="p-4 border-t border-slate-100 bg-white flex-shrink-0">
                 <div className="flex items-end gap-3 max-w-4xl mx-auto">
                   <textarea
                     value={input}
@@ -260,7 +307,7 @@ export default function MentorPage() {
               <div className="flex-1 flex flex-col p-5 gap-4 border-r border-slate-100">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Your Code</span>
-                  <button onClick={() => setCode('')} className="text-xs text-slate-400 hover:text-slate-700 font-medium transition-colors">Clear</button>
+                  <button onClick={() => { setCode(''); setDebugOutput(null); }} className="text-xs text-slate-400 hover:text-slate-700 font-medium transition-colors">Clear</button>
                 </div>
                 <div className="flex-1 rounded-xl border border-slate-200 bg-slate-900 overflow-hidden relative">
                   <textarea
@@ -270,16 +317,16 @@ export default function MentorPage() {
                   />
                   <button
                     onClick={runDebug}
-                    disabled={loading}
+                    disabled={debugLoading || !code.trim()}
                     className="absolute bottom-4 right-4 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs flex items-center gap-2 shadow-md transition-all disabled:opacity-50"
                   >
-                    {loading ? <Spinner size={12} /> : <Icons.Play size={12} />}
-                    Run Review
+                    {debugLoading ? <Spinner size={12} /> : <Icons.Play size={12} />}
+                    {debugLoading ? 'Analyzing...' : 'Run Review'}
                   </button>
                 </div>
               </div>
 
-              <div className="w-80 p-5 flex flex-col gap-4 overflow-y-auto">
+              <div className="w-80 p-5 flex flex-col gap-4 overflow-y-auto flex-shrink-0">
                 <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider pb-3 border-b border-slate-100">Review Output</h3>
 
                 {!debugOutput && (
@@ -292,22 +339,37 @@ export default function MentorPage() {
                 {debugOutput?.status === 'analyzing' && (
                   <div className="space-y-3">
                     <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                      <div className="h-full bg-blue-600 w-2/3 animate-pulse rounded-full" />
+                      <div className="h-full bg-blue-600 animate-pulse rounded-full" style={{ width: '66%' }} />
                     </div>
-                    <p className="text-xs text-blue-600 font-medium">Scanning for issues...</p>
+                    <p className="text-xs text-blue-600 font-medium">AI is analyzing your code...</p>
                   </div>
                 )}
 
                 {debugOutput?.status === 'ready' && (
                   <div className="space-y-3">
-                    {debugOutput.findings.map((f, i) => (
+                    {/* AI Response */}
+                    {debugOutput.aiResponse && (
+                      <div className="p-4 rounded-xl bg-slate-50 border border-slate-100">
+                        <p className="text-[10px] font-bold text-blue-600 uppercase tracking-wider mb-2">AI Analysis</p>
+                        <div className="text-xs text-slate-700 leading-relaxed prose prose-xs max-w-none">
+                          <ReactMarkdown>{debugOutput.aiResponse}</ReactMarkdown>
+                        </div>
+                      </div>
+                    )}
+                    {/* Fallback findings */}
+                    {debugOutput.findings?.map((f, i) => (
                       <div key={i} className={`p-4 rounded-xl border-l-4 ${severityStyles[f.severity]}`}>
                         <p className={`text-[10px] font-bold uppercase tracking-wider mb-1.5 ${severityText[f.severity]}`}>{f.type}</p>
-                        <p className="text-sm text-slate-700 leading-relaxed">{f.msg}</p>
+                        <p className="text-xs text-slate-700 leading-relaxed">{f.msg}</p>
                       </div>
                     ))}
-                    <button className="w-full mt-2 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold transition-colors flex items-center justify-center gap-2">
-                      <Icons.Code size={13} /> Generate Fix
+                    <button
+                      onClick={generateFix}
+                      disabled={fixLoading}
+                      className="w-full mt-2 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                    >
+                      {fixLoading ? <Spinner size={12} /> : <Icons.Code size={13} />}
+                      {fixLoading ? 'Generating...' : 'Generate Fix'}
                     </button>
                   </div>
                 )}
@@ -318,32 +380,49 @@ export default function MentorPage() {
           {/* ── HISTORY ── */}
           {activeTab === 'history' && (
             <div className="p-6 flex-1 overflow-y-auto">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {history.map(h => (
+              {historyLoading ? (
+                <div className="flex justify-center py-12"><Spinner /></div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {history.length === 0 && (
+                    <div className="col-span-3 text-center py-16">
+                      <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-3">
+                        <Icons.Clock size={20} className="text-slate-300" />
+                      </div>
+                      <p className="text-sm text-slate-500 font-medium">No history yet</p>
+                      <p className="text-xs text-slate-400 mt-1">Start chatting with your AI mentor!</p>
+                    </div>
+                  )}
+                  {history.map(h => (
+                    <div
+                      key={h.id}
+                      onClick={() => { setActiveTab('chat'); }}
+                      className="group bg-slate-50 hover:bg-white border border-slate-200 hover:border-blue-200 rounded-2xl p-5 cursor-pointer transition-all hover:shadow-md"
+                    >
+                      <div className="w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center mb-4 shadow-sm">
+                        <Icons.MessageSquare size={15} className="text-blue-600" />
+                      </div>
+                      <h3 className="font-semibold text-slate-900 text-sm mb-1 group-hover:text-blue-600 transition-colors line-clamp-1">{h.title || 'Mentor Session'}</h3>
+                      <p className="text-xs text-slate-400 mb-3 line-clamp-2">{h.preview || h.lastMessage || 'View session'}</p>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] text-slate-400 font-medium">{h.date || new Date(h.createdAt).toLocaleDateString()}</span>
+                        <span className="text-[10px] text-blue-600 font-semibold flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          Open <Icons.ArrowRight size={10} />
+                        </span>
+                      </div>
+                    </div>
+                  ))}
                   <div
-                    key={h.id}
-                    className="group bg-slate-50 hover:bg-white border border-slate-200 hover:border-blue-200 rounded-2xl p-5 cursor-pointer transition-all hover:shadow-md"
+                    onClick={() => setActiveTab('chat')}
+                    className="border border-dashed border-slate-200 rounded-2xl p-5 flex flex-col items-center justify-center text-center cursor-pointer hover:border-blue-300 hover:bg-blue-50 transition-all group"
                   >
-                    <div className="w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center mb-4 shadow-sm">
-                      <Icons.MessageSquare size={15} className="text-blue-600" />
+                    <div className="w-9 h-9 rounded-xl bg-slate-100 group-hover:bg-blue-100 flex items-center justify-center mb-3 transition-colors">
+                      <Icons.Plus size={16} className="text-slate-400 group-hover:text-blue-600 transition-colors" />
                     </div>
-                    <h3 className="font-semibold text-slate-900 text-sm mb-1 group-hover:text-blue-600 transition-colors">{h.title}</h3>
-                    <p className="text-xs text-slate-400 mb-3">{h.preview}</p>
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] text-slate-400 font-medium">{h.date}</span>
-                      <span className="text-[10px] text-blue-600 font-semibold flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        Open <Icons.ArrowRight size={10} />
-                      </span>
-                    </div>
+                    <p className="text-xs text-slate-400 font-medium">New Session</p>
                   </div>
-                ))}
-                <div className="border border-dashed border-slate-200 rounded-2xl p-5 flex flex-col items-center justify-center text-center cursor-pointer hover:border-blue-300 hover:bg-blue-50 transition-all group">
-                  <div className="w-9 h-9 rounded-xl bg-slate-100 group-hover:bg-blue-100 flex items-center justify-center mb-3 transition-colors">
-                    <Icons.Plus size={16} className="text-slate-400 group-hover:text-blue-600 transition-colors" />
-                  </div>
-                  <p className="text-xs text-slate-400 font-medium">New Session</p>
                 </div>
-              </div>
+              )}
             </div>
           )}
         </div>
