@@ -267,17 +267,3 @@ export default function CoursesPage() {
     </div>
   );
 }
-```
-
----
-
-## FILE 4 (Email fix): `server/src/config/passport.js`
-
-The email code is already there and correct — **the issue is missing env vars**. Add these to your Vercel deployment environment variables:
-```
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=your-gmail@gmail.com
-SMTP_PASS=your-gmail-app-password
-EMAIL_FROM=CodeArena <noreply@yourdomain.com>
-CLIENT_URL=https://collabdebt-wg48.vercel.app
