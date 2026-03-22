@@ -1,21 +1,20 @@
 const nodemailer = require('nodemailer');
 const logger = require('./logger');
-
+ 
 const transporter = nodemailer.createTransport({
   host:   process.env.SMTP_HOST || 'smtp.gmail.com',
   port:   Number(process.env.SMTP_PORT) || 587,
-  secure: Number(process.env.SMTP_PORT) === 465, // Use SSL for port 465
+  secure: Number(process.env.SMTP_PORT) === 465,
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
   },
   tls: { rejectUnauthorized: false },
 });
-
+ 
 async function send({ to, subject, html }) {
   if (!process.env.SMTP_USER) {
     logger.warn(`[EMAIL] SMTP not configured — skipping email to ${to}: ${subject}`);
-    // In dev, we can log the HTML for verification
     if (process.env.NODE_ENV !== 'production') {
       logger.debug(`[EMAIL_DEV_PREVIEW] Content for ${to}:\n${html}`);
     }
@@ -31,249 +30,432 @@ async function send({ to, subject, html }) {
     logger.error(`[EMAIL] Failed to send to ${to}: ${err.message}`);
   }
 }
-
-// ─── BASE TEMPLATE ─────────────────────────────────────────
+ 
+// ─── BASE TEMPLATE ──────────────────────────────────────────────────────────
+// CodeArena theme: white background, blue accents — matches the app UI exactly
 function base(content) {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>CodeArena</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
-    *{margin:0;padding:0;box-sizing:border-box}
-    body{background:#020205;font-family:'Inter',sans-serif;color:#F0EEF8;line-height:1.6}
-    .wrap{max-width:600px;margin:40px auto;background:#0A0A0F;border:1px solid rgba(124,58,237,0.25);border-radius:24px;overflow:hidden;box-shadow:0 24px 48px rgba(0,0,0,0.5)}
-    .topbar{height:6px;background:linear-gradient(90deg,#7C3AED,#A855F7,#2DD4BF)}
-    .header{padding:40px 48px 32px;border-bottom:1px solid rgba(255,255,255,0.05)}
-    .logo-row{display:flex;align-items:center;gap:12px;margin-bottom:8px}
-    .logo-icon{width:36px;height:36px;background:linear-gradient(135deg,#7C3AED,#2DD4BF);border-radius:10px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 20px rgba(124,58,237,0.3)}
-    .logo-text{font-size:20px;font-weight:800;letter-spacing:-0.03em;color:#FFFFFF}
-    .header-cmd{font-family:'JetBrains Mono',monospace;font-size:11px;color:#5A5870;letter-spacing:0.04em}
-    .body{padding:40px 48px}
-    h1{font-size:28px;font-weight:800;margin-bottom:12px;color:#FFFFFF;letter-spacing:-0.02em}
-    p{font-size:15px;color:#94A3B8;margin-bottom:20px}
-    .highlight{color:#A855F7;font-weight:700}
-    .teal{color:#2DD4BF;font-weight:600}
-    .btn{display:inline-block;background:linear-gradient(135deg,#7C3AED,#A855F7);color:#FFFFFF!important;text-decoration:none;padding:16px 36px;border-radius:12px;font-size:15px;font-weight:700;letter-spacing:0.01em;margin:12px 0;box-shadow:0 10px 20px rgba(124,58,237,0.2)}
-    .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:24px 0}
-    .stat-card{background:#11111A;border:1px solid rgba(255,255,255,0.05);border-radius:16px;padding:20px;text-align:left}
-    .stat-val{font-size:24px;font-weight:800;color:#FFFFFF;margin-bottom:4px}
-    .stat-lbl{font-size:11px;color:#64748B;text-transform:uppercase;letter-spacing:0.1em}
-    .terminal{background:#050508;border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:20px 24px;margin:24px 0;font-family:'JetBrains Mono',monospace;font-size:12px}
-    .terminal .prompt{color:#5A5870}
-    .terminal .cmd{color:#A855F7}
-    .terminal .out{color:#2DD4BF}
-    .divider{height:1px;background:rgba(255,255,255,0.05);margin:32px 0}
-    .footer{padding:24px 48px;background:#050508;border-top:1px solid rgba(255,255,255,0.05);display:flex;justify-content:space-between;align-items:center}
-    .footer-text{font-size:11px;color:#475569}
-    .footer-link{font-size:11px;color:#7C3AED;text-decoration:none;font-weight:600}
-    .badge-wrap{display:flex;gap:8px;margin:16px 0}
-    .badge{background:rgba(124,58,237,0.1);border:1px solid rgba(124,58,237,0.2);border-radius:8px;padding:6px 14px;font-size:11px;font-weight:600;color:#A855F7}
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap');
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #F1F5F9;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: #0F172A;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    .outer { padding: 40px 16px; }
+    .wrap {
+      max-width: 600px;
+      margin: 0 auto;
+      background: #FFFFFF;
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+    }
+    .topbar { height: 5px; background: linear-gradient(90deg, #1D4ED8, #3B82F6, #06B6D4); }
+    .header {
+      padding: 32px 48px 28px;
+      border-bottom: 1px solid #F1F5F9;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .logo-wrap { display: flex; align-items: center; gap: 10px; }
+    .logo-icon {
+      width: 38px; height: 38px;
+      background: #2563EB;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .logo-text { font-size: 18px; font-weight: 800; color: #0F172A; letter-spacing: -0.03em; }
+    .header-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px; font-weight: 600;
+      color: #94A3B8; text-transform: uppercase; letter-spacing: 0.08em;
+      background: #F8FAFC; border: 1px solid #E2E8F0;
+      padding: 4px 10px; border-radius: 6px;
+    }
+    .body { padding: 44px 48px; }
+    h1 {
+      font-size: 28px; font-weight: 800;
+      color: #0F172A; letter-spacing: -0.03em;
+      line-height: 1.25; margin-bottom: 12px;
+    }
+    .lead { font-size: 15px; color: #64748B; line-height: 1.7; margin-bottom: 28px; }
+    .accent { color: #2563EB; font-weight: 700; }
+    .btn {
+      display: inline-block;
+      background: #2563EB; color: #FFFFFF !important;
+      text-decoration: none;
+      padding: 14px 36px; border-radius: 12px;
+      font-size: 15px; font-weight: 700; letter-spacing: -0.01em;
+      box-shadow: 0 4px 14px rgba(37,99,235,0.3);
+    }
+    .btn-wrap { text-align: center; margin: 32px 0; }
+    .divider { height: 1px; background: #F1F5F9; margin: 32px 0; }
+    .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 24px 0; }
+    .stat-card {
+      background: #F8FAFC; border: 1px solid #E2E8F0;
+      border-radius: 14px; padding: 18px 20px;
+    }
+    .stat-val { font-size: 26px; font-weight: 800; color: #0F172A; letter-spacing: -0.03em; margin-bottom: 2px; }
+    .stat-lbl { font-size: 11px; font-weight: 600; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.08em; }
+    .steps { margin: 24px 0; }
+    .step { display: flex; gap: 14px; align-items: flex-start; padding: 14px 0; border-bottom: 1px solid #F1F5F9; }
+    .step:last-child { border-bottom: none; }
+    .step-num {
+      width: 28px; height: 28px; border-radius: 8px;
+      background: #EFF6FF; color: #2563EB;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 2px;
+    }
+    .step-text { font-size: 14px; color: #334155; line-height: 1.6; }
+    .step-text strong { color: #0F172A; font-weight: 700; }
+    .badge-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 20px 0; }
+    .badge {
+      background: #EFF6FF; border: 1px solid #BFDBFE;
+      border-radius: 8px; padding: 5px 12px;
+      font-size: 12px; font-weight: 600; color: #2563EB;
+    }
+    .info-box {
+      background: #EFF6FF; border: 1px solid #BFDBFE;
+      border-left: 4px solid #2563EB;
+      border-radius: 12px; padding: 16px 20px;
+      margin: 20px 0; font-size: 14px; color: #1E40AF; line-height: 1.6;
+    }
+    .otp-wrap {
+      background: #F8FAFC; border: 2px dashed #BFDBFE;
+      border-radius: 16px; padding: 36px 24px;
+      text-align: center; margin: 28px 0;
+    }
+    .otp-label { font-size: 11px; font-weight: 600; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 14px; }
+    .otp-code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 46px; font-weight: 700;
+      color: #2563EB; letter-spacing: 10px; line-height: 1;
+    }
+    .otp-expiry { font-size: 12px; color: #94A3B8; margin-top: 12px; }
+    .terminal {
+      background: #0F172A; border-radius: 12px;
+      padding: 18px 22px; margin: 20px 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px; line-height: 1.9;
+    }
+    .t-prompt { color: #475569; }
+    .t-cmd    { color: #60A5FA; }
+    .t-out    { color: #34D399; }
+    .t-val    { color: #FFFFFF; }
+    .t-dim    { color: #334155; }
+    .warn-box {
+      background: #FFF7ED; border: 1px solid #FED7AA;
+      border-radius: 12px; padding: 14px 18px;
+      font-size: 13px; color: #9A3412; margin-top: 16px; line-height: 1.6;
+    }
+    .alert-box {
+      background: #FEF2F2; border: 1px solid #FECACA;
+      border-left: 4px solid #EF4444;
+      border-radius: 12px; padding: 14px 18px;
+      font-size: 13px; color: #991B1B; margin: 16px 0; line-height: 1.6;
+    }
+    .footer {
+      padding: 24px 48px; background: #F8FAFC; border-top: 1px solid #F1F5F9;
+      display: flex; justify-content: space-between; align-items: center; gap: 16px;
+    }
+    .footer-text { font-size: 11px; color: #94A3B8; }
+    .footer-link { font-size: 11px; font-weight: 600; color: #2563EB; text-decoration: none; }
+    @media (max-width: 600px) {
+      .header { padding: 24px 28px 20px; }
+      .body   { padding: 32px 28px; }
+      .footer { padding: 20px 28px; flex-direction: column; text-align: center; gap: 8px; }
+      .stat-grid { grid-template-columns: 1fr; }
+      h1 { font-size: 24px; }
+      .otp-code { font-size: 36px; letter-spacing: 6px; }
+    }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="topbar"></div>
-    <div class="header">
-      <div class="logo-row">
-        <div class="logo-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg>
+  <div class="outer">
+    <div class="wrap">
+      <div class="topbar"></div>
+      <div class="header">
+        <div class="logo-wrap">
+          <div class="logo-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="16 18 22 12 16 6"></polyline>
+              <polyline points="8 6 2 12 8 18"></polyline>
+            </svg>
+          </div>
+          <span class="logo-text">CodeArena</span>
         </div>
-        <span class="logo-text">CodeArena</span>
+        <span class="header-tag">Automated Message</span>
       </div>
-      <div class="header-cmd">system.broadcast://welcome_new_architect</div>
-    </div>
-    <div class="body">
-      ${content}
-    </div>
-    <div class="footer">
-      <span class="footer-text">© 2026 CodeArena — Master the Machine.</span>
-      <a href="${process.env.CLIENT_URL || 'https://codearena.dev'}" class="footer-link">codearena.dev</a>
+      <div class="body">
+        ${content}
+      </div>
+      <div class="footer">
+        <span class="footer-text">© 2026 CodeArena. All rights reserved.</span>
+        <a href="${process.env.CLIENT_URL || 'https://codearena.dev'}" class="footer-link">codearena.dev →</a>
+      </div>
     </div>
   </div>
 </body>
 </html>`;
 }
-
-// ─── WELCOME EMAIL ─────────────────────────────────────────
+ 
+// ─── WELCOME EMAIL ──────────────────────────────────────────────────────────
 async function sendWelcome(user) {
   const html = base(`
-    <h1>Welcome to the Forge, <span class="highlight">${user.username}</span></h1>
-    <p>Your workspace is initialized. You've joined a global network of architects building the future of software, one commit at a time.</p>
-
-    <div class="terminal">
-      <div><span class="prompt">$ </span><span class="cmd">skillforge</span> <span class="out">user --activate</span></div>
-      <div style="margin-top:10px;color:#5A5870">✓ Network identity: <span style="color:#FFFFFF">@${user.username}</span></div>
-      <div style="color:#5A5870">✓ Architect Tier: <span style="color:#A855F7">Candidate</span></div>
-      <div style="color:#5A5870">✓ Resource Access: <span style="color:#2DD4BF">UNLOCKED</span></div>
-      <div style="color:#5A5870">✓ Initial Bonus: <span style="color:#2DD4BF">+100 XP provisioned</span></div>
-    </div>
-
+    <h1>Welcome to CodeArena, <span class="accent">${user.username}!</span> 🎉</h1>
+    <p class="lead">
+      Your account is live. You've joined thousands of developers levelling up their skills
+      through real challenges, courses, and 1v1 battles — completely free, forever.
+    </p>
+ 
     <div class="stat-grid">
       <div class="stat-card">
-        <div class="stat-val">102</div>
-        <div class="stat-lbl">Domain Clusters</div>
+        <div class="stat-val">139+</div>
+        <div class="stat-lbl">Free Courses</div>
       </div>
       <div class="stat-card">
-        <div class="stat-val">∞</div>
-        <div class="stat-lbl">Intellect Capacity</div>
+        <div class="stat-val">+100</div>
+        <div class="stat-lbl">Bonus XP Awarded</div>
       </div>
     </div>
-
-    <p>Your journey begins with these tactical objectives:</p>
-
-    <div style="margin:20px 0;background:rgba(255,255,255,0.02);border-radius:12px;padding:24px;border:1px solid rgba(255,255,255,0.04)">
-      <div style="display:flex;gap:12px;margin-bottom:16px">
-        <div style="color:#A855F7;font-weight:800;font-family:'JetBrains Mono',monospace">01</div>
-        <div style="font-size:14px;color:#FFFFFF"><strong>Claim your path</strong> — Select a language or architecture domain library.</div>
-      </div>
-      <div style="display:flex;gap:12px;margin-bottom:16px">
-        <div style="color:#A855F7;font-weight:800;font-family:'JetBrains Mono',monospace">02</div>
-        <div style="font-size:14px;color:#FFFFFF"><strong>Deploy code</strong> — Complete your first lesson to solidify your streak.</div>
-      </div>
-      <div style="display:flex;gap:12px">
-        <div style="color:#A855F7;font-weight:800;font-family:'JetBrains Mono',monospace">03</div>
-        <div style="font-size:14px;color:#FFFFFF"><strong>Consult the Mentor</strong> — Sync with the Lead Architect for code reviews.</div>
-      </div>
-    </div>
-
-    <div style="text-align:center;margin-top:32px">
-      <a href="${process.env.CLIENT_URL || 'https://skillforge.dev'}/dashboard" class="btn">Enter the Core Library →</a>
-    </div>
-
+ 
     <div class="divider"></div>
-    <div class="badge-wrap">
-      <span class="badge">Level 1</span>
-      <span class="badge">New Architect</span>
-      <span class="badge">+100 XP Bonus</span>
+ 
+    <p style="font-size:14px;font-weight:700;color:#0F172A;margin-bottom:4px;">Here's how to get started:</p>
+ 
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-text">
+          <strong>Pick a course</strong> — Browse 139+ free courses across JavaScript, Python, TypeScript, C++, and more. No credit card, no paywall.
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-text">
+          <strong>Complete daily quests</strong> — Earn XP every day by finishing lessons, passing quizzes, and maintaining streaks.
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-text">
+          <strong>Challenge others</strong> — Enter the 1v1 Arena or join weekly tournaments to climb the global leaderboard.
+        </div>
+      </div>
     </div>
-    <p style="font-size:12px;color:#475569;margin-top:20px">You are receiving this encrypted transmission because of your registration at CodeArena.</p>
+ 
+    <div class="btn-wrap">
+      <a href="${process.env.CLIENT_URL || 'https://codearena.dev'}/courses" class="btn">Browse Courses →</a>
+    </div>
+ 
+    <div class="badge-row">
+      <span class="badge">✦ Level 1</span>
+      <span class="badge">🔥 New Member</span>
+      <span class="badge">⚡ +100 XP</span>
+    </div>
+ 
+    <p style="font-size:12px;color:#94A3B8;margin-top:24px;">
+      You're receiving this because you created a CodeArena account with this email address.
+      If this wasn't you, you can safely ignore this message.
+    </p>
   `);
-
+ 
   await send({
     to:      user.email,
-    subject: `[CodeArena] Workspace Initialized — Welcome, ${user.username}!`,
+    subject: `Welcome to CodeArena, ${user.username}! Your account is ready ⚡`,
     html,
   });
 }
-
-// ─── PASSWORD RESET ────────────────────────────────────────
+ 
+// ─── PASSWORD RESET EMAIL ───────────────────────────────────────────────────
 async function sendPasswordReset(user, otp) {
   const html = base(`
-    <h1>Security Override</h1>
-    <p>A password reset request was initiated for your profile: <span class="highlight">@${user.username}</span>.</p>
-
-    <div style="background:#050508;border:1px dashed rgba(45,212,191,0.3);border-radius:16px;padding:32px;text-align:center;margin:28px 0">
-      <div style="font-size:11px;color:#64748B;margin-bottom:12px;text-transform:uppercase;letter-spacing:0.12em">One-Time Verification Code</div>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:42px;font-weight:800;letter-spacing:10px;color:#2DD4BF">${otp}</div>
-      <div style="font-size:12px;color:#475569;margin-top:12px">Valid for 15 minutes · Non-transferable</div>
+    <h1>Reset Your Password</h1>
+    <p class="lead">
+      Hi <span class="accent">@${user.username}</span>, we received a request to reset your
+      CodeArena password. Use the one-time code below to proceed.
+    </p>
+ 
+    <div class="otp-wrap">
+      <div class="otp-label">Your One-Time Reset Code</div>
+      <div class="otp-code">${otp}</div>
+      <div class="otp-expiry">⏱ Valid for 15 minutes only &nbsp;·&nbsp; Do not share this code</div>
     </div>
-
+ 
+    <div class="info-box">
+      Enter this code on the password reset page along with your new password.
+      Once used, this code expires immediately.
+    </div>
+ 
     <div class="terminal">
-      <div><span class="prompt">$ </span><span class="cmd">codearena</span> auth --reset --otp=<span class="out">${otp}</span></div>
+      <div><span class="t-prompt">$ </span><span class="t-cmd">codearena</span> auth reset --otp=<span class="t-out">${otp}</span></div>
+      <div style="margin-top:6px"><span class="t-dim">→ status:  </span><span class="t-out">VALID · awaiting new password</span></div>
+      <div><span class="t-dim">→ user:    </span><span class="t-val">@${user.username}</span></div>
+      <div><span class="t-dim">→ expires: </span><span class="t-val">15 minutes from request</span></div>
     </div>
-
-    <p>If you did not request this, please secure your account immediately.</p>
+ 
+    <div class="btn-wrap">
+      <a href="${process.env.CLIENT_URL || 'https://codearena.dev'}/login" class="btn">Go to Login Page →</a>
+    </div>
+ 
+    <div class="warn-box">
+      ⚠️ <strong>Didn't request this?</strong> Your account is safe — someone may have mistyped
+      their email. You can safely ignore this message. If this keeps happening, please contact support.
+    </div>
+ 
+    <p style="font-size:12px;color:#94A3B8;margin-top:20px;">
+      For security, this code is single-use and expires in 15 minutes.
+      Never share your reset code with anyone.
+    </p>
   `);
-
+ 
   await send({
     to:      user.email,
-    subject: '[CodeArena] Reset Your Security Credentials',
+    subject: '[CodeArena] Your password reset code',
     html,
   });
 }
-
-// ─── STREAK REMINDER ───────────────────────────────────────
+ 
+// ─── STREAK REMINDER ────────────────────────────────────────────────────────
 async function sendStreakReminder(user) {
   const html = base(`
-    <h1>Critical Performance Alert</h1>
-    <p>Your training continuity is at risk. Your <span class="highlight">${user.streak}-day streak</span> will expire in less than 24 hours.</p>
-
-    <div class="terminal">
-      <div><span class="prompt">$ </span><span class="cmd">codearena</span> <span class="out">streak --status</span></div>
-      <div style="margin-top:10px;color:#5A5870">Current continuity: <span style="color:#F97316">${user.streak} days 🔥</span></div>
-      <div style="color:#F87171">STATUS: DEGRADING</div>
-      <div style="color:#5A5870">Required Action: <span style="color:#FFFFFF">Deploy 1 lesson module</span></div>
+    <h1>Your streak is at risk! 🔥</h1>
+    <p class="lead">
+      Hey <span class="accent">@${user.username || user.fullName}</span>, your
+      <strong>${user.streak}-day streak</strong> is about to expire.
+      Complete any lesson or quest before midnight UTC to keep it alive.
+    </p>
+ 
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-val">${user.streak}</div>
+        <div class="stat-lbl">Day Streak 🔥</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val">&lt; 24h</div>
+        <div class="stat-lbl">Time Remaining</div>
+      </div>
     </div>
-
-    <p>Consistency is the difference between a coder and an architect. Don't let the fire go out.</p>
-
-    <div style="text-align:center">
-      <a href="${process.env.CLIENT_URL || 'https://codearena.dev'}/dashboard" class="btn">Maintain Continuity →</a>
+ 
+    <div class="alert-box">
+      <strong>Action required!</strong> You haven't completed any activity today.
+      Finish a lesson, quiz, or quest to maintain your streak.
     </div>
+ 
+    <div class="btn-wrap">
+      <a href="${process.env.CLIENT_URL || 'https://codearena.dev'}/dashboard" class="btn">Keep My Streak →</a>
+    </div>
+ 
+    <p style="font-size:12px;color:#94A3B8;margin-top:8px;">
+      Consistency compounds. Every day you show up, you get better. Don't break the chain.
+    </p>
   `);
-
+ 
   await send({
     to:      user.email,
-    subject: `[CodeArena] Critical: Your ${user.streak}-day streak is at risk`,
+    subject: `[CodeArena] Your ${user.streak}-day streak expires today 🔥`,
     html,
   });
 }
-
-// ─── WEEKLY SUMMARY ────────────────────────────────────────
+ 
+// ─── WEEKLY SUMMARY ─────────────────────────────────────────────────────────
 async function sendWeeklySummary(user, stats) {
   const html = base(`
-    <h1>Sector Performance Report</h1>
-    <p>Weekly intelligence summary for architect <span class="highlight">@${user.username}</span>.</p>
-
+    <h1>Your Weekly Report 📊</h1>
+    <p class="lead">
+      Here's what <span class="accent">@${user.username}</span> accomplished this week on CodeArena.
+    </p>
+ 
     <div class="stat-grid">
       <div class="stat-card">
-        <div class="stat-val">+${stats.xpEarned}</div>
-        <div class="stat-lbl">XP Gain</div>
+        <div class="stat-val">+${stats.xpEarned.toLocaleString()}</div>
+        <div class="stat-lbl">XP Earned</div>
       </div>
       <div class="stat-card">
         <div class="stat-val">${stats.lessonsCompleted}</div>
-        <div class="stat-lbl">Modules Done</div>
+        <div class="stat-lbl">Lessons Done</div>
       </div>
     </div>
-
+ 
     <div class="terminal">
-      <div><span class="prompt">$ </span><span class="cmd">codearena</span> <span class="out">analytics --user=@${user.username}</span></div>
-      <div style="margin-top:10px;color:#5A5870">velocity: <span style="color:#A855F7">+${Math.round(stats.xpEarned/7)} XP/day</span></div>
-      <div style="color:#5A5870">rank_shift: <span style="color:#2DD4BF">STABLE</span></div>
-      <div style="color:#5A5870">current_tier: <span style="color:#FFFFFF">Level ${user.level}</span></div>
+      <div><span class="t-prompt">$ </span><span class="t-cmd">codearena</span> analytics <span class="t-out">--week</span></div>
+      <div style="margin-top:8px"><span class="t-dim">xp_earned:    </span><span class="t-out">+${stats.xpEarned} XP</span></div>
+      <div><span class="t-dim">lessons:      </span><span class="t-val">${stats.lessonsCompleted} completed</span></div>
+      <div><span class="t-dim">daily_avg:    </span><span class="t-out">+${Math.round(stats.xpEarned / 7)} XP/day</span></div>
+      <div><span class="t-dim">current_lvl:  </span><span class="t-val">Level ${user.level || 1}</span></div>
     </div>
-
-    <p>Elite tournaments are provisioning for the next cycle. Ensure your hardware is ready.</p>
-
-    <div style="text-align:center;margin-top:24px">
-      <a href="${process.env.CLIENT_URL || 'https://codearena.dev'}/dashboard" class="btn">Return to Task Board →</a>
+ 
+    <div class="info-box">
+      Keep the momentum going! Consistent practice is the fastest path to mastery.
     </div>
+ 
+    <div class="btn-wrap">
+      <a href="${process.env.CLIENT_URL || 'https://codearena.dev'}/dashboard" class="btn">Continue Learning →</a>
+    </div>
+ 
+    <p style="font-size:12px;color:#94A3B8;margin-top:8px;">
+      You're receiving this weekly summary because you have an active CodeArena account.
+    </p>
   `);
-
+ 
   await send({
     to:      user.email,
-    subject: `[CodeArena] Weekly Report: +${stats.xpEarned} XP Provisioned`,
+    subject: `[CodeArena] Your week in review: +${stats.xpEarned} XP earned`,
     html,
   });
 }
-
-// ─── LEVEL UP NOTIFICATION ─────────────────────────────────
+ 
+// ─── LEVEL UP NOTIFICATION ──────────────────────────────────────────────────
 async function sendLevelUp(user, newLevel, levelName) {
   const html = base(`
-    <h1>Tier Promotion: <span class="teal">${levelName}</span></h1>
-    <p>Excellent work, <span class="highlight">${user.username}</span>. You've officially achieved <span class="teal">Level ${newLevel}: ${levelName}</span>.</p>
-
-    <div class="terminal">
-      <div><span class="prompt">$ </span><span class="cmd">codearena</span> <span class="out">promote --achieved</span></div>
-      <div style="margin-top:10px;color:#5A5870">previous_tier: <span style="color:#5A5870">Level ${newLevel - 1}</span></div>
-      <div style="color:#5A5870">current_tier:  <span style="color:#2DD4BF">Level ${newLevel} — ${levelName}</span></div>
-      <div style="color:#5A5870">network_xp: <span style="color:#A855F7">${user.xp.toLocaleString()} total</span></div>
+    <h1>Level Up! You're now <span class="accent">Level ${newLevel}</span> 🏆</h1>
+    <p class="lead">
+      Incredible work, <span class="accent">@${user.username}</span>!
+      You've reached <strong>${levelName}</strong>. Your dedication is paying off.
+    </p>
+ 
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-val">${newLevel}</div>
+        <div class="stat-lbl">New Level</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val">${(user.xp || 0).toLocaleString()}</div>
+        <div class="stat-lbl">Total XP</div>
+      </div>
     </div>
-
-    <p>New architectural patterns and advanced modules have been unlocked for your tier.</p>
-
-    <div style="text-align:center;margin-top:24px">
-      <a href="${process.env.CLIENT_URL || 'https://codearena.dev'}/profile" class="btn">View Identity Hub →</a>
+ 
+    <div class="terminal">
+      <div><span class="t-prompt">$ </span><span class="t-cmd">codearena</span> promote <span class="t-out">--achieved</span></div>
+      <div style="margin-top:8px"><span class="t-dim">prev_level:  </span><span class="t-dim">Level ${newLevel - 1}</span></div>
+      <div><span class="t-dim">new_level:   </span><span class="t-out">Level ${newLevel} — ${levelName}</span></div>
+      <div><span class="t-dim">total_xp:    </span><span class="t-val">${(user.xp || 0).toLocaleString()} XP</span></div>
+    </div>
+ 
+    <div class="info-box">
+      New challenges and advanced courses have been unlocked for your level. Keep pushing!
+    </div>
+ 
+    <div class="btn-wrap">
+      <a href="${process.env.CLIENT_URL || 'https://codearena.dev'}/profile" class="btn">View My Profile →</a>
     </div>
   `);
-
+ 
   await send({
     to:      user.email,
-    subject: `[CodeArena] Promotion: You reached Level ${newLevel}!`,
+    subject: `[CodeArena] 🏆 Level Up! You reached Level ${newLevel}: ${levelName}`,
     html,
   });
 }
-
+ 
 module.exports = { sendWelcome, sendPasswordReset, sendStreakReminder, sendWeeklySummary, sendLevelUp };
