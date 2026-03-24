@@ -273,23 +273,73 @@ async function main() {
       create: { ...data, categoryId: category.id, isPublished: true },
     });
 
-    // Generate 5 syllabus lessons per course so it's fully playable
-    const lessonTitles = [
-      "Introduction & Setup",
-      "Core Concepts & Fundamentals",
-      "Deep Dive & Architecture",
-      "Real-World Patterns",
-      "Final Project & Review"
+    // Generate 10 syllabus lessons per course so it's fully playable
+    const lessonTemplates = [
+      { title: "Introduction & Core Philosophy", content: "Welcome to your first step in mastering **{courseTitle}**. In this lesson, we will cover the absolute basics and set up your mental model for success." },
+      { title: "Environment Setup & Tooling", content: "Getting your workspace ready is 50% of the battle. We'll explore the compilers, runtimes, and editors best suited for **{courseTitle}**." },
+      { title: "Variables, Types & Data Flow", content: "Understanding how data moves through **{courseTitle}** is crucial. We'll dive into static vs dynamic typing and memory allocation." },
+      { title: "Control Structures & Logic", content: "Master if-else, loops, and pattern matching. This is where your code starts to make decisions." },
+      { title: "Functions & Modular Design", content: "Learn to write DRY (Don't Repeat Yourself) code. We'll cover scope, closures, and module exports." },
+      { title: "Advanced Data Structures", content: "Moving beyond arrays. Deep dive into Maps, Sets, Linked Lists, and how **{courseTitle}** handles them." },
+      { title: "Error Handling & Debugging", content: "Code fails. Senior engineers know how to fail gracefully. Learn try/catch and debugging strategies." },
+      { title: "Asynchronous Patterns", content: "Concurrency in **{courseTitle}**. Master Promises, async/await, or threads depending on the domain." },
+      { title: "Standard Library Exploration", content: "Don't reinvent the wheel. We'll look at the most powerful built-in tools available in **{courseTitle}**." },
+      { title: "Testing & Quality Assurance", content: "Write code that stays working. Unit testing, integration testing, and TDD patterns." },
+      { title: "Optimization & Performance", content: "Making it fast. Profiling code and optimizing the critical paths in **{courseTitle}**." },
+      { title: "Final Capstone Project", content: "Time to build. We'll combine everything you've learned into a real-world project." }
     ];
 
-    for (let i = 0; i < lessonTitles.length; i++) {
-        const title = lessonTitles[i];
+    for (let i = 0; i < lessonTemplates.length; i++) {
+        const template = lessonTemplates[i];
+        const title = template.title;
         const lslug = `${dbCourse.slug}-lesson-${i+1}`;
-        await prisma.lesson.upsert({
+        
+        let content = `## ${title}\n\n${template.content.replace(/{courseTitle}/g, dbCourse.title)}\n\n### Interactive Practice\nUse the SkillForge IDE on the right to practice the concepts from this module. Reference the documentation whenever you get stuck!\n\n> [!TIP]\n> Consistent practice is the key to mastery. Try to code for at least 30 minutes every day.`;
+
+        const dbLesson = await prisma.lesson.upsert({
            where: { courseId_slug: { courseId: dbCourse.id, slug: lslug } },
-           update: { title, order: i+1, content: `## ${title}\n\nWelcome to ${title} for **${dbCourse.title}**. This module covers everything you need to know to progress to the next level.\n\n### Instructions\nRead through the concepts and complete the interactive exercises available in the embedded editor!`, xpReward: 100, duration: 15 },
-           create: { title, slug: lslug, order: i+1, courseId: dbCourse.id, content: `## ${title}\n\nWelcome to ${title} for **${dbCourse.title}**. This module covers everything you need to know to progress to the next level.\n\n### Instructions\nRead through the concepts and complete the interactive exercises available in the embedded editor!`, xpReward: 100, duration: 15 },
+           update: { title, order: i+1, content, xpReward: 100, duration: 20 },
+           create: { title, slug: lslug, order: i+1, courseId: dbCourse.id, content, xpReward: 100, duration: 20 },
         });
+
+        // Add quizzes for multiple lessons to make it "teaching-ready"
+        if (i % 3 === 0) { // Every 3rd lesson has a quiz
+          const quiz = await prisma.quiz.upsert({
+            where: { lessonId: dbLesson.id },
+            update: {},
+            create: { lessonId: dbLesson.id },
+          });
+
+          const questions = [
+            {
+              question: `What is the primary focus of ${title}?`,
+              options: ["Mastering the concepts", "Ignoring the rules", "Copy-pasting", "Skipping to the end"],
+              correctIndex: 0,
+              explanation: "Foundational understanding is necessary for advanced mastery."
+            },
+            {
+              question: `How does SkillForge help you learn ${dbCourse.title}?`,
+              options: ["Interactive IDE & AI Mentor", "Reading books", "Watching TV", "Sleeping"],
+              correctIndex: 0,
+              explanation: "SkillForge provides a hands-on environment with AI guidance."
+            }
+          ];
+
+          await prisma.quizQuestion.deleteMany({ where: { quizId: quiz.id } });
+          for (let qi = 0; qi < questions.length; qi++) {
+            const q = questions[qi];
+            await prisma.quizQuestion.create({
+              data: {
+                quizId: quiz.id,
+                question: q.question,
+                options: q.options,
+                correctIndex: q.correctIndex,
+                explanation: q.explanation,
+                order: qi
+              }
+            });
+          }
+        }
     }
 
     count++;

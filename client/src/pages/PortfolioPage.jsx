@@ -9,7 +9,6 @@ export default function PortfolioPage() {
   const { user } = useAuthStore();
   const [portfolio, setPortfolio]   = useState(null);
   const [readme, setReadme]         = useState('');
-  const [isPreview, setIsPreview]   = useState(false);
   const [loading, setLoading]       = useState(true);
   const [pushing, setPushing]       = useState(false);
   const [generating, setGenerating] = useState(false);
@@ -72,20 +71,10 @@ export default function PortfolioPage() {
     setPushing(false);
   };
 
-  const handleDeleteProject = async (projectId) => {
-    if (!window.confirm('Are you sure you want to delete this project?')) return;
-    try {
-      await api.delete(`/portfolio/me/projects/${projectId}`);
-      setPortfolio((p) => ({ ...p, projects: p.projects.filter((x) => x.id !== projectId) }));
-      toast.success('Project deleted');
-    } catch (_) { toast.error('Delete failed'); }
-  };
-
   const handleAddProject = async () => {
     try {
       const tags = project.tags.split(',').map((t) => t.trim()).filter(Boolean);
-      const r = await api.post('/portfolio/me/projects', { ...project, tags });
-      setPortfolio((p) => ({ ...p, projects: [r.data.project, ...p.projects] }));
+      await api.post('/portfolio/me/projects', { ...project, tags });
       toast.success('Project added');
       setAddProjectModal(false);
       setProject({ title: '', description: '', language: '', tags: '', repoUrl: '', liveUrl: '', featured: false });
@@ -101,7 +90,7 @@ export default function PortfolioPage() {
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h1 className="font-display font-black text-2xl mb-1">Portfolio Builder</h1>
-          <p className="font-mono text-xs text-arena-dim uppercase tracking-widest">Connect your CodeArena journey to GitHub</p>
+          <p className="font-mono text-xs text-arena-dim">// auto-generate your GitHub dev profile from SkillForge stats</p>
         </div>
         <div className="flex gap-2">
           <Button onClick={handleGenerate} variant="secondary" loading={generating}>
@@ -194,16 +183,13 @@ export default function PortfolioPage() {
             {portfolio?.projects?.length ? (
               <div className="space-y-2">
                 {portfolio.projects.slice(0,5).map((p) => (
-                  <div key={p.id} className="flex items-center gap-3 p-2.5 bg-arena-bg3 rounded-lg border border-arena-border group">
+                  <div key={p.id} className="flex items-center gap-3 p-2.5 bg-arena-bg3 rounded-lg border border-arena-border">
                     <Icons.Code size={12} className="text-arena-muted" />
                     <div className="flex-1 min-w-0">
                       <p className="font-mono text-xs text-arena-text truncate">{p.title}</p>
-                      {p.language && <p className="font-mono text-[10px] text-arena-dim">{p.language}</p>}
+                      {p.language && <p className="font-mono text-xs text-arena-dim">{p.language}</p>}
                     </div>
                     {p.featured && <BadgeTag variant="gold">Featured</BadgeTag>}
-                    <button onClick={() => handleDeleteProject(p.id)} className="opacity-0 group-hover:opacity-100 text-red-500/50 hover:text-red-500 transition-all">
-                      <Icons.Trash size={12} />
-                    </button>
                   </div>
                 ))}
               </div>
@@ -222,44 +208,23 @@ export default function PortfolioPage() {
               <div className="w-2.5 h-2.5 rounded-full bg-green-500/60" />
               <span className="font-mono text-xs text-arena-dim ml-2">README.md</span>
             </div>
-            <div className="flex items-center gap-2">
+            {readme && (
               <button
-                onClick={() => setIsPreview(!isPreview)}
-                className={`font-mono text-[10px] px-2 py-0.5 rounded transition-all ${isPreview ? 'bg-arena-teal text-arena-bg font-bold' : 'bg-arena-bg3 text-arena-dim'}`}
+                onClick={() => { navigator.clipboard.writeText(readme); toast.success('Copied'); }}
+                className="font-mono text-xs text-arena-dim hover:text-arena-teal transition-colors"
               >
-                {isPreview ? 'LIVE' : 'RAW'}
+                copy
               </button>
-              {readme && (
-                <button
-                  onClick={() => { navigator.clipboard.writeText(readme); toast.success('Copied'); }}
-                  className="font-mono text-xs text-arena-dim hover:text-arena-teal transition-colors"
-                >
-                  copy
-                </button>
-              )}
-            </div>
+            )}
           </div>
-          <div className="flex-1 overflow-y-auto bg-arena-bg min-h-96">
+          <div className="flex-1 overflow-y-auto p-4 bg-arena-bg min-h-96">
             {readme ? (
-              isPreview ? (
-                <div className="p-6 prose prose-invert prose-xs max-w-none prose-pre:bg-arena-bg3 prose-pre:border prose-pre:border-arena-border overflow-x-hidden">
-                  <h1 className="border-b border-arena-border pb-2 mb-4 text-xl font-bold">{form.githubUsername}'s Portfolio</h1>
-                  <p className="text-arena-muted italic mb-6">Preview of your generated README.md</p>
-                  <pre className="text-[10px] p-4 bg-arena-bg2 rounded border border-arena-border whitespace-pre-wrap">{readme}</pre>
-                </div>
-              ) : (
-                <textarea
-                  value={readme}
-                  onChange={(e) => setReadme(e.target.value)}
-                  className="w-full h-full bg-arena-bg text-red-400/80 font-mono text-xs p-6 outline-none resize-none leading-relaxed"
-                  spellCheck={false}
-                />
-              )
+              <pre className="font-mono text-xs text-arena-muted whitespace-pre-wrap leading-relaxed">{readme}</pre>
             ) : (
               <div className="flex flex-col items-center justify-center h-full gap-3 text-center py-16">
                 <Icons.Code size={28} className="text-arena-dim" />
-                <p className="font-mono text-xs text-arena-dim uppercase tracking-widest">
-                  Generate README to build your profile
+                <p className="font-mono text-xs text-arena-dim">
+                  Click "Generate README" to build your<br />GitHub profile from your SkillForge data
                 </p>
               </div>
             )}

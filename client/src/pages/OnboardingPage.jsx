@@ -68,7 +68,7 @@ export default function OnboardingPage() {
           <div className="w-9 h-9 rounded-xl bg-purple-teal flex items-center justify-center">
             <Icons.Code size={17} className="text-white" />
           </div>
-          <span className="font-display font-black text-xl text-gradient">CodeArena</span>
+          <span className="font-display font-black text-xl text-gradient">SkillForge</span>
         </div>
         <div className="flex gap-2 mb-8">
           {[1,2,3,4].map((s) => (

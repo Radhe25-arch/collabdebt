@@ -10,5 +10,7 @@ router.post('/friend-request/:id', socialController.sendFriendRequest);
 router.post('/friend-accept/:id',  socialController.acceptFriendRequest);
 router.get('/friends',            socialController.getFriends);
 router.get('/friend-requests',    socialController.getPendingRequests);
+router.post('/messages',           socialController.sendMessage);
+router.get('/messages/:friendId',   socialController.getMessages);
 
 module.exports = router;

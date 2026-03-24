@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store';
-import { Avatar, ProgressBar } from '@/components/ui';
+import { StatCard, Card, XPBar, BadgeTag, Avatar, ProgressBar } from '@/components/ui';
 import Icons from '@/assets/icons';
 import api from '@/lib/api';
 import { format, subDays } from 'date-fns';
@@ -21,96 +21,188 @@ function ActivityHeatmap({ logs }) {
   const getColor = (d) => {
     const key = format(d, 'yyyy-MM-dd');
     const xp = logMap[key] || 0;
-    if (!xp) return 'bg-slate-100 border-slate-200';
-    if (xp < 100)  return 'bg-blue-200 border-blue-300';
-    if (xp < 300)  return 'bg-blue-400 border-blue-500';
-    if (xp < 600)  return 'bg-blue-600 border-blue-700';
-    return 'bg-blue-800 border-blue-900';
+    if (!xp) return 'bg-arena-bg3 border-arena-border/30';
+    if (xp < 100)  return 'bg-arena-purple/30 border-arena-purple/20';
+    if (xp < 300)  return 'bg-arena-purple/60 border-arena-purple/40';
+    if (xp < 600)  return 'bg-arena-purple border-arena-purple/60';
+    return 'bg-arena-teal border-arena-teal/40';
   };
 
   return (
     <div>
-      <div className="flex gap-1.5 overflow-x-auto pb-2 scrollbar-hide">
+      <div className="flex gap-1 overflow-x-auto pb-1">
         {weeks.map((week, wi) => (
-          <div key={wi} className="flex flex-col gap-1.5">
+          <div key={wi} className="flex flex-col gap-1">
             {week.map((day) => (
               <div
                 key={day.toISOString()}
                 title={`${format(day, 'MMM d')} — ${logMap[format(day, 'yyyy-MM-dd')] || 0} XP`}
-                className={`w-3.5 h-3.5 rounded-sm border ${getColor(day)} transition-colors cursor-default`}
+                className={`w-3 h-3 rounded-sm border ${getColor(day)} transition-colors cursor-default`}
               />
             ))}
           </div>
         ))}
       </div>
-      <div className="flex items-center gap-2 mt-3">
-        <span className="text-[11px] font-semibold text-slate-400 tracking-wider uppercase">Less</span>
-        {['bg-slate-100', 'bg-blue-200', 'bg-blue-400', 'bg-blue-600', 'bg-blue-800'].map((c) => (
-          <div key={c} className={`w-3.5 h-3.5 rounded-sm ${c}`} />
+      <div className="flex items-center gap-2 mt-2">
+        <span className="font-mono text-xs text-arena-dim">Less</span>
+        {['bg-arena-bg3', 'bg-arena-purple/30', 'bg-arena-purple/60', 'bg-arena-purple', 'bg-arena-teal'].map((c) => (
+          <div key={c} className={`w-3 h-3 rounded-sm ${c}`} />
         ))}
-        <span className="text-[11px] font-semibold text-slate-400 tracking-wider uppercase ml-1">More</span>
+        <span className="font-mono text-xs text-arena-dim">More</span>
       </div>
     </div>
   );
 }
 
-// Course Progress Card
+// ─── COURSE PROGRESS CARD ──────────────────────────────────
 function CourseProgressCard({ enrollment, onContinue }) {
   const course = enrollment?.course;
   if (!course) return null;
   return (
     <div
-      className="bg-white border border-slate-200 rounded-2xl p-6 cursor-pointer hover:shadow-lg hover:-translate-y-1 transition-all group"
+      className="arena-card p-5 cursor-pointer hover:-translate-y-1 transition-transform"
       onClick={() => onContinue(course.slug)}
     >
-      <div className="flex items-start justify-between mb-4">
+      <div className="flex items-start justify-between mb-3">
         <div>
-          <span className="text-xs font-bold tracking-widest text-slate-400 uppercase">Continue Learning</span>
-          <h3 className="font-bold text-lg text-slate-900 mt-1.5 leading-tight group-hover:text-blue-600 transition-colors">{course.title}</h3>
+          <span className="font-mono text-xs text-arena-dim uppercase tracking-widest">Continue Learning</span>
+          <h3 className="font-display font-bold text-sm mt-1">{course.title}</h3>
         </div>
-        <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
-          <Icons.Play size={16} className="text-blue-600 ml-1" />
+        <div className="w-8 h-8 rounded-lg bg-arena-purple/15 border border-arena-border flex items-center justify-center flex-shrink-0">
+          <Icons.Book size={14} className="text-arena-purple2" />
         </div>
       </div>
-      
-      <div className="w-full bg-slate-100 rounded-full h-2 mb-3 overflow-hidden">
-        <div className="bg-blue-600 h-2 rounded-full transition-all" style={{ width: `${enrollment.progress}%` }} />
-      </div>
-      
-      <div className="flex justify-between items-center">
-        <span className="text-sm font-semibold text-slate-500">{enrollment.progress}% complete</span>
-        <span className="text-sm font-bold text-blue-600 flex items-center gap-1 group-hover:gap-2 transition-all">
-          Resume <Icons.ArrowRight size={14} />
+      <ProgressBar value={enrollment.progress} max={100} color="grad" height={4} className="mb-2" />
+      <div className="flex justify-between">
+        <span className="font-mono text-xs text-arena-dim">{enrollment.progress}% complete</span>
+        <span className="font-mono text-xs text-arena-teal flex items-center gap-1">
+          <Icons.ArrowRight size={10} /> Resume
         </span>
       </div>
     </div>
   );
 }
 
-// Stats Card Utility
-function StatCard({ label, value, icon }) {
+// ─── WEEKLY GOAL WIDGET ────────────────────────────────────
+function WeeklyGoal({ lessonsThisWeek = 0, goal = 5 }) {
+  const pct = Math.min((lessonsThisWeek / goal) * 100, 100);
   return (
-    <div className="bg-white border border-slate-200 rounded-2xl p-5 hover:border-slate-300 transition-colors">
-      <div className="flex items-center justify-between mb-3">
-        <span className="text-sm font-semibold text-slate-500">{label}</span>
-        <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center border border-slate-100">
-          {icon}
-        </div>
+    <div className="arena-card p-5">
+      <div className="flex items-center justify-between mb-4">
+        <span className="font-mono text-xs text-arena-dim uppercase tracking-widest">Weekly Goal</span>
+        <Icons.Target size={14} className="text-arena-muted" />
       </div>
-      <div className="font-display font-bold text-2xl text-slate-900 tracking-tight">{value}</div>
+      <div className="flex items-baseline gap-1 mb-3">
+        <span className="font-display font-bold text-2xl text-arena-text">{lessonsThisWeek}</span>
+        <span className="font-mono text-sm text-arena-dim">/ {goal} lessons</span>
+      </div>
+      <ProgressBar value={lessonsThisWeek} max={goal} color={pct >= 100 ? 'teal' : 'purple'} height={6} />
+      {pct >= 100 && (
+        <span className="font-mono text-xs text-arena-teal mt-2 flex items-center gap-1">
+          <Icons.Check size={10} /> Goal reached this week
+        </span>
+      )}
     </div>
   );
 }
 
+// ─── TOURNAMENT CARD WIDGET ────────────────────────────────
+function TournamentWidget({ tournament, onJoin }) {
+  if (!tournament) return (
+    <div className="arena-card p-5">
+      <span className="font-mono text-xs text-arena-dim">No active tournament</span>
+    </div>
+  );
+  return (
+    <div className="arena-card p-5 relative overflow-hidden">
+      <div className="absolute top-0 right-0 w-24 h-24 bg-arena-purple/5 rounded-full -translate-y-8 translate-x-8" />
+      <div className="flex items-center gap-2 mb-3">
+        <span className="w-1.5 h-1.5 rounded-full bg-arena-teal animate-pulse" />
+        <span className="font-mono text-xs text-arena-teal tracking-widest uppercase">Live Tournament</span>
+      </div>
+      <h3 className="font-display font-bold text-sm mb-1">{tournament.title}</h3>
+      <p className="font-mono text-xs text-arena-dim mb-4">
+        {tournament._count?.entries || 0} participants
+      </p>
+      <button onClick={() => onJoin(tournament.id)} className="btn-primary text-xs px-4 py-2 w-full">
+        <Icons.Tournament size={13} /> Join Now
+      </button>
+    </div>
+  );
+}
+
+// ─── RECENT BADGES ─────────────────────────────────────────
+function RecentBadges({ badges }) {
+  if (!badges?.length) return (
+    <div className="arena-card p-5">
+      <span className="font-mono text-xs text-arena-dim uppercase tracking-widest block mb-3">Recent Badges</span>
+      <p className="font-mono text-xs text-arena-dim">Complete courses to earn badges</p>
+    </div>
+  );
+  return (
+    <div className="arena-card p-5">
+      <span className="font-mono text-xs text-arena-dim uppercase tracking-widest block mb-4">Recent Badges</span>
+      <div className="grid grid-cols-4 gap-3">
+        {badges.slice(0, 8).map(({ badge, awardedAt }) => (
+          <div key={badge.id} title={badge.name} className="flex flex-col items-center gap-1">
+            <div className="w-10 h-10 rounded-lg bg-arena-purple/15 border border-arena-border flex items-center justify-center">
+              <Icons.Award size={18} className="text-arena-purple2" />
+            </div>
+            <span className="font-mono text-xs text-arena-dim text-center leading-none truncate w-full">{badge.name}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── LEADERBOARD PREVIEW ───────────────────────────────────
+function LeaderboardPreview({ topUsers, myRank }) {
+  const navigate = useNavigate();
+  return (
+    <div className="arena-card overflow-hidden">
+      <div className="flex items-center justify-between px-5 py-3 border-b border-arena-border">
+        <span className="font-mono text-xs text-arena-dim uppercase tracking-widest">Top Learners</span>
+        <button onClick={() => navigate('/leaderboard')} className="font-mono text-xs text-arena-purple2 hover:text-arena-teal transition-colors">
+          Full board
+        </button>
+      </div>
+      <div className="divide-y divide-arena-border/50">
+        {(topUsers || []).slice(0, 5).map((u, i) => (
+          <div key={u.id} className="flex items-center gap-3 px-5 py-2.5">
+            <span className={`font-mono text-xs font-bold w-4 text-center ${
+              i === 0 ? 'text-yellow-400' : i === 1 ? 'text-slate-400' : i === 2 ? 'text-amber-600' : 'text-arena-dim'
+            }`}>{i + 1}</span>
+            <Avatar user={u} size={24} />
+            <div className="flex-1 min-w-0">
+              <p className="font-mono text-xs text-arena-text truncate">{u.username}</p>
+            </div>
+            <div className="flex items-center gap-1 text-arena-purple2">
+              <Icons.Zap size={10} />
+              <span className="font-mono text-xs">{u.xp?.toLocaleString()}</span>
+            </div>
+          </div>
+        ))}
+        {myRank && (
+          <div className="flex items-center gap-3 px-5 py-2.5 bg-arena-purple/5">
+            <span className="font-mono text-xs font-bold w-4 text-arena-teal text-center">#{myRank}</span>
+            <span className="font-mono text-xs text-arena-teal">You</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── MAIN DASHBOARD ────────────────────────────────────────
 export default function DashboardPage() {
   const { user } = useAuthStore();
   const navigate = useNavigate();
-  const [stats, setStats] = useState(null);
-  const [topUsers, setTopUsers] = useState([]);
-  const [myRank, setMyRank] = useState(null);
-  const [tournament, setTournament] = useState(null);
-  const [activeBattle, setActiveBattle] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [stats, setStats]           = useState(null);
+  const [topUsers, setTopUsers]      = useState([]);
+  const [myRank, setMyRank]          = useState(null);
+  const [tournament, setTournament]  = useState(null);
+  const [loading, setLoading]        = useState(true);
 
   const lvl    = Math.min(user?.level || 1, 10);
   const xp     = user?.xp || 0;
@@ -122,14 +214,11 @@ export default function DashboardPage() {
       api.get('/users/me/stats'),
       api.get('/leaderboard/global?limit=5'),
       api.get('/tournaments/current'),
-      api.get('/battles'),
-    ]).then(([s, lb, t, b]) => {
+    ]).then(([s, lb, t]) => {
       setStats(s.data);
       setTopUsers(lb.data.users || []);
       setMyRank(lb.data.myRank);
       setTournament(t.data.tournament);
-      const live = (b.data.battles || []).find(x => ['ACTIVE', 'PENDING', 'CONFIGURING'].includes(x.status));
-      setActiveBattle(live);
     }).catch(() => {}).finally(() => setLoading(false));
   }, []);
 
@@ -145,205 +234,123 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-4 border-slate-200 border-t-blue-600 rounded-full animate-spin" />
+        <div className="text-arena-dim font-mono text-sm animate-pulse">loading dashboard...</div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8 pb-12 animate-fade-in font-sans">
-      
-      {/* ── Header ── */}
-      <div className="flex items-end justify-between flex-wrap gap-6 bg-blue-600 rounded-3xl p-8 text-white shadow-lg overflow-hidden relative">
-        <div className="absolute -right-20 -top-20 w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="relative z-10">
-          <p className="font-semibold text-blue-200 mb-1 uppercase tracking-widest text-xs">
+    <div className="space-y-6">
+      {/* Header row */}
+      <div className="flex items-start justify-between flex-wrap gap-4">
+        <div>
+          <h1 className="font-display font-black text-2xl">
+            Welcome back, <span className="text-gradient">{user?.username}</span>
+          </h1>
+          <p className="font-mono text-xs text-arena-dim mt-1">
             {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
           </p>
-          <h1 className="font-display font-black text-3xl md:text-4xl tracking-tight">
-            Welcome back, {user?.username}
-          </h1>
         </div>
-        
-        <div className="relative z-10 flex items-center gap-4">
-          <div className="bg-white/10 backdrop-blur border border-white/20 rounded-xl px-4 py-2 flex items-center gap-2">
-            <Icons.Fire size={16} className="text-amber-300" />
-            <span className="font-bold text-sm text-white">{user?.streak || 0} Day Streak</span>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 bg-orange-500/10 border border-orange-500/20 rounded-lg px-3 py-2">
+            <Icons.Fire size={14} className="text-orange-400" />
+            <span className="font-mono text-xs font-bold text-orange-400">{user?.streak || 0} day streak</span>
           </div>
-          <button onClick={() => navigate('/courses')} className="bg-white text-blue-700 px-6 py-2 rounded-xl text-sm font-bold shadow-sm hover:bg-slate-50 transition-colors">
-            Start a Course
-          </button>
         </div>
       </div>
 
-      {/* ── Quick Stats ── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Total Experience" value={xp.toLocaleString()} icon={<Icons.Zap size={14} className="text-amber-500" />} />
-        <StatCard label="Completed Courses" value={user?.coursesCompleted || 0} icon={<Icons.Book size={14} className="text-blue-500" />} />
-        <StatCard label="Avg. Accuracy" value={`${stats?.user?.accuracy || 0}%`} icon={<Icons.Target size={14} className="text-emerald-500" />} />
-        <StatCard label="Global Rank" value={myRank ? `#${myRank.toLocaleString()}` : '--'} icon={<Icons.Trophy size={14} className="text-purple-500" />} />
+      {/* XP Bar — full width */}
+      <div className="arena-card p-5">
+        <XPBar
+          current={xp - prevXP}
+          max={nextXP - prevXP}
+          level={lvl}
+          levelName={LEVEL_NAMES[lvl - 1]}
+          showLabel
+        />
+        <p className="font-mono text-xs text-arena-dim mt-2">
+          {(nextXP - xp).toLocaleString()} XP to {LEVEL_NAMES[Math.min(lvl, 9)]}
+        </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
-        {/* ── Left Column (Content) ── */}
-        <div className="lg:col-span-2 space-y-8">
-          
-          {/* Active Battle Alert */}
-          {activeBattle && (
-            <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center">
-                  <Icons.Zap size={20} className="text-indigo-600" />
-                </div>
-                <div>
-                  <h4 className="font-bold text-slate-900">Battle is {activeBattle.status.toLowerCase()}!</h4>
-                  <p className="text-sm text-slate-600">You have a live challenge waiting against {activeBattle.challenger?.username === user?.username ? activeBattle.challenged?.username : activeBattle.challenger?.username}.</p>
-                </div>
-              </div>
-              <button onClick={() => navigate(`/battles/${activeBattle.id}`)} className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-full font-semibold text-sm transition-all whitespace-nowrap">
-                Join Match →
-              </button>
-            </div>
-          )}
+      {/* Stats row */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard
+          label="Total XP"
+          value={xp.toLocaleString()}
+          icon={<Icons.Zap size={14} className="text-arena-purple2" />}
+        />
+        <StatCard
+          label="Courses Done"
+          value={user?.coursesCompleted || 0}
+          icon={<Icons.Book size={14} className="text-arena-teal" />}
+        />
+        <StatCard
+          label="Quiz Accuracy"
+          value={`${stats?.user?.accuracy || 0}%`}
+          icon={<Icons.Target size={14} className="text-arena-muted" />}
+        />
+        <StatCard
+          label="Global Rank"
+          value={myRank ? `#${myRank.toLocaleString()}` : '--'}
+          icon={<Icons.Trophy size={14} className="text-yellow-400" />}
+        />
+      </div>
 
-          {/* Recent Course */}
+      {/* Main content grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left col — main */}
+        <div className="lg:col-span-2 space-y-5">
+          {/* Continue learning */}
           {recentEnrollment && (
             <CourseProgressCard enrollment={recentEnrollment} onContinue={(slug) => navigate(`/courses/${slug}`)} />
           )}
 
-          {/* Activity Heatmap */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm">
-            <div className="flex items-center justify-between mb-8">
-              <div>
-                <h3 className="font-bold text-lg text-slate-900">Learning Activity</h3>
-                <p className="text-sm text-slate-500">Your XP earnings over the last 12 weeks</p>
-              </div>
+          {/* Activity heatmap */}
+          <div className="arena-card p-5">
+            <div className="flex items-center justify-between mb-4">
+              <span className="font-mono text-xs text-arena-dim uppercase tracking-widest">Activity Heatmap</span>
+              <span className="font-mono text-xs text-arena-dim">Last 12 weeks</span>
             </div>
             <ActivityHeatmap logs={stats?.activityLogs} />
           </div>
 
-          {/* Badges */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm">
-            <h3 className="font-bold text-lg text-slate-900 mb-6">Recent Achievements</h3>
-            {(!stats?.badges || stats.badges.length === 0) ? (
-              <div className="p-8 text-center border border-slate-200 border-dashed rounded-xl bg-slate-50">
-                <p className="text-sm text-slate-500 italic">No badges earned yet. Complete courses to unlock achievements.</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                {stats.badges.slice(0, 8).map(({ badge }) => (
-                  <div key={badge.id} className="flex flex-col items-center justify-center p-4 border border-slate-100 rounded-xl bg-slate-50 text-center hover:bg-slate-100 transition-colors">
-                    <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mb-3 shadow-md">
-                      <Icons.Award size={20} className="text-blue-600" />
-                    </div>
-                    <span className="text-xs font-bold text-slate-900 leading-tight block">{badge.name}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-          
-          {/* Top Categories */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm">
-            <h3 className="font-bold text-lg text-slate-900 mb-6">Popular Learning Tracks</h3>
-            <div className="flex flex-wrap gap-2.5">
-              {['JavaScript', 'System Design', 'Python', 'React', 'DevOps', 'Rust', 'Cloud Architecture', 'Cybersecurity'].map(tag => (
-                <button key={tag} onClick={() => navigate('/courses')} className="px-4 py-2 rounded-full border border-slate-100 bg-slate-50 text-xs font-bold text-slate-600 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all shadow-sm">
-                  {tag}
+          {/* Recent badges */}
+          <RecentBadges badges={stats?.badges} />
+        </div>
+
+        {/* Right col — sidebar widgets */}
+        <div className="space-y-4">
+          <WeeklyGoal lessonsThisWeek={lessonsThisWeek} goal={5} />
+
+          <TournamentWidget
+            tournament={tournament}
+            onJoin={(id) => navigate(`/tournaments/${id}`)}
+          />
+
+          <LeaderboardPreview topUsers={topUsers} myRank={myRank} />
+
+          {/* Quick actions */}
+          <div className="arena-card p-5">
+            <span className="font-mono text-xs text-arena-dim uppercase tracking-widest block mb-3">Quick Actions</span>
+            <div className="space-y-2">
+              {[
+                { label: 'Browse Courses',    icon: Icons.Book,        to: '/courses' },
+                { label: 'View Leaderboard',  icon: Icons.Leaderboard, to: '/leaderboard' },
+                { label: 'My Profile',        icon: Icons.Profile,     to: '/profile' },
+              ].map(({ label, icon: Ic, to }) => (
+                <button
+                  key={to}
+                  onClick={() => navigate(to)}
+                  className="w-full flex items-center gap-3 p-2.5 rounded-lg hover:bg-arena-bg3 transition-colors text-left group"
+                >
+                  <Ic size={14} className="text-arena-dim group-hover:text-arena-purple2 transition-colors" />
+                  <span className="font-mono text-xs text-arena-muted group-hover:text-arena-text transition-colors">{label}</span>
+                  <Icons.ChevronRight size={12} className="ml-auto text-arena-dim" />
                 </button>
               ))}
             </div>
           </div>
-
-          {/* Quick Actions */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div onClick={() => navigate('/mentor')} className="bg-white border border-slate-200 p-6 rounded-2xl cursor-pointer hover:shadow-md hover:border-blue-300 transition-all flex flex-col items-center text-center group">
-              <div className="w-12 h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform"><Icons.Terminal size={20} /></div>
-              <h4 className="font-bold text-slate-900 text-sm mb-1">AI Mentor</h4>
-              <p className="text-xs text-slate-500">Get debugging help</p>
-            </div>
-            <div onClick={() => navigate('/rooms')} className="bg-white border border-slate-200 p-6 rounded-2xl cursor-pointer hover:shadow-md hover:border-indigo-300 transition-all flex flex-col items-center text-center group">
-              <div className="w-12 h-12 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform"><Icons.Users size={20} /></div>
-              <h4 className="font-bold text-slate-900 text-sm mb-1">Multiplayer Room</h4>
-              <p className="text-xs text-slate-500">Collaborate live</p>
-            </div>
-            <div onClick={() => navigate('/quests')} className="bg-white border border-slate-200 p-6 rounded-2xl cursor-pointer hover:shadow-md hover:border-amber-300 transition-all flex flex-col items-center text-center group">
-              <div className="w-12 h-12 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform"><Icons.Target size={20} /></div>
-              <h4 className="font-bold text-slate-900 text-sm mb-1">Daily Quests</h4>
-              <p className="text-xs text-slate-500">Earn bonus XP</p>
-            </div>
-          </div>
-        </div>
-
-        {/* ── Right Column (Widgets) ── */}
-        <div className="space-y-6">
-          
-          {/* Level Progress */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-            <h3 className="font-bold text-slate-900 mb-4">Level {lvl}</h3>
-            <div className="w-full bg-slate-100 rounded-full h-3 mb-3 overflow-hidden">
-              <div className="bg-blue-600 h-3 rounded-full" style={{ width: `${Math.min(((xp - prevXP) / (nextXP - prevXP)) * 100, 100)}%` }} />
-            </div>
-            <p className="text-xs font-bold text-slate-500 tracking-wide">
-              {xp.toLocaleString()} / {nextXP.toLocaleString()} XP to Level {lvl + 1}
-            </p>
-          </div>
-
-          {/* Weekly Goal */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold text-slate-900">Weekly Goal</h3>
-              <Icons.Target size={16} className="text-blue-600" />
-            </div>
-            <div className="flex items-end gap-1 mb-3">
-              <span className="font-display font-black text-3xl text-slate-900 leading-none">{lessonsThisWeek}</span>
-              <span className="text-sm font-bold text-slate-400 mb-1">/ 5 lessons</span>
-            </div>
-            <div className="w-full bg-slate-100 rounded-full h-2 mb-3">
-              <div className={`h-2 rounded-full ${lessonsThisWeek >= 5 ? 'bg-emerald-500' : 'bg-blue-500'}`} style={{ width: `${Math.min((lessonsThisWeek / 5) * 100, 100)}%` }} />
-            </div>
-            {lessonsThisWeek >= 5 && <p className="text-xs font-bold text-emerald-600 flex items-center gap-1"><Icons.Check size={12}/> Goal reached!</p>}
-          </div>
-
-          {/* Live Tournament */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-purple-50 rounded-bl-full -z-0" />
-            <div className="relative z-10">
-              <div className="flex items-center gap-2 mb-4">
-                <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                <span className="text-[10px] font-bold text-red-500 uppercase tracking-widest">Live Event</span>
-              </div>
-              <h3 className="font-bold text-slate-900 mb-2">{tournament ? tournament.title : 'Weekend Coding Challenge'}</h3>
-              <p className="text-sm text-slate-500 mb-6">{tournament ? tournament._count?.entries : 854} hackers participating</p>
-              <button onClick={() => navigate('/tournaments')} className="w-full bg-slate-900 text-white font-bold py-2.5 rounded-lg text-sm hover:bg-slate-800 transition-colors">
-                Compete Now
-              </button>
-            </div>
-          </div>
-
-          {/* Top Learners */}
-          <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-              <h3 className="font-bold text-slate-900 text-sm">Top Learners</h3>
-              <button onClick={() => navigate('/leaderboard')} className="text-[11px] font-bold text-blue-600 uppercase tracking-wider">Full Board</button>
-            </div>
-            <div className="divide-y divide-slate-50">
-              {(topUsers || []).slice(0, 5).map((u, i) => (
-                <div key={u.id} className="flex items-center gap-4 px-6 py-3 hover:bg-slate-50 transition-colors">
-                  <span className={`font-bold text-sm w-4 text-center ${i === 0 ? 'text-amber-500' : i === 1 ? 'text-slate-400' : i === 2 ? 'text-amber-700' : 'text-slate-300'}`}>{i + 1}</span>
-                  <div className="flex-1 min-w-0 flex items-center gap-3">
-                    <Avatar user={u} size={28} />
-                    <div>
-                      <p className="text-sm font-bold text-slate-900 truncate leading-tight">{u.username}</p>
-                      <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">{(u.xp || 0).toLocaleString()} XP</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
         </div>
       </div>
     </div>

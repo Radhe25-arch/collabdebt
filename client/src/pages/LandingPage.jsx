@@ -1,711 +1,532 @@
-import { useNavigate, Link } from 'react-router-dom';
-import { motion, useScroll, useTransform } from 'framer-motion';
-import { useRef, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Icons from '@/assets/icons';
 
-// ── Badge ──────────────────────────────────────────────────────────────────────
-function Badge({ children, color = 'blue' }) {
-  const colors = {
-    blue:  'bg-blue-50 text-blue-600 border-blue-100',
-    green: 'bg-green-50 text-green-600 border-green-100',
-    amber: 'bg-amber-50 text-amber-600 border-amber-100',
+const STATS = [
+  { value: '48,291', label: 'Developers' },
+  { value: '127',    label: 'Free Courses' },
+  { value: '312',    label: 'Tournaments' },
+  { value: '2.1M',   label: 'XP Earned' },
+  { value: '100%',   label: 'Free Forever' },
+];
+
+const LANGUAGES = [
+  { slug: 'javascript', label: 'JavaScript',    icon: Icons.Code,     color: '#F7DF1E', bg: 'rgba(247,223,30,0.1)',    border: 'rgba(247,223,30,0.25)' },
+  { slug: 'python',     label: 'Python',         icon: Icons.Terminal, color: '#4B8BBE', bg: 'rgba(75,139,190,0.12)',   border: 'rgba(75,139,190,0.3)'  },
+  { slug: 'cpp',        label: 'C++',             icon: Icons.Code,     color: '#6db3f2', bg: 'rgba(109,179,242,0.1)',   border: 'rgba(109,179,242,0.25)'},
+  { slug: 'java',       label: 'Java',            icon: Icons.Terminal, color: '#ED8B00', bg: 'rgba(237,139,0,0.1)',     border: 'rgba(237,139,0,0.25)'  },
+  { slug: 'typescript', label: 'TypeScript',      icon: Icons.Code,     color: '#3178C6', bg: 'rgba(49,120,198,0.1)',    border: 'rgba(49,120,198,0.25)' },
+  { slug: 'rust',       label: 'Rust',            icon: Icons.Shield,   color: '#CE422B', bg: 'rgba(206,66,43,0.1)',     border: 'rgba(206,66,43,0.25)'  },
+  { slug: 'go',         label: 'Go',              icon: Icons.Terminal, color: '#00ACD7', bg: 'rgba(0,172,215,0.1)',     border: 'rgba(0,172,215,0.25)'  },
+  { slug: 'kotlin',     label: 'Kotlin',          icon: Icons.Code,     color: '#7F52FF', bg: 'rgba(127,82,255,0.1)',    border: 'rgba(127,82,255,0.25)' },
+  { slug: 'swift',      label: 'Swift',           icon: Icons.Code,     color: '#FA7343', bg: 'rgba(250,115,67,0.1)',    border: 'rgba(250,115,67,0.25)' },
+  { slug: 'c',          label: 'C',               icon: Icons.Terminal, color: '#9e9e9e', bg: 'rgba(158,158,158,0.08)', border: 'rgba(158,158,158,0.2)' },
+  { slug: 'dsa',        label: 'Data Structures', icon: Icons.Target,   color: '#00D9B5', bg: 'rgba(0,217,181,0.1)',     border: 'rgba(0,217,181,0.25)'  },
+  { slug: 'web-dev',    label: 'Web Dev',          icon: Icons.Globe,    color: '#9D65F5', bg: 'rgba(157,101,245,0.1)',   border: 'rgba(157,101,245,0.25)'},
+  { slug: 'sql',        label: 'SQL',              icon: Icons.Book,     color: '#E48E00', bg: 'rgba(228,142,0,0.1)',     border: 'rgba(228,142,0,0.25)'  },
+  { slug: 'bash',       label: 'Bash / Shell',     icon: Icons.Terminal, color: '#4EAA25', bg: 'rgba(78,170,37,0.1)',     border: 'rgba(78,170,37,0.25)'  },
+  { slug: 'php',        label: 'PHP',              icon: Icons.Code,     color: '#8892BF', bg: 'rgba(136,146,191,0.1)',   border: 'rgba(136,146,191,0.25)'},
+  { slug: 'ruby',       label: 'Ruby',             icon: Icons.Code,     color: '#CC342D', bg: 'rgba(204,52,45,0.1)',     border: 'rgba(204,52,45,0.25)'  },
+];
+
+const FEATURES = [
+  { icon: Icons.Zap,       title: 'XP & Leveling',       desc: 'Every lesson, quiz and challenge earns XP. Progress through 10 tiers — Beginner to Legend — with a live bar tracking each milestone.' },
+  { icon: Icons.Leaderboard, title: 'Live Leaderboards',  desc: 'Global, weekly, and per-language rankings. Your position updates in real time. Even rank #2000 is visible — nobody disappears.' },
+  { icon: Icons.Target,    title: 'Accuracy Tracking',    desc: 'Every answer logs your hit rate. Watch your accuracy improve per language with breakdowns on your public profile.' },
+  { icon: Icons.Clock,     title: 'Speed Metrics',        desc: 'Time-per-problem, average completion speed, tournament response times. Every millisecond is on record.' },
+  { icon: Icons.Tournament,title: 'Weekly Tournaments',   desc: 'Three formats every Monday: Coding Challenge, Quiz Battle, Speed Course. Free entry. Real competition. Permanent winner badges.' },
+  { icon: Icons.TrendingUp,title: 'Progress Analytics',   desc: 'GitHub-style heatmaps, streak counters, skill radar charts. One shareable public profile with everything you\'ve earned.' },
+];
+
+const LB_PREVIEW = [
+  { rank: 1, username: 'sarthak_k',   level: 42, xp: 24880, lang: 'Rust',       label: 'Legend',    acc: 96 },
+  { rank: 2, username: 'priya_react', level: 38, xp: 22410, lang: 'TypeScript', label: 'Expert',    acc: 93 },
+  { rank: 3, username: 'arjun_m',     level: 31, xp: 19350, lang: 'Python',     label: 'Pro',       acc: 91 },
+  { rank: 4, username: 'neha_v',      level: 24, xp: 14200, lang: 'Go',         label: 'Developer', acc: 88 },
+];
+
+const TESTIMONIALS = [
+  { name: 'Rahul K.', role: 'Frontend Dev · Mumbai',     text: 'Went from zero JS to landing my first frontend role in 7 months. Tournaments kept me accountable — you cannot fake an accuracy score.', lang: 'JavaScript', level: 'Lv 22' },
+  { name: 'Priya S.', role: 'CS Student · Bangalore',    text: 'The leaderboard is genuinely dangerous. I ended up grinding 2 extra hours of Python just to beat my friend. Level 29 in 4 months.',   lang: 'Python',     level: 'Lv 29' },
+  { name: 'Amit N.',  role: 'Working Professional · Delhi', text: 'Every other platform charges thousands. SkillForge gave me DSA, Rust basics, and three tournament wins — completely free.',           lang: 'DSA',        level: 'Lv 18' },
+];
+
+function RankIcon({ rank }) {
+  const medals = {
+    1: { bg: 'rgba(255,215,0,0.12)',   border: 'rgba(255,215,0,0.3)',   color: '#FFD700' },
+    2: { bg: 'rgba(192,192,192,0.12)', border: 'rgba(192,192,192,0.3)', color: '#C0C0C0' },
+    3: { bg: 'rgba(205,127,50,0.12)',  border: 'rgba(205,127,50,0.3)',  color: '#CD7F32' },
   };
-  return (
-    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${colors[color]}`}>
-      {children}
-    </span>
+  const m = medals[rank];
+  if (m) return (
+    <div style={{ width:32, height:32, borderRadius:'50%', background:m.bg, border:`1px solid ${m.border}`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+      <Icons.Trophy size={13} style={{ color: m.color }} />
+    </div>
   );
-}
-
-// ── StatCard ───────────────────────────────────────────────────────────────────
-function StatCard({ label, value, sub, icon: Icon, accent = 'blue' }) {
-  const accents = {
-    blue:   'text-blue-600 bg-blue-50',
-    green:  'text-green-600 bg-green-50',
-    amber:  'text-amber-600 bg-amber-50',
-    purple: 'text-purple-600 bg-purple-50',
-  };
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm hover:shadow-md transition-shadow">
-      <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${accents[accent]}`}>
-        <Icon size={18} />
-      </div>
-      <div className="text-2xl font-bold text-slate-900 font-display">{value}</div>
-      <div className="text-sm font-semibold text-slate-700 mt-0.5">{label}</div>
-      {sub && <div className="text-xs text-slate-400 mt-0.5">{sub}</div>}
+    <div style={{ width:32, height:32, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+      <span className="font-mono text-xs text-arena-dim">#{rank}</span>
     </div>
   );
 }
 
-// ── FeatureCard ────────────────────────────────────────────────────────────────
-function FeatureCard({ icon: Icon, title, desc, accent = 'blue', badge }) {
-  const accents = {
-    blue:   'bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white',
-    green:  'bg-green-50 text-green-600 group-hover:bg-green-600 group-hover:text-white',
-    amber:  'bg-amber-50 text-amber-600 group-hover:bg-amber-600 group-hover:text-white',
-    purple: 'bg-purple-50 text-purple-600 group-hover:bg-purple-600 group-hover:text-white',
-  };
-  const badgeColors = { blue: 'blue', green: 'green', amber: 'amber', purple: 'blue' };
-  return (
-    <motion.div
-      whileHover={{ y: -2 }}
-      className="group bg-white rounded-2xl border border-slate-100 p-6 shadow-sm hover:shadow-lg transition-all cursor-default"
-    >
-      <div className="flex items-start justify-between mb-4">
-        <div className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-300 ${accents[accent]}`}>
-          <Icon size={20} />
-        </div>
-        {badge && <Badge color={badgeColors[accent]}>{badge}</Badge>}
-      </div>
-      <h3 className="font-display font-bold text-slate-900 text-base mb-1.5">{title}</h3>
-      <p className="text-sm text-slate-500 leading-relaxed">{desc}</p>
-    </motion.div>
-  );
-}
-
-// ── LiveActivity ticker ────────────────────────────────────────────────────────
-function LiveActivity() {
-  const items = [
-    { user: 'Arjun S.',  action: 'won a 1v1 battle',          xp: '+300 XP',  avatar: 'AS', color: 'bg-blue-600' },
-    { user: 'Neha K.',   action: 'reached Level 5 in Python', xp: 'BADGE',    avatar: 'NK', color: 'bg-green-600' },
-    { user: 'Marco D.',  action: 'solved Linked List',        xp: '+50 XP',   avatar: 'MD', color: 'bg-amber-600' },
-    { user: 'Sofia R.',  action: 'enrolled in Go course',     xp: 'ENROLLED', avatar: 'SR', color: 'bg-purple-600' },
-    { user: 'Alex M.',   action: 'hit a 14-day streak',       xp: '+200 XP',  avatar: 'AM', color: 'bg-blue-600' },
-    { user: 'Priya J.',  action: 'entered top 10 global',     xp: '#9 RANK',  avatar: 'PJ', color: 'bg-green-600' },
-  ];
-  return (
-    <div className="overflow-hidden border-y border-slate-100 bg-white py-3">
-      <motion.div
-        animate={{ x: [0, -1500] }}
-        transition={{ repeat: Infinity, duration: 30, ease: 'linear' }}
-        className="flex gap-8 whitespace-nowrap"
-      >
-        {[...items, ...items, ...items].map((a, i) => (
-          <div key={i} className="flex items-center gap-2.5 text-sm">
-            <div className={`w-6 h-6 rounded-full ${a.color} text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0`}>
-              {a.avatar}
-            </div>
-            <span className="font-semibold text-slate-700">{a.user}</span>
-            <span className="text-slate-400">{a.action}</span>
-            <span className="text-blue-600 font-semibold text-xs bg-blue-50 px-2 py-0.5 rounded-full">{a.xp}</span>
-            <span className="text-slate-200 mx-2">·</span>
-          </div>
-        ))}
-      </motion.div>
-    </div>
-  );
-}
-
-// ── Dashboard Preview mock ─────────────────────────────────────────────────────
-function DashboardPreview() {
-  return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl overflow-hidden select-none">
-      {/* Window chrome */}
-      <div className="h-9 bg-slate-50 border-b border-slate-100 flex items-center px-4 gap-2">
-        <div className="w-3 h-3 rounded-full bg-red-400" />
-        <div className="w-3 h-3 rounded-full bg-amber-400" />
-        <div className="w-3 h-3 rounded-full bg-green-400" />
-        <div className="ml-3 bg-slate-200 rounded h-5 flex items-center px-2 max-w-[200px] w-full">
-          <span className="text-slate-400 text-[10px] font-mono truncate">codearena.io/dashboard</span>
-        </div>
-      </div>
-
-      <div className="flex" style={{ minHeight: 320 }}>
-        {/* Mini sidebar */}
-        <div className="w-14 bg-white border-r border-slate-100 flex flex-col items-center py-4 gap-3 flex-shrink-0">
-          <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center shadow-sm">
-            <Icons.Code size={14} className="text-white" />
-          </div>
-          {[Icons.Home, Icons.Book, Icons.Zap, Icons.Trophy, Icons.Users].map((Ic, idx) => (
-            <div
-              key={idx}
-              className={`w-8 h-8 rounded-lg flex items-center justify-center ${idx === 0 ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-300'}`}
-            >
-              <Ic size={14} />
-            </div>
-          ))}
-        </div>
-
-        {/* Main */}
-        <div className="flex-1 p-4 bg-slate-50/60">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <div className="text-sm font-bold text-slate-900">Good morning, Arjun 👋</div>
-              <div className="text-xs text-slate-400">14-day streak · Rank #12</div>
-            </div>
-            <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold shadow-sm">AS</div>
-          </div>
-
-          {/* Stats */}
-          <div className="grid grid-cols-3 gap-2 mb-3">
-            {[
-              { label: 'XP Total',     val: '42,900', color: 'text-blue-600' },
-              { label: 'Battles Won',  val: '142',    color: 'text-green-600' },
-              { label: 'Global Rank',  val: '#12',    color: 'text-amber-600' },
-            ].map((s, i) => (
-              <div key={i} className="bg-white rounded-xl border border-slate-100 p-2.5 shadow-sm">
-                <div className={`text-base font-bold font-display ${s.color}`}>{s.val}</div>
-                <div className="text-[10px] text-slate-400">{s.label}</div>
-              </div>
-            ))}
-          </div>
-
-          {/* Quest */}
-          <div className="bg-white rounded-xl border border-slate-100 p-3 shadow-sm mb-2">
-            <div className="flex items-center gap-2 mb-2">
-              <Icons.Target size={13} className="text-blue-600" />
-              <span className="text-xs font-semibold text-slate-700">Active Quest</span>
-              <span className="ml-auto text-[10px] font-semibold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded-full">2/3</span>
-            </div>
-            <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: '66%' }}
-                transition={{ delay: 1, duration: 1.4, ease: 'easeOut' }}
-                className="h-full bg-blue-600 rounded-full"
-              />
-            </div>
-          </div>
-
-          {/* Live battle */}
-          <div className="bg-white rounded-xl border border-red-100 p-3 shadow-sm flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-            <span className="text-xs font-semibold text-slate-700">Live Battle</span>
-            <span className="text-[10px] text-slate-400 ml-auto font-mono">vs ShadowCoder — 02:44</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ── Testimonial ────────────────────────────────────────────────────────────────
-function Testimonial({ quote, name, role, avatarColor }) {
-  return (
-    <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm flex flex-col h-full">
-      <div className="flex gap-1 mb-4">
-        {[...Array(5)].map((_, i) => (
-          <svg key={i} className="w-4 h-4 text-amber-400 fill-current" viewBox="0 0 20 20">
-            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-          </svg>
-        ))}
-      </div>
-      <p className="text-sm text-slate-600 leading-relaxed flex-1 mb-5">"{quote}"</p>
-      <div className="flex items-center gap-3">
-        <div className={`w-9 h-9 rounded-full ${avatarColor} text-white flex items-center justify-center text-sm font-bold flex-shrink-0`}>
-          {name[0]}
-        </div>
-        <div>
-          <div className="text-sm font-semibold text-slate-800">{name}</div>
-          <div className="text-xs text-slate-400">{role}</div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ── Main ───────────────────────────────────────────────────────────────────────
 export default function LandingPage() {
   const navigate = useNavigate();
-  const heroRef = useRef(null);
-  const { scrollYProgress } = useScroll({ target: heroRef });
-  const heroY = useTransform(scrollYProgress, [0, 1], [0, 50]);
-
-  // Animated counters
-  const [count, setCount] = useState({ users: 0, battles: 0, courses: 0 });
-  useEffect(() => {
-    const targets = { users: 24700, battles: 183000, courses: 48 };
-    const duration = 1800;
-    const start = Date.now();
-    const tick = () => {
-      const p = Math.min((Date.now() - start) / duration, 1);
-      const e = 1 - Math.pow(1 - p, 3);
-      setCount({
-        users:   Math.round(targets.users   * e),
-        battles: Math.round(targets.battles * e),
-        courses: Math.round(targets.courses * e),
-      });
-      if (p < 1) requestAnimationFrame(tick);
-    };
-    const t = setTimeout(() => requestAnimationFrame(tick), 600);
-    return () => clearTimeout(t);
-  }, []);
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+    <div className="min-h-screen bg-arena-bg text-arena-text font-body">
 
-      {/* ── NAVBAR ── */}
-      <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-100 shadow-sm">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-
-          {/* Logo */}
-          <motion.button
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            onClick={() => navigate('/')}
-            className="flex items-center gap-2.5 group"
-          >
-            <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center shadow-sm group-hover:shadow-md group-hover:shadow-blue-200 transition-shadow">
-              <Icons.Code size={15} className="text-white" />
-            </div>
-            <span className="font-display font-bold text-lg text-slate-900 tracking-tight">CodeArena</span>
-          </motion.button>
-
-          {/* Nav links */}
-          <div className="hidden md:flex items-center gap-1">
-            {[
-              { label: 'Curriculum',  to: '/courses' },
-              { label: '1v1 Arena',   to: '/battles' },
-              { label: 'AI Mentor',   to: '/mentor',       badge: 'Beta' },
-              { label: 'Community',   to: '/community' },
-              { label: 'Leaderboard',to: '/leaderboard' },
-            ].map(({ label, to, badge }) => (
-              <Link
-                key={to}
-                to={to}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all"
-              >
-                {label}
-                {badge && (
-                  <span className="text-[10px] font-bold bg-blue-600 text-white px-1.5 py-0.5 rounded-full leading-none">
-                    {badge}
-                  </span>
-                )}
-              </Link>
-            ))}
+      {/* ─── NAVBAR ─── */}
+      <nav className="fixed top-0 left-0 right-0 z-50 h-14 flex items-center justify-between px-6 bg-arena-bg/92 backdrop-blur-lg border-b border-arena-border">
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-md bg-purple-teal flex items-center justify-center">
+            <Icons.Code size={13} className="text-white" />
           </div>
-
-          {/* Auth */}
-          <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} className="flex items-center gap-3">
-            <button
-              onClick={() => navigate('/login')}
-              className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors px-3 py-2"
-            >
-              Sign in
-            </button>
-            <button
-              onClick={() => navigate('/register')}
-              className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-5 py-2.5 rounded-xl shadow-sm hover:shadow-md hover:shadow-blue-200 transition-all"
-            >
-              Get started free
-            </button>
-          </motion.div>
+          <span className="font-display font-bold text-base text-gradient tracking-tight">SkillForge</span>
+        </div>
+        <div className="hidden md:flex items-center gap-0.5">
+          {[['Languages','#languages'],['Features','#features'],['Leaderboard','#leaderboard'],['Tournaments','#tournaments']].map(([l,h]) => (
+            <a key={l} href={h} className="font-mono text-xs text-arena-muted hover:text-arena-text transition-colors px-3 py-2 rounded-md hover:bg-arena-bg3">{l}</a>
+          ))}
+        </div>
+        <div className="flex items-center gap-2">
+          <button onClick={() => navigate('/login')}    className="btn-secondary text-xs px-4 py-2">Log In</button>
+          <button onClick={() => navigate('/register')} className="btn-primary  text-xs px-4 py-2">Get Started</button>
         </div>
       </nav>
 
-      {/* ── HERO ── */}
-      <section ref={heroRef} className="relative overflow-hidden pt-20 pb-20 px-6">
-        {/* Subtle grid background */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            backgroundImage: 'linear-gradient(rgba(59,130,246,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(59,130,246,0.05) 1px, transparent 1px)',
-            backgroundSize: '48px 48px',
-          }}
-        />
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[400px] bg-blue-600/5 rounded-full blur-[100px] pointer-events-none" />
+      {/* ─── HERO ─── */}
+      <section className="relative min-h-screen flex flex-col items-center justify-center text-center px-6 pt-14 overflow-hidden">
+        <div className="absolute inset-0 bg-grid" />
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full bg-arena-purple/8 blur-3xl pointer-events-none" />
+        <div className="absolute bottom-1/4 left-1/4  w-[300px] h-[300px] rounded-full bg-arena-teal/5  blur-3xl pointer-events-none" />
+        <div className="absolute top-1/2  right-1/4  w-[250px] h-[250px] rounded-full bg-arena-purple/4 blur-3xl pointer-events-none" />
 
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col lg:flex-row items-center gap-16">
+        <div className="relative z-10 max-w-4xl mx-auto">
+          <div className="inline-flex items-center gap-2 bg-arena-purple/10 border border-arena-border rounded-full px-4 py-1.5 mb-8 animate-fade-up">
+            <span className="w-1.5 h-1.5 rounded-full bg-arena-teal animate-pulse" />
+            <span className="font-mono text-xs text-arena-purple2 tracking-widest">12,847 DEVS ONLINE NOW</span>
+          </div>
 
-            {/* Copy */}
-            <motion.div style={{ y: heroY }} className="flex-1 text-center lg:text-left">
+          <h1 className="font-display font-black leading-none mb-6 animate-fade-up delay-100"
+              style={{ fontSize: 'clamp(40px,7vw,78px)', letterSpacing: '-3px' }}>
+            Your Free Path to<br />
+            <span className="text-gradient">Tech Mastery.</span>
+          </h1>
 
-              <motion.div
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="inline-flex items-center gap-2 mb-6"
-              >
-                <Badge color="blue">
-                  <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse inline-block" />
-                  24,000+ developers competing live
-                </Badge>
-              </motion.div>
+          <p className="text-arena-muted leading-relaxed mb-10 animate-fade-up delay-200 max-w-lg mx-auto"
+             style={{ fontSize: '17px' }}>
+            Learn every coding language on the planet — structured courses, live competitions,
+            XP that actually means something. Zero cost. No catch.
+          </p>
 
-              <motion.h1
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="font-display font-black text-slate-900 leading-tight mb-5"
-                style={{ fontSize: 'clamp(2.4rem, 5.5vw, 3.8rem)' }}
-              >
-                Level up your coding<br />
-                <span className="text-blue-600">through competition.</span>
-              </motion.h1>
+          <div className="flex items-center justify-center gap-4 flex-wrap animate-fade-up delay-300">
+            <button onClick={() => navigate('/register')} className="btn-primary px-8 py-3.5 text-base glow-purple">
+              <Icons.ArrowRight size={16} /> Start Learning Free
+            </button>
+            <button onClick={() => navigate('/courses')} className="btn-secondary px-8 py-3.5 text-base">
+              <Icons.Book size={16} /> Browse Languages
+            </button>
+          </div>
 
-              <motion.p
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="text-lg text-slate-500 leading-relaxed mb-8 max-w-lg mx-auto lg:mx-0"
-              >
-                Real-time 1v1 battles, structured courses, and an AI mentor that knows your skill gaps. Built for developers who learn by doing.
-              </motion.p>
-
-              <motion.div
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-                className="flex flex-wrap gap-3 justify-center lg:justify-start"
-              >
-                <button
-                  onClick={() => navigate('/register')}
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-7 py-3.5 rounded-xl shadow-md hover:shadow-blue-200 transition-all text-sm flex items-center gap-2"
-                >
-                  Start for free
-                  <Icons.ChevronRight size={16} />
-                </button>
-                <button
-                  onClick={() => navigate('/courses')}
-                  className="bg-white hover:bg-slate-50 text-slate-700 font-semibold px-7 py-3.5 rounded-xl border border-slate-200 transition-all text-sm flex items-center gap-2 shadow-sm"
-                >
-                  <Icons.Book size={16} className="text-slate-400" />
-                  Browse courses
-                </button>
-              </motion.div>
-
-              {/* Social proof avatars */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.6 }}
-                className="flex items-center gap-3 mt-8 justify-center lg:justify-start"
-              >
-                <div className="flex -space-x-2">
-                  {['bg-blue-500', 'bg-green-500', 'bg-amber-500', 'bg-purple-500', 'bg-red-500'].map((c, i) => (
-                    <div key={i} className={`w-7 h-7 rounded-full ${c} border-2 border-white flex items-center justify-center text-[9px] text-white font-bold`}>
-                      {['A','N','M','S','P'][i]}
-                    </div>
-                  ))}
+          {/* XP demo card */}
+          <div className="mt-14 max-w-sm mx-auto animate-fade-up delay-400">
+            <div className="arena-card p-4 text-left">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <Icons.Zap size={14} className="text-arena-purple2" />
+                  <span className="font-mono text-xs text-arena-purple2 font-bold">Level 7 · Developer</span>
                 </div>
-                <span className="text-sm text-slate-400">
-                  Join <span className="font-semibold text-slate-700">24,700+</span> developers
-                </span>
-              </motion.div>
-            </motion.div>
-
-            {/* Dashboard preview */}
-            <motion.div
-              initial={{ opacity: 0, y: 24, scale: 0.96 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ delay: 0.3, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-              className="flex-1 w-full max-w-lg mx-auto"
-            >
-              <DashboardPreview />
-            </motion.div>
+                <span className="font-mono text-xs text-arena-dim">3,420 / 5,000 XP</span>
+              </div>
+              <div className="xp-bar-track"><div className="xp-bar-fill" style={{ width: '68%' }} /></div>
+              <div className="flex flex-wrap gap-2 mt-3">
+                <span className="badge-tag badge-purple"><Icons.Fire size={10} /> 7-day streak</span>
+                <span className="badge-tag badge-teal"><Icons.Trophy size={10} /> Top 10 this week</span>
+                <span className="badge-tag badge-gold"><Icons.Award size={10} /> JS Certified</span>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ── LIVE TICKER ── */}
-      <LiveActivity />
+      {/* ─── STATS TICKER ─── */}
+      <div className="bg-arena-bg2 border-y border-arena-border py-5 overflow-hidden">
+        <div className="animate-ticker flex gap-16 whitespace-nowrap w-max">
+          {[...STATS,...STATS].map((s,i) => (
+            <div key={i} className="flex items-center gap-3 flex-shrink-0">
+              <span className="font-display font-bold text-xl text-gradient">{s.value}</span>
+              <span className="font-mono text-xs text-arena-muted tracking-widest uppercase">{s.label}</span>
+              <span className="text-arena-border ml-8">|</span>
+            </div>
+          ))}
+        </div>
+      </div>
 
-      {/* ── STATS ── */}
-      <section className="py-16 px-6 bg-white border-y border-slate-100">
-        <div className="max-w-5xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
-            {[
-              { label: 'Developers',    value: count.users.toLocaleString()   + '+', icon: Icons.Users,  accent: 'blue',   sub: 'Active this month' },
-              { label: 'Battles Fought',value: count.battles.toLocaleString() + '+', icon: Icons.Zap,    accent: 'green',  sub: 'Since launch' },
-              { label: 'Courses',       value: count.courses + '',                    icon: Icons.Book,   accent: 'amber',  sub: '8 languages covered' },
-              { label: 'Avg Rating',    value: '4.9 ★',                              icon: Icons.Trophy, accent: 'purple', sub: 'From 2,400 reviews' },
-            ].map((s, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.08 }}
-              >
-                <StatCard {...s} />
-              </motion.div>
+      {/* ─── LANGUAGES ─── */}
+      <section id="languages" className="py-24 px-6 bg-arena-bg2 border-b border-arena-border">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex items-end justify-between mb-12 flex-wrap gap-4">
+            <div>
+              <span className="badge-tag badge-teal font-mono tracking-widest uppercase text-xs mb-4 inline-block">Course Library</span>
+              <h2 className="font-display font-black" style={{ fontSize:'clamp(28px,5vw,48px)', letterSpacing:'-1.5px' }}>
+                Every Language.<br />All Free.
+              </h2>
+              <p className="text-arena-muted mt-3 max-w-md text-sm leading-relaxed">
+                Structured from first principles. No prerequisites needed for any track.
+              </p>
+            </div>
+            <button onClick={() => navigate('/courses')} className="btn-secondary text-sm">
+              View All Courses <Icons.ArrowRight size={14} />
+            </button>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {LANGUAGES.map(({ slug, label, icon: Ic, color, bg, border }) => (
+              <button key={slug} onClick={() => navigate(`/courses?category=${slug}`)}
+                className="arena-card p-4 flex items-center gap-3 text-left group hover:-translate-y-1">
+                <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 transition-all"
+                     style={{ background: bg, border: `1px solid ${border}` }}>
+                  <Ic size={15} style={{ color }} />
+                </div>
+                <div>
+                  <span className="font-body text-sm font-medium text-arena-text block">{label}</span>
+                  <span className="font-mono text-xs text-arena-dim">Free · All levels</span>
+                </div>
+              </button>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── FEATURES ── */}
-      <section className="py-20 px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <Badge color="blue">Everything you need</Badge>
-            <h2 className="font-display font-black text-slate-900 text-3xl md:text-4xl mt-4 mb-3">
-              One platform. Every edge.
+      {/* ─── FEATURES ─── */}
+      <section id="features" className="py-24 px-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <span className="badge-tag badge-purple font-mono tracking-widest uppercase text-xs mb-4 inline-block">Platform</span>
+            <h2 className="font-display font-black mb-4" style={{ fontSize:'clamp(28px,5vw,48px)', letterSpacing:'-1.5px' }}>
+              Built Different.<br />For Developers.
             </h2>
-            <p className="text-slate-500 max-w-lg mx-auto text-base leading-relaxed">
-              From structured learning to live battles — the only coding platform built around actual competition.
+            <p className="text-arena-muted max-w-md mx-auto text-sm leading-relaxed">
+              Not another video course you forget in three days. SkillForge is engineered so you actually retain and improve.
             </p>
           </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {[
-              { icon: Icons.Zap,      title: '1v1 Real-time Battles',  desc: 'Challenge opponents in live coding duels. Ranked matchmaking, ELO rating, and post-battle replays.',          accent: 'blue',   badge: 'Popular' },
-              { icon: Icons.Book,     title: 'Structured Curriculum',   desc: 'Topic-by-topic courses across Python, JS, Go, Rust and more. Built around what interviews actually ask.',      accent: 'green' },
-              { icon: Icons.Terminal, title: 'AI Mentor',               desc: 'Your personal coach that knows your weak spots, suggests targeted practice, and reviews your code in depth.',  accent: 'purple', badge: 'Beta' },
-              { icon: Icons.Trophy,   title: 'Tournaments',             desc: 'Weekly bracket tournaments with global leaderboards and prizes. Beginner to elite divisions.',                 accent: 'amber' },
-              { icon: Icons.Target,   title: 'Quests & XP',             desc: 'Daily and weekly challenges keep your streak alive and your skills sharp. Every action earns XP.',            accent: 'blue' },
-              { icon: Icons.Users,    title: 'Community & Rooms',       desc: 'Study rooms, peer reviews, and a feed of developers sharing solutions and learning in public.',                accent: 'green' },
-            ].map((f, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.07 }}
-              >
-                <FeatureCard {...f} />
-              </motion.div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {FEATURES.map(({ icon: Ic, title, desc }) => (
+              <div key={title} className="arena-card p-6 group hover:-translate-y-1">
+                <div className="w-10 h-10 rounded-lg bg-arena-purple/15 border border-arena-border flex items-center justify-center mb-4 group-hover:bg-arena-purple/25 transition-colors">
+                  <Ic size={18} className="text-arena-purple2" />
+                </div>
+                <h3 className="font-display font-bold text-base mb-2">{title}</h3>
+                <p className="text-arena-muted text-sm leading-relaxed">{desc}</p>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── AI MENTOR CALLOUT ── */}
-      <section className="py-20 px-6 bg-white border-y border-slate-100">
-        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-14">
-
-          {/* Code panel */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            className="flex-1 w-full max-w-lg"
-          >
-            <div className="bg-slate-900 rounded-2xl overflow-hidden shadow-xl border border-slate-700">
-              <div className="h-9 flex items-center px-4 gap-2 border-b border-slate-700/60 bg-slate-800">
-                <div className="w-3 h-3 rounded-full bg-red-400" />
-                <div className="w-3 h-3 rounded-full bg-amber-400" />
-                <div className="w-3 h-3 rounded-full bg-green-400" />
-                <span className="ml-3 text-slate-400 text-xs font-mono">ai_mentor.js</span>
+      {/* ─── HOW IT WORKS ─── */}
+      <section className="py-24 px-6 bg-arena-bg2 border-y border-arena-border">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-16">
+            <span className="badge-tag badge-teal font-mono tracking-widest uppercase text-xs mb-4 inline-block">How It Works</span>
+            <h2 className="font-display font-black" style={{ fontSize:'clamp(28px,5vw,48px)', letterSpacing:'-1.5px' }}>Three Steps. One Goal.</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[
+              { n: '01', icon: Icons.Profile,  title: 'Pick Your Language',   desc: 'Choose from 16+ coding languages. Structured path from zero to real projects. No prerequisites, no upsells.' },
+              { n: '02', icon: Icons.Zap,      title: 'Learn, Code, Earn XP',  desc: 'Complete lessons and quizzes at your pace. Every action adds XP and updates your accuracy stats.' },
+              { n: '03', icon: Icons.Trophy,   title: 'Compete and Rise',      desc: 'Enter weekly tournaments, track your speed and accuracy, climb the leaderboard. Earned, not bought.' },
+            ].map(({ n, icon: Ic, title, desc }) => (
+              <div key={n} className="arena-card p-6 text-center">
+                <div className="font-mono text-xs text-arena-dim tracking-widest mb-4">{n}</div>
+                <div className="w-12 h-12 rounded-xl bg-purple-grad flex items-center justify-center mx-auto mb-4 glow-purple">
+                  <Ic size={20} className="text-white" />
+                </div>
+                <h3 className="font-display font-bold text-base mb-2">{title}</h3>
+                <p className="text-arena-muted text-sm leading-relaxed">{desc}</p>
               </div>
-              <div className="p-5 font-mono text-sm leading-loose">
-                <div className="text-slate-500">{'// AI Suggestion: optimization detected'}</div>
-                <div className="mt-2">
-                  <span className="text-purple-400">const </span>
-                  <span className="text-blue-300">efficiency</span>
-                  <span className="text-slate-300"> = (base, load) =&gt; {'{'}</span>
-                </div>
-                <div className="ml-5 text-slate-300">
-                  <span className="text-blue-300">return </span>
-                  base * Math.pow(Math.E, -0.12 * load);
-                </div>
-                <div className="text-slate-300">{'};'}</div>
-                <div className="mt-5 p-3.5 bg-blue-500/10 border border-blue-500/20 rounded-xl">
-                  <div className="flex items-start gap-2.5">
-                    <div className="w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <Icons.Terminal size={11} className="text-white" />
-                    </div>
-                    <p className="text-blue-200 text-xs leading-relaxed">
-                      This reduces memory overhead by <span className="font-bold text-blue-300">22%</span> vs your last attempt. Want to apply the refactor?
-                    </p>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── LEADERBOARD PREVIEW ─── */}
+      <section id="leaderboard" className="py-24 px-6">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div>
+            <span className="badge-tag badge-gold font-mono tracking-widest uppercase text-xs mb-4 inline-block">Leaderboard</span>
+            <h2 className="font-display font-black mb-4" style={{ fontSize:'clamp(28px,5vw,48px)', letterSpacing:'-1.5px' }}>Your Rank.<br />Your Proof.</h2>
+            <p className="text-arena-muted mb-4 text-sm leading-relaxed">
+              Global rankings, weekly boards, per-language leaderboards.
+              Every entry shows accuracy and speed — not just farmed XP.
+            </p>
+            <p className="text-arena-muted mb-6 text-sm">Weekly boards reset every Monday. Fresh shot at the top, every week.</p>
+            <div className="flex flex-wrap gap-2">
+              {['Global','Weekly','JavaScript','Python','Rust','Friends'].map((l,i) => (
+                <span key={l} className={`badge-tag ${i===0?'badge-purple':'badge-gray'} font-mono text-xs`}>{l}</span>
+              ))}
+            </div>
+          </div>
+
+          <div className="arena-card overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-3.5 border-b border-arena-border">
+              <span className="font-display font-bold text-sm">Global Leaderboard</span>
+              <span className="font-mono text-xs text-arena-dim">This Week</span>
+            </div>
+            <div className="grid grid-cols-4 gap-2 px-5 py-2 border-b border-arena-border/40">
+              <span className="col-span-2 font-mono text-xs text-arena-dim uppercase tracking-widest">Developer</span>
+              <span className="font-mono text-xs text-arena-dim uppercase tracking-widest text-right">Accuracy</span>
+              <span className="font-mono text-xs text-arena-dim uppercase tracking-widest text-right">XP</span>
+            </div>
+            <div className="divide-y divide-arena-border/40">
+              {LB_PREVIEW.map(({ rank, username, level, xp, lang, label, acc }) => (
+                <div key={rank} className="flex items-center gap-3 px-5 py-3.5 hover:bg-arena-bg3/50 transition-colors">
+                  <RankIcon rank={rank} />
+                  <div className="w-7 h-7 rounded-full bg-arena-bg3 border border-arena-border flex items-center justify-center flex-shrink-0">
+                    <span className="font-mono text-xs text-arena-muted">{username.slice(0,2).toUpperCase()}</span>
                   </div>
-                  <div className="flex gap-2 mt-3">
-                    <button
-                      onClick={() => navigate('/mentor')}
-                      className="text-xs bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg font-medium transition-colors"
-                    >
-                      Apply fix
-                    </button>
-                    <button
-                      onClick={() => navigate('/mentor')}
-                      className="text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 px-3 py-1.5 rounded-lg font-medium transition-colors"
-                    >
-                      Explain more
-                    </button>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-mono text-xs text-arena-text truncate">{username}</p>
+                    <p className="font-mono text-xs text-arena-dim">{label} · Lv{level} · {lang}</p>
                   </div>
+                  <span className="font-mono text-xs text-arena-teal w-12 text-right">{acc}%</span>
+                  <div className="flex items-center gap-1 text-arena-purple2 w-16 justify-end">
+                    <Icons.Zap size={10} />
+                    <span className="font-mono text-xs font-bold">{xp.toLocaleString()}</span>
+                  </div>
+                </div>
+              ))}
+              <div className="flex items-center gap-3 px-5 py-3.5 bg-arena-teal/5 border-l-2 border-l-arena-teal">
+                <Icons.Target size={14} className="text-arena-teal flex-shrink-0" />
+                <div className="w-7 h-7 rounded-full bg-arena-teal/10 border border-arena-border2 flex items-center justify-center flex-shrink-0">
+                  <span className="font-mono text-xs text-arena-teal">YO</span>
+                </div>
+                <div className="flex-1">
+                  <p className="font-mono text-xs text-arena-teal">you (rank #847)</p>
+                  <p className="font-mono text-xs text-arena-dim">Apprentice · Lv8 · JavaScript</p>
+                </div>
+                <span className="font-mono text-xs text-arena-teal w-12 text-right">74%</span>
+                <div className="flex items-center gap-1 text-arena-teal w-16 justify-end">
+                  <Icons.Zap size={10} />
+                  <span className="font-mono text-xs font-bold">3,420</span>
                 </div>
               </div>
             </div>
-          </motion.div>
-
-          {/* Copy */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            className="flex-1 space-y-5"
-          >
-            <Badge color="blue">AI Mentor — Beta</Badge>
-            <h2 className="font-display font-black text-slate-900 text-3xl md:text-4xl leading-tight">
-              A mentor that actually<br />understands your code.
-            </h2>
-            <p className="text-slate-500 text-base leading-relaxed">
-              Not just a linter. Your AI Mentor tracks your patterns across every session, identifies recurring mistakes, and nudges you toward senior-level thinking.
-            </p>
-            <ul className="space-y-3">
-              {[
-                'Personalized weak-spot detection',
-                'Code review with reasoning, not just errors',
-                'Suggested problems based on your skill gaps',
-                'Progress graph across languages and topics',
-              ].map((item, i) => (
-                <li key={i} className="flex items-center gap-2.5 text-sm text-slate-600">
-                  <div className="w-5 h-5 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
-                    <Icons.Check size={11} className="text-blue-600" />
-                  </div>
-                  {item}
-                </li>
-              ))}
-            </ul>
-            <button
-              onClick={() => navigate('/register')}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-xl shadow-sm hover:shadow-blue-200 transition-all text-sm flex items-center gap-2"
-            >
-              Try AI Mentor free
-              <Icons.ChevronRight size={15} />
-            </button>
-          </motion.div>
+          </div>
         </div>
       </section>
 
-      {/* ── TESTIMONIALS ── */}
-      <section className="py-20 px-6">
-        <div className="max-w-7xl mx-auto">
+      {/* ─── TOURNAMENTS ─── */}
+      <section id="tournaments" className="py-24 px-6 bg-arena-bg2 border-y border-arena-border">
+        <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
-            <Badge color="green">Testimonials</Badge>
-            <h2 className="font-display font-black text-slate-900 text-3xl mt-4">
-              What developers say
+            <span className="badge-tag badge-teal font-mono tracking-widest uppercase text-xs mb-4 inline-block">Tournaments</span>
+            <h2 className="font-display font-black" style={{ fontSize:'clamp(28px,5vw,48px)', letterSpacing:'-1.5px' }}>New Tournament.<br />Every Monday.</h2>
+            <p className="text-arena-muted mt-4 max-w-md mx-auto text-sm">Three formats. Unlimited entries. Winner badges that never expire.</p>
+          </div>
+          <div className="arena-card p-8 relative overflow-hidden">
+            <div className="absolute inset-0 bg-grid opacity-30 pointer-events-none" />
+            <div className="relative z-10">
+              <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
+                <div>
+                  <div className="inline-flex items-center gap-2 badge-tag badge-teal mb-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-arena-teal animate-pulse" />
+                    <span className="font-mono text-xs">WEEK #47 — ACTIVE NOW</span>
+                  </div>
+                  <h3 className="font-display font-bold text-xl">3,241 participants competing</h3>
+                  <p className="text-arena-muted text-sm mt-1">Ends Sunday 23:59 UTC</p>
+                </div>
+                <button onClick={() => navigate('/register')} className="btn-teal px-6 py-3">
+                  <Icons.Trophy size={15} /> Join Free
+                </button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {[
+                  { icon: Icons.Terminal, label: 'Coding Challenge', desc: 'Solve language-specific problems under time pressure.', xp: '+500 XP', metric: 'Best time wins' },
+                  { icon: Icons.Target,   label: 'Quiz Battle',       desc: 'Fast-fire questions on syntax, concepts and debugging.',  xp: '+300 XP', metric: 'Accuracy ranked' },
+                  { icon: Icons.Zap,      label: 'Speed Course',      desc: 'Complete a mini-module faster than everyone else.',       xp: '+200 XP', metric: 'Speed tracked' },
+                ].map(({ icon: Ic, label, desc, xp, metric }) => (
+                  <div key={label} className="bg-arena-bg3 border border-arena-border rounded-xl p-5">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Ic size={16} className="text-arena-muted" />
+                      <span className="font-mono text-xs font-bold text-arena-text">{label}</span>
+                    </div>
+                    <p className="text-arena-muted text-xs leading-relaxed mb-3">{desc}</p>
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-xs text-arena-teal font-bold">{xp}</span>
+                      <span className="font-mono text-xs text-arena-dim">{metric}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── 1v1 BATTLE TEASER ─── */}
+      <section className="py-24 px-6">
+        <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div>
+            <span className="badge-tag badge-red font-mono tracking-widest uppercase text-xs mb-4 inline-block">1v1 Battle Mode</span>
+            <h2 className="font-display font-black mb-4" style={{ fontSize:'clamp(28px,5vw,48px)', letterSpacing:'-1.5px' }}>
+              Challenge Anyone.<br />Anytime.
+            </h2>
+            <p className="text-arena-muted mb-6 text-sm leading-relaxed">
+              Pick a language, set a timer, and go head-to-head against another dev.
+              Your code runs live. Score is based on correctness + speed. Loser's streak takes a hit.
+            </p>
+            <div className="flex flex-wrap gap-2 mb-6">
+              {['Real-time code eval','XP wagered','Accuracy tracked','Streak on the line'].map(f => (
+                <span key={f} className="badge-tag badge-gray font-mono text-xs">
+                  <Icons.Check size={9} /> {f}
+                </span>
+              ))}
+            </div>
+            <button onClick={() => navigate('/register')} className="btn-primary px-6 py-3">
+              <Icons.Zap size={15} /> Start a Battle
+            </button>
+          </div>
+
+          {/* Battle card preview */}
+          <div className="arena-card overflow-hidden">
+            <div className="px-5 py-3 border-b border-arena-border flex items-center justify-between">
+              <span className="font-display font-bold text-sm">Live Battle</span>
+              <span className="badge-tag badge-red font-mono text-xs"><span className="w-1.5 h-1.5 rounded-full bg-red-400 inline-block mr-1 animate-pulse" />LIVE</span>
+            </div>
+            <div className="p-5">
+              {/* Timer */}
+              <div className="text-center mb-5">
+                <div className="font-mono font-black text-4xl text-arena-teal" style={{ letterSpacing: '-2px' }}>12:34</div>
+                <div className="w-full h-1 bg-arena-bg3 rounded-full mt-2 overflow-hidden">
+                  <div className="h-full bg-arena-teal rounded-full" style={{ width: '41%' }} />
+                </div>
+              </div>
+              {/* Players */}
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                {[
+                  { name: 'sarthak_k', lvl: 42, score: 4, total: 5, acc: 94, you: true },
+                  { name: 'priya_r',   lvl: 38, score: 3, total: 5, acc: 88, you: false },
+                ].map(p => (
+                  <div key={p.name} className={`bg-arena-bg3 border rounded-xl p-3 ${p.you ? 'border-arena-teal/40' : 'border-arena-border'}`}>
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-mono font-bold ${p.you ? 'bg-arena-teal/20 text-arena-teal' : 'bg-arena-bg border border-arena-border text-arena-muted'}`}>
+                        {p.name.slice(0,2).toUpperCase()}
+                      </div>
+                      <div>
+                        <p className={`font-mono text-xs font-bold ${p.you ? 'text-arena-teal' : 'text-arena-text'}`}>{p.name}{p.you && ' (you)'}</p>
+                        <p className="font-mono text-xs text-arena-dim">Lv{p.lvl}</p>
+                      </div>
+                    </div>
+                    <div className="font-mono text-2xl font-black text-arena-text mb-1">{p.score}<span className="text-arena-dim text-sm">/{p.total}</span></div>
+                    <div className="xp-bar-track"><div className="xp-bar-fill" style={{ width: `${(p.score/p.total)*100}%` }} /></div>
+                    <p className="font-mono text-xs text-arena-dim mt-1">Accuracy: <span className="text-arena-teal">{p.acc}%</span></p>
+                  </div>
+                ))}
+              </div>
+              <div className="bg-arena-bg3 rounded-lg p-3 text-center">
+                <span className="font-mono text-xs text-arena-dim">Problem 4/5 · </span>
+                <span className="font-mono text-xs text-arena-purple2">JavaScript · Hard</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── TESTIMONIALS ─── */}
+      <section className="py-24 px-6 bg-arena-bg2 border-y border-arena-border">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <span className="badge-tag badge-purple font-mono tracking-widest uppercase text-xs mb-4 inline-block">Community</span>
+            <h2 className="font-display font-black" style={{ fontSize:'clamp(26px,4vw,40px)', letterSpacing:'-1px' }}>
+              From Developers Who Actually Used It
             </h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {[
-              {
-                quote: 'CodeArena is the only platform where I feel real competitive pressure. Within 3 weeks I went from struggling with arrays to confidently solving graph problems.',
-                name: 'Arjun Shah', role: 'SDE at Swiggy', avatarColor: 'bg-blue-600',
-              },
-              {
-                quote: 'The AI Mentor figured out I was bad at recursion before I did. It kept quietly serving me recursion problems until I was solid. Sneaky and effective.',
-                name: 'Neha Kulkarni', role: 'CS Grad, IIT Bombay', avatarColor: 'bg-green-600',
-              },
-              {
-                quote: 'I prepped for FAANG interviews mostly on CodeArena. Battle mode trains you to think fast under pressure — nothing else really does that.',
-                name: 'Marco Diaz', role: 'Software Engineer, Google', avatarColor: 'bg-amber-600',
-              },
-            ].map((t, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 12 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className="flex"
-              >
-                <Testimonial {...t} />
-              </motion.div>
+            {TESTIMONIALS.map(({ name, role, text, lang, level }) => (
+              <div key={name} className="arena-card p-6 flex flex-col justify-between">
+                <div>
+                  <div className="flex gap-0.5 mb-4">
+                    {[...Array(5)].map((_,i) => <Icons.Star key={i} size={12} className="text-arena-teal" />)}
+                  </div>
+                  <p className="text-arena-muted text-sm leading-relaxed mb-5">"{text}"</p>
+                </div>
+                <div className="flex items-center gap-3 pt-4 border-t border-arena-border/50">
+                  <div className="w-8 h-8 rounded-full bg-arena-purple/20 border border-arena-border flex items-center justify-center flex-shrink-0">
+                    <span className="font-mono text-xs text-arena-purple2">{name.slice(0,2).toUpperCase()}</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-xs text-arena-text">{name}</p>
+                    <p className="font-mono text-xs text-arena-dim">{role}</p>
+                  </div>
+                  <div className="flex flex-col items-end gap-1">
+                    <span className="badge-tag badge-purple font-mono text-xs">{lang}</span>
+                    <span className="font-mono text-xs text-arena-dim">{level}</span>
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── FINAL CTA ── */}
-      <section className="py-24 px-6 bg-white border-t border-slate-100">
-        <div className="max-w-2xl mx-auto text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            <div className="w-14 h-14 rounded-2xl bg-blue-600 flex items-center justify-center mx-auto mb-6 shadow-lg shadow-blue-100">
-              <Icons.Code size={24} className="text-white" />
-            </div>
-            <h2 className="font-display font-black text-slate-900 text-4xl md:text-5xl leading-tight mb-4">
-              Your skills deserve<br />
-              <span className="text-blue-600">proof.</span>
-            </h2>
-            <p className="text-slate-500 text-base mb-8 max-w-md mx-auto leading-relaxed">
-              Stop collecting certificates. Start building a portfolio that speaks for itself.
-            </p>
-            <div className="flex gap-3 justify-center flex-wrap">
-              <button
-                onClick={() => navigate('/register')}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-3.5 rounded-xl shadow-md hover:shadow-blue-200 transition-all text-sm flex items-center gap-2"
-              >
-                Create free account
-                <Icons.ChevronRight size={16} />
-              </button>
-              <button
-                onClick={() => navigate('/battles')}
-                className="bg-slate-900 hover:bg-slate-800 text-white font-semibold px-8 py-3.5 rounded-xl transition-all text-sm flex items-center gap-2"
-              >
-                <Icons.Zap size={15} />
-                Watch a live battle
-              </button>
-            </div>
-            <p className="text-xs text-slate-400 mt-5">No credit card. No BS. Just code.</p>
-          </motion.div>
+      {/* ─── FINAL CTA ─── */}
+      <section className="py-28 px-6 text-center">
+        <div className="max-w-2xl mx-auto">
+          <span className="badge-tag badge-teal font-mono tracking-widest uppercase text-xs mb-6 inline-block">Free · No Cards · No Tricks</span>
+          <h2 className="font-display font-black mb-4" style={{ fontSize:'clamp(32px,6vw,60px)', letterSpacing:'-2px' }}>
+            Pick a Language.<br />Start Today.
+          </h2>
+          <p className="text-arena-muted mb-10 leading-relaxed">
+            Join 48,291 developers already on the platform. Your first lesson is one click away.
+          </p>
+          <button onClick={() => navigate('/register')} className="btn-primary px-10 py-4 text-base glow-purple">
+            <Icons.ArrowRight size={18} /> Create Free Account
+          </button>
         </div>
       </section>
 
-      {/* ── FOOTER ── */}
-      <footer className="bg-slate-50 border-t border-slate-100 py-12 px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row justify-between gap-10 mb-10">
-
-            {/* Brand */}
-            <div className="max-w-xs">
-              <div className="flex items-center gap-2.5 mb-3">
-                <div className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center shadow-sm">
-                  <Icons.Code size={13} className="text-white" />
-                </div>
-                <span className="font-display font-bold text-slate-900">CodeArena</span>
+      {/* ─── FOOTER ─── */}
+      <footer className="border-t border-arena-border bg-arena-bg">
+        <div className="max-w-6xl mx-auto px-6 py-12 grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="col-span-2 md:col-span-1">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-6 h-6 rounded bg-purple-teal flex items-center justify-center">
+                <Icons.Code size={12} className="text-white" />
               </div>
-              <p className="text-sm text-slate-400 leading-relaxed">
-                The competitive coding platform for developers who want to grow fast.
-              </p>
+              <span className="font-display font-bold text-sm text-gradient">SkillForge</span>
             </div>
-
-            {/* Links */}
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-8 text-sm">
-              {[
-                { heading: 'Product', links: [
-                  { label: 'Courses',     to: '/courses' },
-                  { label: '1v1 Arena',   to: '/battles' },
-                  { label: 'Tournaments', to: '/tournaments' },
-                  { label: 'AI Mentor',   to: '/mentor' },
-                  { label: 'Leaderboard', to: '/leaderboard' },
-                ]},
-                { heading: 'Community', links: [
-                  { label: 'Community', to: '/community' },
-                  { label: 'Friends',   to: '/friends' },
-                  { label: 'Quests',    to: '/quests' },
-                  { label: 'Rooms',     to: '/rooms' },
-                ]},
-                { heading: 'Account', links: [
-                  { label: 'Sign in',  to: '/login' },
-                  { label: 'Register', to: '/register' },
-                  { label: 'Settings', to: '/settings' },
-                  { label: 'Portfolio',to: '/portfolio' },
-                ]},
-              ].map(({ heading, links }) => (
-                <div key={heading}>
-                  <div className="font-semibold text-slate-700 mb-3">{heading}</div>
-                  <ul className="space-y-2">
-                    {links.map(({ label, to }) => (
-                      <li key={label}>
-                        <Link to={to} className="text-slate-400 hover:text-slate-700 transition-colors">
-                          {label}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
+            <p className="font-mono text-xs text-arena-dim leading-relaxed">
+              Learn every coding language. Free forever. No paywalls, no ads, no subscriptions.
+            </p>
           </div>
-
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4 pt-8 border-t border-slate-100">
-            <p className="text-xs text-slate-400">© 2025 CodeArena. All rights reserved.</p>
-            <div className="flex gap-6 text-xs text-slate-400">
-              <a href="#" className="hover:text-slate-700 transition-colors">Privacy Policy</a>
-              <a href="#" className="hover:text-slate-700 transition-colors">Terms of Service</a>
-              <a href="#" className="hover:text-slate-700 transition-colors">Documentation</a>
+          {[
+            { h: 'Languages', links: ['JavaScript','Python','C++','Java','TypeScript','Rust','Go','Kotlin'] },
+            { h: 'Platform',  links: ['Leaderboard','Tournaments','1v1 Battles','Daily Quests','Hall of Fame'] },
+            { h: 'Company',   links: ['About','Blog','Careers','Privacy','Terms'] },
+          ].map(({ h, links }) => (
+            <div key={h}>
+              <h4 className="font-mono text-xs text-arena-dim uppercase tracking-widest mb-4">{h}</h4>
+              <ul className="space-y-2">
+                {links.map(l => (
+                  <li key={l}><a href="#" className="font-body text-xs text-arena-dim hover:text-arena-text transition-colors">{l}</a></li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+        <div className="border-t border-arena-border">
+          <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between flex-wrap gap-3">
+            <p className="font-mono text-xs text-arena-dim">© 2025 SkillForge. Built for developers, by developers.</p>
+            <div className="flex gap-3">
+              {[Icons.Globe, Icons.Code, Icons.Users].map((Ic, i) => (
+                <button key={i} className="w-7 h-7 rounded border border-arena-border flex items-center justify-center text-arena-dim hover:text-arena-text hover:border-arena-purple/40 transition-colors">
+                  <Ic size={12} />
+                </button>
+              ))}
             </div>
           </div>
         </div>
       </footer>
-
     </div>
   );
 }

@@ -1,129 +1,127 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store';
-import { Avatar, BadgeTag, Modal, Spinner } from '@/components/ui';
+import { Button, BadgeTag, Avatar, Spinner, Modal, Input } from '@/components/ui';
 import Icons from '@/assets/icons';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import { formatDistanceToNow } from 'date-fns';
 
-export default function RoomsPage() {
+const LANGUAGES = ['javascript', 'typescript', 'python', 'cpp', 'java'];
+
+// ─── ROOMS LIST ───────────────────────────────────────────
+export function RoomsPage() {
   const navigate = useNavigate();
-  const { user } = useAuthStore();
-  const [rooms, setRooms]     = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [modal, setModal]     = useState(false);
-  const [roomName, setRoomName] = useState('');
-  const [creating, setCreating] = useState(false);
+  const [rooms, setRooms]         = useState([]);
+  const [loading, setLoading]     = useState(true);
+  const [createModal, setCreate]  = useState(false);
+  const [form, setForm]           = useState({ name: '', language: 'javascript', isPublic: true, maxUsers: 4 });
+  const [creating, setCreating]   = useState(false);
 
   useEffect(() => {
-    api.get('/rooms').then((r) => setRooms(r.data.rooms || [])).finally(() => setLoading(false));
+    api.get('/rooms').then(r => setRooms(r.data.rooms || [])).finally(() => setLoading(false));
   }, []);
 
   const handleCreate = async () => {
-    if (!roomName.trim()) return;
     setCreating(true);
     try {
-      const r = await api.post('/rooms', { name: roomName });
-      toast.success('Room created successfully');
-      setModal(false);
+      const r = await api.post('/rooms', form);
       navigate(`/rooms/${r.data.room.id}`);
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Could not create room');
+      toast.error(err.response?.data?.error || 'Failed to create room');
     }
     setCreating(false);
   };
 
   const handleJoin = async (id) => {
-    navigate(`/rooms/${id}`);
+    try {
+      await api.post(`/rooms/${id}/join`);
+      navigate(`/rooms/${id}`);
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Cannot join room');
+    }
   };
 
   return (
-    <div className="space-y-8 max-w-5xl mx-auto pb-20 font-sans animate-fade-in">
-      {/* Header */}
-      <div className="flex items-end justify-between border-b border-slate-200 pb-6 pt-4">
+    <div className="space-y-6 max-w-4xl mx-auto">
+      <div className="flex items-center justify-between">
         <div>
-          <span className="bg-indigo-100 text-indigo-700 text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-full mb-4 inline-block shadow-sm">
-            MULTIPLAYER
-          </span>
-          <h1 className="font-display font-black text-4xl text-slate-900 mb-2 tracking-tight">Code Rooms</h1>
-          <p className="text-lg text-slate-600 max-w-xl">Collaborate in real-time, pair program, and solve challenges together.</p>
+          <h1 className="font-display font-black text-2xl mb-1">Code Rooms</h1>
+          <p className="font-mono text-xs text-arena-dim">// collaborative real-time coding · up to 4 devs · auto-expire 24h</p>
         </div>
-        <button onClick={() => setModal(true)} className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-sm flex items-center justify-center gap-2">
-          <Icons.Plus size={16} /> New Room
-        </button>
+        <Button onClick={() => setCreate(true)} variant="primary">
+          <Icons.Plus size={14} /> Create Room
+        </Button>
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-24"><div className="w-8 h-8 border-4 border-slate-200 border-t-indigo-600 rounded-full animate-spin" /></div>
+        <div className="flex justify-center py-12"><Spinner size={24} className="text-arena-purple2" /></div>
       ) : rooms.length === 0 ? (
-        <div className="bg-slate-50 border border-slate-200 border-dashed rounded-3xl p-20 text-center">
-          <div className="w-20 h-20 rounded-full bg-white shadow-sm flex items-center justify-center mx-auto mb-6">
-            <Icons.Terminal size={32} className="text-slate-300" />
-          </div>
-          <h3 className="font-display font-black text-2xl text-slate-900 mb-2">No Active Rooms</h3>
-          <p className="text-slate-500 text-lg max-w-sm mx-auto mb-8">Start a collaborative session and invite your team to code together.</p>
-          <button onClick={() => setModal(true)} className="bg-indigo-600 text-white font-bold px-8 py-3.5 rounded-xl hover:bg-indigo-700 shadow-sm transition-colors">
-            Create First Room
-          </button>
+        <div className="arena-card p-16 text-center">
+          <Icons.Users size={32} className="text-arena-dim mx-auto mb-4" />
+          <p className="font-display font-bold mb-2">No public rooms</p>
+          <p className="font-mono text-xs text-arena-dim mb-6">Be the first to create a collaborative code room</p>
+          <Button onClick={() => setCreate(true)} variant="primary">
+            <Icons.Plus size={14} /> Create First Room
+          </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {rooms.map((r) => (
-            <div key={r.id} className="bg-white border border-slate-200 rounded-3xl p-6 hover:shadow-lg hover:-translate-y-1 transition-all group cursor-pointer flex flex-col" onClick={() => handleJoin(r.id)}>
-              <div className="flex justify-between items-start mb-6">
-                <div className="w-12 h-12 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600">
-                  <Icons.Code size={20} />
-                </div>
-                <span className="bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5 shadow-sm border border-emerald-200">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Live
-                </span>
-              </div>
-              
-              <h3 className="font-display font-black text-xl text-slate-900 mb-2 leading-tight group-hover:text-indigo-600 transition-colors truncate">
-                {r.name}
-              </h3>
-              
-              <div className="flex items-center gap-2 mb-6 text-sm font-semibold text-slate-500 uppercase tracking-widest">
-                <Icons.Users size={14} className="text-slate-400" /> {r._count?.members || 1} Developer{r._count?.members !== 1 ? 's' : ''}
-              </div>
-              
-              <div className="mt-auto pt-6 border-t border-slate-100 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Avatar user={r.host} size={28} className="shadow-sm border border-slate-200" />
-                  <div>
-                    <span className="text-[10px] text-slate-400 uppercase tracking-widest block font-bold">Host</span>
-                    <span className="text-xs font-bold text-slate-900 truncate max-w-[100px] block">{r.host?.username}</span>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {rooms.map(room => (
+            <div key={room.id} className="arena-card p-5 hover:-translate-y-0.5 transition-transform">
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <h3 className="font-display font-bold text-sm mb-1">{room.name}</h3>
+                  <div className="flex items-center gap-2">
+                    <BadgeTag variant="gray">{room.language}</BadgeTag>
+                    <span className="font-mono text-xs text-arena-dim">
+                      {room._count?.participants || 0}/{room.maxUsers} devs
+                    </span>
                   </div>
                 </div>
-                <button className="w-8 h-8 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-colors">
-                  <Icons.ArrowRight size={14} />
-                </button>
+                <div className="w-8 h-8 rounded-lg bg-arena-purple/15 border border-arena-border flex items-center justify-center">
+                  <Icons.Code size={13} className="text-arena-purple2" />
+                </div>
               </div>
+              <div className="flex items-center gap-2 mb-4">
+                <Avatar user={room.owner} size={20} />
+                <span className="font-mono text-xs text-arena-dim">{room.owner?.username}</span>
+                <span className="font-mono text-xs text-arena-dim ml-auto">
+                  {formatDistanceToNow(new Date(room.createdAt), { addSuffix: true })}
+                </span>
+              </div>
+              <Button onClick={() => handleJoin(room.id)} variant="secondary" size="sm" className="w-full">
+                <Icons.ArrowRight size={13} /> Join Room
+              </Button>
             </div>
           ))}
         </div>
       )}
 
-      <Modal open={modal} onClose={() => setModal(false)} title="Create Code Room">
-        <div className="space-y-6">
-          <p className="text-sm text-slate-600">Give your collaborative coding room a name. You can invite others via a link once it's created.</p>
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Room Name</label>
-            <input
-              type="text"
-              placeholder="e.g. React Debugging Session"
-              value={roomName}
-              onChange={(e) => setRoomName(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 ring-indigo-500/20 focus:border-indigo-500 transition-all font-sans"
-            />
+      <Modal open={createModal} onClose={() => setCreate(false)} title="Create Code Room">
+        <div className="space-y-4">
+          <Input label="Room Name" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
+            placeholder="My Coding Session" />
+          <div>
+            <label className="arena-label">Language</label>
+            <select className="arena-input" value={form.language} onChange={e => setForm({ ...form, language: e.target.value })}>
+              {LANGUAGES.map(l => <option key={l} value={l}>{l}</option>)}
+            </select>
           </div>
-          <div className="flex gap-3 pt-4 border-t border-slate-100">
-            <button onClick={() => setModal(false)} className="flex-1 px-4 py-3 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors text-sm">Cancel</button>
-            <button onClick={handleCreate} disabled={creating} className="flex-1 px-4 py-3 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm transition-colors text-sm flex items-center justify-center gap-2">
-              <Icons.Plus size={16} /> <span>{creating ? 'Creating...' : 'Launch Room'}</span>
-            </button>
+          <Input label="Max Participants" type="number" min={2} max={6} value={form.maxUsers}
+            onChange={e => setForm({ ...form, maxUsers: Number(e.target.value) })} />
+          <label className="flex items-center gap-2 cursor-pointer">
+            <div onClick={() => setForm({ ...form, isPublic: !form.isPublic })}
+              className={`w-4 h-4 rounded border flex items-center justify-center ${form.isPublic ? 'bg-arena-purple border-arena-purple' : 'border-arena-border'}`}>
+              {form.isPublic && <Icons.Check size={10} className="text-white" />}
+            </div>
+            <span className="font-mono text-xs text-arena-muted">Public room (visible to everyone)</span>
+          </label>
+          <div className="flex gap-3">
+            <Button onClick={() => setCreate(false)} variant="secondary" className="flex-1">Cancel</Button>
+            <Button onClick={handleCreate} variant="teal" className="flex-1" loading={creating}>
+              <Icons.Code size={13} /> Create & Enter
+            </Button>
           </div>
         </div>
       </Modal>
@@ -131,16 +129,159 @@ export default function RoomsPage() {
   );
 }
 
+// ─── ACTIVE ROOM ──────────────────────────────────────────
 export function RoomPage() {
-  const { id } = useParams();
+  const { id }     = useParams();
+  const navigate   = useNavigate();
+  const { user }   = useAuthStore();
+  const [room, setRoom]       = useState(null);
+  const [code, setCode]       = useState('');
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving]   = useState(false);
+  const saveRef = useRef(null);
+  const pollRef = useRef(null);
+
+  const fetchRoom = useCallback(async () => {
+    try {
+      const r = await api.get(`/rooms/${id}`);
+      setRoom(r.data.room);
+      // Only sync code if we're not currently typing (throttle)
+      setCode(prev => prev !== r.data.room.code ? r.data.room.code : prev);
+    } catch (_) {}
+  }, [id]);
+
+  useEffect(() => {
+    // Join room first
+    api.post(`/rooms/${id}/join`).catch(() => {});
+
+    fetchRoom().finally(() => setLoading(false));
+
+    // Poll every 3s for collaborative updates
+    pollRef.current = setInterval(fetchRoom, 3000);
+    return () => {
+      clearInterval(pollRef.current);
+      api.delete(`/rooms/${id}/leave`).catch(() => {});
+    };
+  }, [id, fetchRoom]);
+
+  const handleCodeChange = (newCode) => {
+    setCode(newCode);
+    // Debounce save
+    clearTimeout(saveRef.current);
+    saveRef.current = setTimeout(async () => {
+      setSaving(true);
+      try {
+        await api.put(`/rooms/${id}/code`, { code: newCode });
+      } catch (_) {}
+      setSaving(false);
+    }, 800);
+  };
+
+  if (loading) return (
+    <div className="flex justify-center py-24"><Spinner size={24} className="text-arena-purple2" /></div>
+  );
+  if (!room) return (
+    <div className="text-center py-24">
+      <p className="font-mono text-sm text-arena-dim">Room not found or expired</p>
+      <Button onClick={() => navigate('/rooms')} variant="secondary" className="mt-4">Back to Rooms</Button>
+    </div>
+  );
+
+  const participants = room.participants || [];
+  const isOwner = room.ownerId === user?.id;
+
   return (
-    <div className="flex flex-col items-center justify-center py-24 animate-fade-in space-y-4">
-      <div className="w-16 h-16 rounded-full bg-indigo-50 flex items-center justify-center mb-4">
-        <Icons.Terminal size={24} className="text-indigo-600" />
+    <div className="flex flex-col gap-4 h-[calc(100vh-7rem)]">
+      {/* Header */}
+      <div className="flex items-center justify-between flex-shrink-0">
+        <div className="flex items-center gap-3">
+          <button onClick={() => navigate('/rooms')} className="text-arena-dim hover:text-arena-text transition-colors">
+            <Icons.ArrowLeft size={15} />
+          </button>
+          <div>
+            <h1 className="font-display font-bold text-base">{room.name}</h1>
+            <div className="flex items-center gap-2">
+              <BadgeTag variant="gray">{room.language}</BadgeTag>
+              <span className="flex items-center gap-1 font-mono text-xs text-arena-teal">
+                <span className="w-1.5 h-1.5 rounded-full bg-arena-teal animate-pulse" />
+                {participants.length} online
+              </span>
+              {saving && <span className="font-mono text-xs text-arena-dim">saving...</span>}
+            </div>
+          </div>
+        </div>
+
+        {/* Participants */}
+        <div className="flex items-center gap-2">
+          <div className="flex -space-x-2">
+            {participants.slice(0, 4).map(p => (
+              <Avatar key={p.userId} user={p.user} size={28} className="ring-2 ring-arena-bg" />
+            ))}
+          </div>
+          <button
+            onClick={() => { navigator.clipboard.writeText(window.location.href); toast.success('Room link copied'); }}
+            className="btn-secondary text-xs px-3 py-1.5"
+          >
+            <Icons.Copy size={12} /> Share
+          </button>
+        </div>
       </div>
-      <h2 className="font-display font-black text-2xl text-slate-900">Code Room: {id}</h2>
-      <p className="text-slate-500 font-medium">Connecting to live synchronization server...</p>
-      <div className="w-6 h-6 border-4 border-slate-200 border-t-indigo-600 rounded-full animate-spin mt-4" />
+
+      {/* Editor */}
+      <div className="flex-1 arena-card overflow-hidden flex flex-col">
+        <div className="flex items-center justify-between px-4 py-2.5 bg-arena-bg border-b border-arena-border flex-shrink-0">
+          <div className="flex items-center gap-1.5">
+            <div className="w-2.5 h-2.5 rounded-full bg-red-500/60" />
+            <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/60" />
+            <div className="w-2.5 h-2.5 rounded-full bg-green-500/60" />
+            <span className="font-mono text-xs text-arena-dim ml-2">
+              main.{room.language === 'python' ? 'py' : room.language === 'cpp' ? 'cpp' : room.language === 'java' ? 'java' : 'js'}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="font-mono text-xs text-arena-dim">{room.language}</span>
+            {isOwner && (
+              <select
+                value={room.language}
+                onChange={async e => {
+                  await api.put(`/rooms/${id}/code`, { language: e.target.value });
+                  fetchRoom();
+                }}
+                className="bg-arena-bg3 border border-arena-border rounded font-mono text-xs px-2 py-1 text-arena-muted"
+              >
+                {LANGUAGES.map(l => <option key={l} value={l}>{l}</option>)}
+              </select>
+            )}
+          </div>
+        </div>
+
+        <textarea
+          value={code}
+          onChange={e => handleCodeChange(e.target.value)}
+          className="flex-1 bg-arena-bg text-arena-text font-mono text-sm p-4 outline-none resize-none border-0 leading-relaxed"
+          spellCheck={false}
+          onKeyDown={e => {
+            if (e.key === 'Tab') {
+              e.preventDefault();
+              const s = e.target.selectionStart;
+              const newCode = code.substring(0, s) + '  ' + code.substring(e.target.selectionEnd);
+              handleCodeChange(newCode);
+              setTimeout(() => { e.target.selectionStart = e.target.selectionEnd = s + 2; }, 0);
+            }
+          }}
+        />
+
+        <div className="flex items-center justify-between px-4 py-2 border-t border-arena-border flex-shrink-0">
+          <span className="font-mono text-xs text-arena-dim">
+            {code.split('\n').length} lines · {code.length} chars
+          </span>
+          <span className="font-mono text-xs text-arena-dim">
+            Syncs every 3s · Expires {room.expiresAt ? formatDistanceToNow(new Date(room.expiresAt), { addSuffix: true }) : 'never'}
+          </span>
+        </div>
+      </div>
     </div>
   );
 }
+
+export default RoomsPage;

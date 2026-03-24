@@ -143,10 +143,48 @@ const getPendingRequests = async (req, res) => {
   }
 };
 
+const sendMessage = async (req, res) => {
+  const senderId = req.user.id;
+  const { receiverId, content } = req.body;
+
+  if (!content?.trim()) return res.status(400).json({ message: "Content required" });
+
+  try {
+    const message = await prisma.message.create({
+      data: { senderId, receiverId, content }
+    });
+    res.status(201).json({ message });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const getMessages = async (req, res) => {
+  const userId = req.user.id;
+  const { friendId } = req.params;
+
+  try {
+    const messages = await prisma.message.findMany({
+      where: {
+        OR: [
+          { senderId: userId, receiverId: friendId },
+          { senderId: friendId, receiverId: userId }
+        ]
+      },
+      orderBy: { createdAt: 'asc' }
+    });
+    res.json({ messages });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   getCommunityUsers,
   sendFriendRequest,
   acceptFriendRequest,
   getFriends,
-  getPendingRequests
+  getPendingRequests,
+  sendMessage,
+  getMessages
 };

@@ -429,38 +429,11 @@ export default function BattlePage() {
   const opponent      = isChallenger ? battle.challenged  : battle.challenger;
   const mySub         = isChallenger ? battle.challengerSubmission : battle.challengedSubmission;
   const oppSub        = isChallenger ? battle.challengedSubmission : battle.challengerSubmission;
-  const problem       = battle.problems?.[currentProblem] || (battle.problemText ? { title: 'Challenge Problem', description: battle.problemText, difficulty: 'MEDIUM', examples: [], constraints: [], xpReward: 100 } : null);
+  const problem       = battle.problems?.[currentProblem];
   const isActive      = battle.status === 'ACTIVE';
-  const isPending     = battle.status === 'PENDING';
-  const isConfiguring = battle.status === 'CONFIGURING';
   const isCompleted   = battle.status === 'COMPLETED' || battle.status === 'ENDED';
-  const isWaiting     = isPending || isConfiguring;
-  const canCode       = isActive;
 
   const LANGUAGES_AVAILABLE = ['javascript', 'python', 'cpp', 'java', 'typescript', 'rust', 'go'];
-
-  // ── Config state for host ──
-  const [cfgMode, setCfgMode]       = useState('system');
-  const [cfgLang, setCfgLang]       = useState('javascript');
-  const [cfgTime, setCfgTime]       = useState(1800);
-  const [configuring, setConfiguring] = useState(false);
-
-  const handleConfigure = async () => {
-    setConfiguring(true);
-    try {
-      await api.post(`/battles/${id}/configure`, {
-        mode: cfgMode,
-        language: cfgLang,
-        timeLimit: cfgTime,
-      });
-      toast.success('Battle started! Timer is running.');
-      fetchBattle();
-    } catch (e) {
-      toast.error(e.response?.data?.message || 'Configuration failed');
-    } finally {
-      setConfiguring(false);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-arena-bg text-arena-text font-body flex flex-col">
@@ -472,9 +445,9 @@ export default function BattlePage() {
             <Icons.ArrowLeft size={16} />
           </button>
           <div className="flex items-center gap-2">
-            <div className={`w-2 h-2 rounded-full ${isActive ? 'bg-red-400 animate-pulse' : isWaiting ? 'bg-yellow-400 animate-pulse' : 'bg-arena-dim'}`} />
+            <div className={`w-2 h-2 rounded-full ${isActive ? 'bg-red-400 animate-pulse' : 'bg-arena-dim'}`} />
             <span className="font-mono text-xs text-arena-dim uppercase tracking-widest">
-              {isActive ? 'LIVE BATTLE' : isPending ? 'WAITING FOR OPPONENT' : isConfiguring ? 'CONFIGURING' : battle.status}
+              {isActive ? 'LIVE BATTLE' : battle.status}
             </span>
           </div>
           {battle.language && (
@@ -581,182 +554,103 @@ export default function BattlePage() {
       </div>
 
       {/* ─── MAIN ARENA ─── */}
-      <div className="flex-1 flex overflow-hidden min-h-0 animate-fade-up">
+      <div className="flex-1 flex overflow-hidden min-h-0">
 
-        {/* Left: Problem / Waiting state */}
-        <div className="w-[38%] flex flex-col border-r border-arena-border overflow-hidden animate-fade-up delay-100">
-
-          {/* ── PENDING state: waiting for opponent ── */}
-          {isPending && (
-            <div className="flex-1 flex flex-col items-center justify-center p-6 text-center space-y-4">
-              <div className="w-16 h-16 rounded-2xl bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center">
-                <Icons.Clock size={28} className="text-yellow-400 animate-pulse" />
-              </div>
-              <h2 className="font-display font-bold text-lg text-white">Waiting for Opponent</h2>
-              <p className="font-mono text-xs text-white/40 max-w-xs">Your challenge has been sent to <span className="text-white/70">{opponent?.username}</span>. They need to accept before the battle can begin.</p>
-              <div className="flex items-center gap-2 pt-2">
-                <Spinner size={14} className="text-yellow-400" />
-                <span className="font-mono text-[11px] text-yellow-400/70">Listening for response...</span>
-              </div>
+        {/* Left: Problem */}
+        <div className="w-[38%] flex flex-col border-r border-arena-border overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-2.5 bg-arena-bg2 border-b border-arena-border flex-shrink-0">
+            <span className="font-mono text-xs text-arena-dim uppercase tracking-widest">Problem {currentProblem + 1}</span>
+            <div className="flex gap-1">
+              {Array.from({ length: battle.totalProblems || 5 }, (_, i) => (
+                <button key={i} onClick={() => setCurrentProblem(i)}
+                  className={`w-6 h-6 rounded text-xs font-mono font-bold transition-all ${
+                    results[i]?.passed ? 'bg-arena-teal/20 text-arena-teal' :
+                    results[i]        ? 'bg-red-500/10 text-red-400' :
+                    i === currentProblem ? 'bg-arena-purple/20 text-arena-purple2' :
+                    'text-arena-dim hover:text-arena-text'
+                  }`}>
+                  {i+1}
+                </button>
+              ))}
             </div>
-          )}
+          </div>
 
-          {/* ── CONFIGURING state: host picks settings ── */}
-          {isConfiguring && (
-            <div className="flex-1 overflow-y-auto p-6 space-y-5">
-              <div className="text-center space-y-2 pb-4 border-b border-arena-border">
-                <div className="w-14 h-14 mx-auto rounded-2xl bg-arena-purple/15 border border-arena-purple/25 flex items-center justify-center">
-                  <Icons.Settings size={24} className="text-arena-purple2" />
-                </div>
-                <h2 className="font-display font-bold text-lg text-white">
-                  {isChallenger ? 'Configure Match' : 'Waiting for Host'}
-                </h2>
-                <p className="font-mono text-xs text-white/40">
-                  {isChallenger ? 'Set up the battle before it begins.' : `${opponent?.username} is setting up the match...`}
-                </p>
-              </div>
-
-              {isChallenger ? (
-                <div className="space-y-4">
-                  <div>
-                    <label className="font-mono text-[11px] text-white/40 uppercase tracking-widest mb-1.5 block">Mode</label>
-                    <select value={cfgMode} onChange={e => setCfgMode(e.target.value)} className="arena-input text-sm">
-                      <option value="system">System Problem (randomized)</option>
-                      <option value="custom">Custom Problem</option>
-                    </select>
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            {problem ? (
+              <>
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <h2 className="font-display font-bold text-base">{problem.title}</h2>
+                    <span className={`badge-tag font-mono text-xs ${
+                      problem.difficulty === 'HARD' ? 'badge-red' :
+                      problem.difficulty === 'MEDIUM' ? 'badge-gold' : 'badge-teal'
+                    }`}>{problem.difficulty}</span>
                   </div>
+                  <p className="text-arena-muted text-sm leading-relaxed">{problem.description}</p>
+                </div>
+
+                {problem.examples?.length > 0 && (
                   <div>
-                    <label className="font-mono text-[11px] text-white/40 uppercase tracking-widest mb-1.5 block">Language</label>
-                    <select value={cfgLang} onChange={e => setCfgLang(e.target.value)} className="arena-input text-sm">
-                      {LANGUAGES_AVAILABLE.map(l => <option key={l} value={l}>{l.charAt(0).toUpperCase() + l.slice(1)}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="font-mono text-[11px] text-white/40 uppercase tracking-widest mb-1.5 block">Time Limit</label>
-                    <select value={cfgTime} onChange={e => setCfgTime(Number(e.target.value))} className="arena-input text-sm">
-                      <option value={600}>10 Minutes</option>
-                      <option value={900}>15 Minutes</option>
-                      <option value={1800}>30 Minutes</option>
-                      <option value={3600}>60 Minutes</option>
-                    </select>
-                  </div>
-                  <button
-                    onClick={handleConfigure}
-                    disabled={configuring}
-                    className="w-full py-3 rounded-xl bg-arena-purple font-mono text-sm font-bold text-white hover:bg-arena-purple/80 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-                  >
-                    {configuring ? <Spinner size={14} /> : <Icons.Zap size={14} />}
-                    Start Battle
-                  </button>
-                </div>
-              ) : (
-                <div className="flex items-center justify-center py-10">
-                  <Spinner size={20} className="text-arena-purple2" />
-                  <span className="font-mono text-sm text-white/40 ml-3">Host is configuring...</span>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* ── ACTIVE / COMPLETED: show problem ── */}
-          {(isActive || isCompleted) && (
-            <>
-              <div className="flex items-center justify-between px-4 py-2.5 bg-arena-bg2 border-b border-arena-border flex-shrink-0">
-                <span className="font-mono text-xs text-arena-dim uppercase tracking-widest">Problem {currentProblem + 1}</span>
-                <div className="flex gap-1">
-                  {Array.from({ length: battle.totalProblems || 1 }, (_, i) => (
-                    <button key={i} onClick={() => setCurrentProblem(i)}
-                      className={`w-6 h-6 rounded text-xs font-mono font-bold transition-all ${
-                        results[i]?.passed ? 'bg-arena-teal/20 text-arena-teal' :
-                        results[i]        ? 'bg-red-500/10 text-red-400' :
-                        i === currentProblem ? 'bg-arena-purple/20 text-arena-purple2' :
-                        'text-arena-dim hover:text-arena-text'
-                      }`}>
-                      {i+1}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {problem ? (
-                  <>
-                    <div>
-                      <div className="flex items-center gap-2 mb-2">
-                        <h2 className="font-display font-bold text-base">{problem.title}</h2>
-                        {problem.difficulty && (
-                          <span className={`badge-tag font-mono text-xs ${
-                            problem.difficulty === 'HARD' ? 'badge-red' :
-                            problem.difficulty === 'MEDIUM' ? 'badge-gold' : 'badge-teal'
-                          }`}>{problem.difficulty}</span>
-                        )}
+                    <p className="font-mono text-xs text-arena-dim uppercase tracking-widest mb-2">Examples</p>
+                    {problem.examples.map((ex, i) => (
+                      <div key={i} className="bg-arena-bg3 border border-arena-border/50 rounded-lg p-3 mb-2 code-block text-xs">
+                        <p><span className="text-arena-teal">Input:</span>  {ex.input}</p>
+                        <p><span className="text-arena-teal">Output:</span> {ex.output}</p>
+                        {ex.explanation && <p className="text-arena-dim mt-1">{ex.explanation}</p>}
                       </div>
-                      <div className="text-arena-muted text-sm leading-relaxed whitespace-pre-wrap">{problem.description}</div>
-                    </div>
-
-                    {problem.examples?.length > 0 && (
-                      <div>
-                        <p className="font-mono text-xs text-arena-dim uppercase tracking-widest mb-2">Examples</p>
-                        {problem.examples.map((ex, i) => (
-                          <div key={i} className="bg-arena-bg3 border border-arena-border/50 rounded-lg p-3 mb-2 code-block text-xs">
-                            <p><span className="text-arena-teal">Input:</span>  {ex.input}</p>
-                            <p><span className="text-arena-teal">Output:</span> {ex.output}</p>
-                            {ex.explanation && <p className="text-arena-dim mt-1">{ex.explanation}</p>}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {problem.constraints?.length > 0 && (
-                      <div>
-                        <p className="font-mono text-xs text-arena-dim uppercase tracking-widest mb-2">Constraints</p>
-                        <ul className="space-y-1">
-                          {problem.constraints.map((c, i) => (
-                            <li key={i} className="font-mono text-xs text-arena-muted flex items-start gap-2">
-                              <span className="text-arena-purple2 mt-0.5">·</span> {c}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-
-                    <div className="flex items-center gap-2 pt-2 border-t border-arena-border/50">
-                      <Icons.Zap size={12} className="text-arena-purple2" />
-                      <span className="font-mono text-xs text-arena-dim">Solve to earn</span>
-                      <span className="font-mono text-xs text-arena-purple2 font-bold">+{problem.xpReward || 100} XP</span>
-                    </div>
-                  </>
-                ) : (
-                  <div className="flex items-center justify-center h-40">
-                    <p className="font-mono text-sm text-arena-dim">No problem loaded</p>
+                    ))}
                   </div>
                 )}
+
+                {problem.constraints?.length > 0 && (
+                  <div>
+                    <p className="font-mono text-xs text-arena-dim uppercase tracking-widest mb-2">Constraints</p>
+                    <ul className="space-y-1">
+                      {problem.constraints.map((c, i) => (
+                        <li key={i} className="font-mono text-xs text-arena-muted flex items-start gap-2">
+                          <span className="text-arena-purple2 mt-0.5">·</span> {c}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* XP reward */}
+                <div className="flex items-center gap-2 pt-2 border-t border-arena-border/50">
+                  <Icons.Zap size={12} className="text-arena-purple2" />
+                  <span className="font-mono text-xs text-arena-dim">Solve to earn</span>
+                  <span className="font-mono text-xs text-arena-purple2 font-bold">+{problem.xpReward || 100} XP</span>
+                </div>
+              </>
+            ) : (
+              <div className="flex items-center justify-center h-40">
+                <p className="font-mono text-sm text-arena-dim">No problem loaded</p>
               </div>
-            </>
-          )}
+            )}
+          </div>
         </div>
 
         {/* Right: Code editor */}
-        <div className="flex-1 flex flex-col overflow-hidden animate-fade-up delay-200">
+        <div className="flex-1 flex flex-col overflow-hidden">
           {/* Editor toolbar */}
           <div className="flex items-center gap-3 px-4 py-2.5 bg-arena-bg2 border-b border-arena-border flex-shrink-0">
             <select
               value={selectedLang}
               onChange={e => setSelectedLang(e.target.value)}
               className="arena-input text-xs w-auto py-1.5"
-              disabled={!canCode}
+              disabled={!isActive}
             >
               {LANGUAGES_AVAILABLE.map(l => (
                 <option key={l} value={l}>{l.charAt(0).toUpperCase() + l.slice(1)}</option>
               ))}
             </select>
             <div className="flex-1" />
-            <button onClick={handleRunTests} disabled={!canCode || running || !code.trim()}
+            <button onClick={handleRunTests} disabled={!isActive || running || !code.trim()}
               className="btn-secondary text-xs px-3 py-1.5 flex items-center gap-1.5">
               {running ? <Spinner size={11} /> : <Icons.Play size={11} />}
               Run Tests
             </button>
-            <button onClick={handleSubmit} disabled={!canCode || submitting || !code.trim()}
+            <button onClick={handleSubmit} disabled={!isActive || submitting || !code.trim()}
               className="btn-primary text-xs px-4 py-1.5 flex items-center gap-1.5">
               {submitting ? <Spinner size={11} /> : <Icons.Zap size={11} />}
               Submit
@@ -768,15 +662,12 @@ export default function BattlePage() {
             <textarea
               value={code}
               onChange={e => setCode(e.target.value)}
-              disabled={!canCode}
+              disabled={!isActive}
               className="flex-1 w-full bg-arena-bg resize-none outline-none p-4 font-mono text-sm text-arena-text leading-relaxed"
               style={{ fontFamily: "'JetBrains Mono', Consolas, monospace", minHeight: 0 }}
-              placeholder={
-                canCode
-                  ? `// Write your ${selectedLang} solution here\n// Problem ${currentProblem + 1} of ${battle.totalProblems || 1}\n`
-                  : isPending ? 'Waiting for opponent to accept...'
-                  : isConfiguring ? (isChallenger ? 'Configure the match on the left panel...' : 'Waiting for host to start the battle...')
-                  : 'Battle has ended'
+              placeholder={isActive
+                ? `// Write your ${selectedLang} solution here\n// Problem ${currentProblem + 1} of ${battle.totalProblems || 5}\n`
+                : battle.status === 'WAITING' ? '// Waiting for opponent to join...' : '// Battle has ended'
               }
               spellCheck={false}
             />

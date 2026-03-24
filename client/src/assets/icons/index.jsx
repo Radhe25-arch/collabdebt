@@ -1,4 +1,4 @@
-// Centralized SVG icon set for CodeArena — no emoji, pure vectors
+// Centralized SVG icon set for SkillForge — no emoji, pure vectors
 // Usage: <Icon.Home size={18} className="text-ink-secondary" />
 
 const Icon = ({ d, size = 18, className = '', strokeWidth = 1.5, fill = 'none', ...rest }) => (
@@ -58,15 +58,6 @@ export const ClockIcon      = (p) => <Icon {...p} d={["M12 22a10 10 0 100-20 10 
 export const CalendarIcon   = (p) => <Icon {...p} d={["M8 7V3 M16 7V3 M3 11h18","M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z"]} />;
 export const UsersIcon      = (p) => <Icon {...p} d={["M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2","M9 11a4 4 0 100-8 4 4 0 000 8z","M23 21v-2a4 4 0 00-3-3.87","M16 3.13a4 4 0 010 7.75"]} />;
 export const GlobeIcon      = (p) => <Icon {...p} d={["M12 22a10 10 0 100-20 10 10 0 000 20z","M2 12h20","M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"]} />;
-export const BookOpenIcon   = (p) => <Icon {...p} d={["M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z","M22 3h-6a4 4 0 01-4 4v14a3 3 0 013-3h7z"]} />;
-export const MessageSquare  = (p) => <Icon {...p} d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />;
-export const UserPlus       = (p) => <Icon {...p} d={["M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2","M8 7a4 4 0 100 8 4 4 0 000-8z","M20 8v6","M23 11h-6"]} />;
-export const TrashIcon      = (p) => <Icon {...p} d={["M3 6h18","M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2","M10 11v6","M14 11v6"]} />;
-export const UserIcon       = (p) => <Icon {...p} d={["M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2","M12 11a4 4 0 100-8 4 4 0 000 8z"]} />;
-export const GithubIcon     = (p) => <Icon {...p} d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0020 4.77 5.07 5.07 0 0019.91 1S18.73.65 16 2.48a13.38 13.38 0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 4.77a5.44 5.44 0 00-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22" />;
-export const EyeIcon        = (p) => <Icon {...p} d={["M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z","M12 15a3 3 0 100-6 3 3 0 000 6z"]} />;
-export const EyeOffIcon     = (p) => <Icon {...p} d={["M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94","M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19","M1 1l22 22","M9.17 9.17a3 3 0 104.24 4.24"]} />;
-export const AlertCircle    = (p) => <Icon {...p} d={["M12 8v4","M12 16h.01","M22 12c0 5.523-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2s10 4.477 10 10z"]} />;
 
 export default {
   Home: HomeIcon, Courses: CoursesIcon, Trophy: TrophyIcon,
@@ -74,15 +65,13 @@ export default {
   Profile: ProfileIcon, Settings: SettingsIcon, Admin: AdminIcon,
   Bell: BellIcon, Plus: PlusIcon, Search: SearchIcon,
   ChevronRight, ChevronDown, ChevronLeft,
-  ArrowRight, ArrowLeft, X: XIcon, Check: CheckIcon,
-  Copy: CopyIcon, ExternalLink, LogOut: LogOutIcon, Trash: TrashIcon,
+  ArrowRight, ArrowLeft, X: XIcon, XIcon, Check: CheckIcon,
+  Copy: CopyIcon, ExternalLink, LogOut: LogOutIcon,
   Menu: MenuIcon, Sidebar: SidebarIcon,
   Zap: ZapIcon, Star: StarIcon, Fire: FireIcon,
   Shield: ShieldIcon, Award: AwardIcon, Target: TargetIcon,
   TrendingUp: TrendingUpIcon,
   Code: CodeIcon, Terminal: TerminalIcon, Play: PlayIcon,
-  Book: BookIcon, BookOpen: BookOpenIcon, Video: VideoIcon, Clock: ClockIcon,
+  Book: BookIcon, Video: VideoIcon, Clock: ClockIcon,
   Calendar: CalendarIcon, Users: UsersIcon, Globe: GlobeIcon,
-  MessageSquare, UserPlus, User: UserIcon, Github: GithubIcon,
-  Eye: EyeIcon, EyeOff: EyeOffIcon, AlertCircle: AlertCircle,
 };

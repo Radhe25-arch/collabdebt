@@ -299,7 +299,7 @@ export default function AdminPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-display font-black text-2xl mb-1">Admin Panel</h1>
-          <p className="font-mono text-[10px] text-arena-dim uppercase tracking-widest">Platform Administration Control Panel</p>
+          <p className="font-mono text-xs text-arena-dim">// full platform control</p>
         </div>
         <BadgeTag variant="gold">ADMIN</BadgeTag>
       </div>
