@@ -281,7 +281,7 @@ function HostConfigPanel({ battle, onStart, onRefresh }) {
               <button
                 key={opt.id}
                 onClick={() => setMode(opt.id)}
-                className={`p-3 rounded-xl text-left border transition-all ${mode === opt.id ? 'bg-blue-600/10 border-blue-600/40' : 'bg-slate-100 border-slate-200 hover:border-white/20'}`}
+                className={`p-3 rounded-xl text-left border transition-all ${mode === opt.id ? 'bg-blue-600/10 border-blue-600/40' : 'bg-slate-100 border-slate-200 hover:border-slate-300'}`}
               >
                 <p className="font-mono text-xs font-bold text-white">{opt.label}</p>
                 <p className="font-mono text-[10px] text-slate-500 mt-1">{opt.desc}</p>

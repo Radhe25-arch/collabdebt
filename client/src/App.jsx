@@ -22,6 +22,8 @@ import BattlePage      from '@/pages/BattlePage';
 import QuestPage       from '@/pages/QuestPage';
 import PortfolioPage   from '@/pages/PortfolioPage';
 import MentorPage      from '@/pages/MentorPage';
+import CommunityPage   from '@/pages/CommunityPage';
+import FriendsPage     from '@/pages/FriendsPage';
 import RoomsPage, { RoomPage } from '@/pages/RoomsPage';
 import ProfilePage     from '@/pages/ProfilePage';
 import SettingsPage    from '@/pages/SettingsPage';
@@ -47,8 +49,11 @@ function AuthCallback() {
   }, []);
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0A0A0F', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'monospace' }}>
-      signing you in...
+    <div style={{ minHeight: '100vh', background: '#f8fafc', color: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'DM Sans', sans-serif" }}>
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ width: 32, height: 32, border: '3px solid #e2e8f0', borderTopColor: '#2563eb', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 12px' }} />
+        <span style={{ fontSize: 14, color: '#64748b' }}>Signing you in...</span>
+      </div>
     </div>
   );
 }
@@ -67,9 +72,9 @@ export default function App() {
   return (
     <BrowserRouter>
       <Toaster position="bottom-right" toastOptions={{
-        style: { background: '#16161F', color: '#F0EEF8', border: '1px solid rgba(124,58,237,0.3)', fontFamily: "'JetBrains Mono', monospace", fontSize: '13px' },
-        success: { iconTheme: { primary: '#00D9B5', secondary: '#0A0A0F' } },
-        error:   { iconTheme: { primary: '#f87171', secondary: '#0A0A0F' } },
+        style: { background: '#ffffff', color: '#0f172a', border: '1px solid #e2e8f0', fontFamily: "'DM Sans', sans-serif", fontSize: '13px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' },
+        success: { iconTheme: { primary: '#2563eb', secondary: '#ffffff' } },
+        error:   { iconTheme: { primary: '#dc2626', secondary: '#ffffff' } },
       }} />
       <Routes>
         <Route path="/"              element={<LandingPage />} />
@@ -92,6 +97,8 @@ export default function App() {
           <Route path="/quests"                element={<QuestPage />} />
           <Route path="/portfolio"             element={<PortfolioPage />} />
           <Route path="/mentor"                element={<MentorPage />} />
+          <Route path="/community"             element={<CommunityPage />} />
+          <Route path="/friends"               element={<FriendsPage />} />
           <Route path="/rooms"                 element={<RoomsPage />} />
           <Route path="/rooms/:id"             element={<RoomPage />} />
           <Route path="/profile"              element={<ProfilePage />} />
