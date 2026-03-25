@@ -59,6 +59,8 @@ export const CalendarIcon   = (p) => <Icon {...p} d={["M8 7V3 M16 7V3 M3 11h18",
 export const UsersIcon      = (p) => <Icon {...p} d={["M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2","M9 11a4 4 0 100-8 4 4 0 000 8z","M23 21v-2a4 4 0 00-3-3.87","M16 3.13a4 4 0 010 7.75"]} />;
 export const GlobeIcon      = (p) => <Icon {...p} d={["M12 22a10 10 0 100-20 10 10 0 000 20z","M2 12h20","M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"]} />;
 export const MessageSquareIcon = (p) => <Icon {...p} d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2v10z" />;
+export const UserIcon          = (p) => <Icon {...p} d={["M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2","M12 11a4 4 0 100-8 4 4 0 000 8z"]} />;
+export const UserPlusIcon      = (p) => <Icon {...p} d={["M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2","M9 11a4 4 0 100-8 4 4 0 000 8z","M19 8v6","M16 11h6"]} />;
 
 export default {
   Home: HomeIcon, Courses: CoursesIcon, Trophy: TrophyIcon,
@@ -75,5 +77,5 @@ export default {
   Code: CodeIcon, Terminal: TerminalIcon, Play: PlayIcon,
   Book: BookIcon, Video: VideoIcon, Clock: ClockIcon,
   Calendar: CalendarIcon, Users: UsersIcon, Globe: GlobeIcon,
-  MessageSquare: MessageSquareIcon,
+  MessageSquare: MessageSquareIcon, User: UserIcon, UserPlus: UserPlusIcon,
 };

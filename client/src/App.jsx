@@ -104,6 +104,7 @@ export default function App() {
           <Route path="/profile"              element={<ProfilePage />} />
           <Route path="/settings"             element={<SettingsPage />} />
           <Route path="/admin"                element={<AdminPage />} />
+          <Route path="*"                     element={<Navigate to="/dashboard" replace />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />
