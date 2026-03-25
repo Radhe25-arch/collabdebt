@@ -19,6 +19,15 @@
   --txt:      #F0EEF8;
   --muted:    #9896AA;
   --dim:      #5A5870;
+  --land-bg:       #f8fafc;
+  --land-surface:  #ffffff;
+  --land-border:   #e2e8f0;
+  --land-txt:      #0f172a;
+  --land-muted:    #64748b;
+  --land-dim:      #94a3b8;
+  --land-accent:   #2563eb;
+  --land-accent2:  #1d4ed8;
+  --land-accent-bg:#eff6ff;
 }
 
 /* ─── RESET ─────────────────────────────────────────────── */
@@ -278,8 +287,39 @@ code,pre,kbd { font-family: 'JetBrains Mono', monospace; }
 .animate-bounce     { animation: bounce 1s ease-in-out infinite; }
 .animate-pulse      { animation: pulse 2s ease-in-out infinite; }
 
-.delay-100 { animation-delay: 0.1s; }
-.delay-200 { animation-delay: 0.2s; }
-.delay-300 { animation-delay: 0.3s; }
-.delay-400 { animation-delay: 0.4s; }
-.delay-500 { animation-delay: 0.5s; }
+/* ─── MISC ───────────────────────────────────────────────── */
+.asymmetric-layout {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(2rem, 8vw, 6rem);
+}
+
+.humanized-spacing {
+  margin-left: clamp(1rem, 5vw, 4rem);
+  margin-right: clamp(1rem, 3vw, 2rem);
+}
+
+.glass-depth-1 { background: rgba(255,255,255,0.03); backdrop-filter: blur(12px); border-color: rgba(255,255,255,0.05); box-shadow: 0 32px 64px -16px rgba(0,0,0,0.4); }
+.glass-depth-2 { background: rgba(255,255,255,0.06); backdrop-filter: blur(16px); border-color: rgba(255,255,255,0.1);  box-shadow: 0 32px 64px -16px rgba(0,0,0,0.6); }
+
+.text-neon-teal   { color: #00f5d4; text-shadow: 0 0 12px rgba(0,245,212,0.4); }
+.text-neon-purple { color: #9b5de5; text-shadow: 0 0 12px rgba(155,93,229,0.4); }
+.bg-neon-teal     { background: #00f5d4; box-shadow: 0 0 20px rgba(0,245,212,0.4); }
+.bg-neon-purple   { background: #9b5de5; box-shadow: 0 0 20px rgba(155,93,229,0.4); }
+
+.cursor-blink::after {
+  content: '|';
+  animation: blink 1s step-end infinite;
+}
+@keyframes blink {
+  from, to { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.morph-target { transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+.text-justify-human { text-align: justify; text-justify: inter-word; hyphens: auto; }
+.delay-600  { animation-delay: 0.6s; }
+.delay-700  { animation-delay: 0.7s; }
+.delay-800  { animation-delay: 0.8s; }
+.delay-900  { animation-delay: 0.9s; }
+.delay-1000 { animation-delay: 1.0s; }
