@@ -86,7 +86,7 @@ export default function BattlesPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-display font-black text-2xl mb-1">1v1 Battles</h1>
-          <p className="font-mono text-xs text-arena-dim">Challenge any developer. Full report after every battle.</p>
+          <p className="font-mono text-xs text-slate-500">Challenge any developer. Full report after every battle.</p>
         </div>
         <Button onClick={() => setModal(true)} variant="primary">
           <Icons.Zap size={14} /> Challenge
@@ -105,8 +105,8 @@ export default function BattlesPage() {
           })() },
         ].map(({ label, value }) => (
           <div key={label} className="arena-card p-4 text-center">
-            <div className="font-display font-bold text-xl text-arena-text">{value}</div>
-            <div className="font-mono text-xs text-arena-dim mt-1">{label}</div>
+            <div className="font-display font-bold text-xl text-slate-900">{value}</div>
+            <div className="font-mono text-xs text-slate-500 mt-1">{label}</div>
           </div>
         ))}
       </div>
@@ -114,19 +114,19 @@ export default function BattlesPage() {
       {/* Incoming Challenges */}
       {pendingIncoming.length > 0 && (
         <div className="arena-card overflow-hidden">
-          <div className="px-5 py-3 border-b border-arena-border bg-arena-purple/5">
-            <span className="font-mono text-xs text-arena-purple2 uppercase tracking-widest">Incoming Challenges</span>
+          <div className="px-5 py-3 border-b border-slate-200 bg-blue-600/5">
+            <span className="font-mono text-xs text-blue-700 uppercase tracking-widest">Incoming Challenges</span>
           </div>
           <div className="divide-y divide-arena-border/40">
             {pendingIncoming.map(b => (
               <div key={b.id} className="flex items-center gap-4 px-5 py-4">
                 <Avatar user={b.challenger} size={36} />
                 <div className="flex-1 min-w-0">
-                  <span className="font-mono text-sm font-bold text-arena-text">{b.challenger?.username}</span>
-                  <p className="font-mono text-xs text-arena-dim">wants to battle you!</p>
+                  <span className="font-mono text-sm font-bold text-slate-900">{b.challenger?.username}</span>
+                  <p className="font-mono text-xs text-slate-500">wants to battle you!</p>
                 </div>
                 <div className="flex gap-2">
-                  <button onClick={() => handleRespond(b.id, true)} className="px-3 py-1.5 rounded-lg text-xs font-mono font-bold bg-arena-teal/20 text-arena-teal border border-arena-teal/30 hover:bg-arena-teal/30 transition-colors">Accept</button>
+                  <button onClick={() => handleRespond(b.id, true)} className="px-3 py-1.5 rounded-lg text-xs font-mono font-bold bg-indigo-600/20 text-indigo-600 border border-indigo-600/30 hover:bg-indigo-600/30 transition-colors">Accept</button>
                   <button onClick={() => handleRespond(b.id, false)} className="px-3 py-1.5 rounded-lg text-xs font-mono font-bold bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 transition-colors">Decline</button>
                 </div>
               </div>
@@ -144,20 +144,20 @@ export default function BattlesPage() {
       ))}
 
       {loading ? (
-        <div className="flex justify-center py-12"><Spinner size={24} className="text-arena-purple2" /></div>
+        <div className="flex justify-center py-12"><Spinner size={24} className="text-blue-700" /></div>
       ) : otherBattles.length === 0 && pendingIncoming.length === 0 && configuringBattles.length === 0 ? (
         <div className="arena-card p-16 text-center">
-          <Icons.Zap size={32} className="text-arena-dim mx-auto mb-4" />
+          <Icons.Zap size={32} className="text-slate-500 mx-auto mb-4" />
           <p className="font-display font-bold mb-2">No battles yet</p>
-          <p className="font-mono text-xs text-arena-dim mb-6">Challenge a friend to your first 1v1</p>
+          <p className="font-mono text-xs text-slate-500 mb-6">Challenge a friend to your first 1v1</p>
           <Button onClick={() => setModal(true)} variant="primary">
             <Icons.Zap size={14} /> Start a Battle
           </Button>
         </div>
       ) : otherBattles.length > 0 && (
         <div className="arena-card overflow-hidden">
-          <div className="px-5 py-3 border-b border-arena-border">
-            <span className="font-mono text-xs text-arena-dim uppercase tracking-widest">Battle History</span>
+          <div className="px-5 py-3 border-b border-slate-200">
+            <span className="font-mono text-xs text-slate-500 uppercase tracking-widest">Battle History</span>
           </div>
           <div className="divide-y divide-arena-border/40">
             {otherBattles.map((b) => {
@@ -170,36 +170,36 @@ export default function BattlesPage() {
               return (
                 <div
                   key={b.id}
-                  className="flex items-center gap-4 px-5 py-3.5 cursor-pointer hover:bg-arena-bg3/50 transition-colors"
+                  className="flex items-center gap-4 px-5 py-3.5 cursor-pointer hover:bg-slate-100/50 transition-colors"
                   onClick={() => navigate(`/battles/${b.id}`)}
                 >
                   <Avatar user={opp} size={36} />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-sm font-bold text-arena-text">{opp?.username}</span>
+                      <span className="font-mono text-sm font-bold text-slate-900">{opp?.username}</span>
                       <BadgeTag variant={statusColor[b.status] || 'gray'}>
                         {b.status}
                       </BadgeTag>
                     </div>
-                    <span className="font-mono text-xs text-arena-dim">
+                    <span className="font-mono text-xs text-slate-500">
                       {formatDistanceToNow(new Date(b.createdAt), { addSuffix: true })}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
                     {b.status === 'COMPLETED' && (
-                      <span className={`font-mono font-bold text-sm ${isWinner ? 'text-yellow-400' : isDraw ? 'text-arena-purple2' : 'text-red-400'}`}>
+                      <span className={`font-mono font-bold text-sm ${isWinner ? 'text-yellow-400' : isDraw ? 'text-blue-700' : 'text-red-400'}`}>
                         {isWinner ? 'WON' : isDraw ? 'DRAW' : 'LOST'}
                       </span>
                     )}
                     {isActive && (
-                      <span className="flex items-center gap-1 font-mono text-xs text-arena-teal">
-                        <span className="w-1.5 h-1.5 rounded-full bg-arena-teal animate-pulse" /> LIVE
+                      <span className="flex items-center gap-1 font-mono text-xs text-indigo-600">
+                        <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 animate-pulse" /> LIVE
                       </span>
                     )}
                     {isConfig && (
                       <span className="font-mono text-xs text-blue-400">Configuring</span>
                     )}
-                    <Icons.ChevronRight size={14} className="text-arena-dim" />
+                    <Icons.ChevronRight size={14} className="text-slate-500" />
                   </div>
                 </div>
               );
@@ -211,7 +211,7 @@ export default function BattlesPage() {
       {/* Challenge Modal */}
       <Modal open={modal} onClose={() => setModal(false)} title="Challenge a Developer">
         <div className="space-y-4">
-          <p className="font-mono text-xs text-arena-muted">Enter the username of the developer you want to challenge to a 1v1 coding battle.</p>
+          <p className="font-mono text-xs text-slate-600">Enter the username of the developer you want to challenge to a 1v1 coding battle.</p>
           <Input
             label="Opponent Username"
             placeholder="e.g. sarthak_k"
@@ -257,7 +257,7 @@ function HostConfigPanel({ battle, onStart, onRefresh }) {
 
   return (
     <div className="arena-card overflow-hidden">
-      <div className="px-5 py-3 border-b border-arena-border bg-blue-500/5">
+      <div className="px-5 py-3 border-b border-slate-200 bg-blue-500/5">
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
           <span className="font-mono text-xs text-blue-400 uppercase tracking-widest">Configure Match — You Are The Host</span>
@@ -265,26 +265,26 @@ function HostConfigPanel({ battle, onStart, onRefresh }) {
       </div>
 
       <div className="p-5 space-y-5">
-        <div className="flex items-center gap-3 p-3 rounded-xl bg-arena-bg3 border border-arena-border">
+        <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-100 border border-slate-200">
           <Avatar user={battle.challenged} size={32} />
           <div>
             <p className="font-mono text-sm font-bold text-white">{battle.challenged?.username}</p>
-            <p className="font-mono text-xs text-arena-dim">Opponent accepted. Configure and start the match.</p>
+            <p className="font-mono text-xs text-slate-500">Opponent accepted. Configure and start the match.</p>
           </div>
         </div>
 
         {/* Problem Mode */}
         <div>
-          <label className="font-mono text-xs text-arena-dim uppercase tracking-widest block mb-2">Problem Mode</label>
+          <label className="font-mono text-xs text-slate-500 uppercase tracking-widest block mb-2">Problem Mode</label>
           <div className="grid grid-cols-2 gap-3">
             {MODE_OPTIONS.map(opt => (
               <button
                 key={opt.id}
                 onClick={() => setMode(opt.id)}
-                className={`p-3 rounded-xl text-left border transition-all ${mode === opt.id ? 'bg-arena-purple/10 border-arena-purple/40' : 'bg-arena-bg3 border-arena-border hover:border-white/20'}`}
+                className={`p-3 rounded-xl text-left border transition-all ${mode === opt.id ? 'bg-blue-600/10 border-blue-600/40' : 'bg-slate-100 border-slate-200 hover:border-white/20'}`}
               >
                 <p className="font-mono text-xs font-bold text-white">{opt.label}</p>
-                <p className="font-mono text-[10px] text-arena-dim mt-1">{opt.desc}</p>
+                <p className="font-mono text-[10px] text-slate-500 mt-1">{opt.desc}</p>
               </button>
             ))}
           </div>
@@ -293,9 +293,9 @@ function HostConfigPanel({ battle, onStart, onRefresh }) {
         {/* Custom problem input */}
         {mode === 'custom' && (
           <div>
-            <label className="font-mono text-xs text-arena-dim uppercase tracking-widest block mb-2">Problem Description</label>
+            <label className="font-mono text-xs text-slate-500 uppercase tracking-widest block mb-2">Problem Description</label>
             <textarea
-              className="w-full arena-input p-3 text-sm min-h-[100px] resize-y"
+              className="w-full w-full bg-white border border-slate-200 rounded-xl px-4 py-3 placeholder-slate-400 text-slate-900 focus:outline-none focus:border-blue-500 transition-all text-sm p-3 text-sm min-h-[100px] resize-y"
               placeholder="Write the problem statement for your opponent..."
               value={customProblem}
               onChange={(e) => setCustomProblem(e.target.value)}
@@ -305,13 +305,13 @@ function HostConfigPanel({ battle, onStart, onRefresh }) {
 
         {/* Language */}
         <div>
-          <label className="font-mono text-xs text-arena-dim uppercase tracking-widest block mb-2">Language</label>
+          <label className="font-mono text-xs text-slate-500 uppercase tracking-widest block mb-2">Language</label>
           <div className="flex flex-wrap gap-2">
             {LANGUAGES.map(lang => (
               <button
                 key={lang}
                 onClick={() => setLanguage(lang)}
-                className={`px-3 py-1.5 rounded-lg font-mono text-xs transition-all ${language === lang ? 'bg-arena-purple text-white' : 'bg-arena-bg3 text-arena-dim border border-arena-border hover:text-white'}`}
+                className={`px-3 py-1.5 rounded-lg font-mono text-xs transition-all ${language === lang ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500 border border-slate-200 hover:text-white'}`}
               >{lang}</button>
             ))}
           </div>
@@ -319,13 +319,13 @@ function HostConfigPanel({ battle, onStart, onRefresh }) {
 
         {/* Timer */}
         <div>
-          <label className="font-mono text-xs text-arena-dim uppercase tracking-widest block mb-2">Timer</label>
+          <label className="font-mono text-xs text-slate-500 uppercase tracking-widest block mb-2">Timer</label>
           <div className="flex flex-wrap gap-2">
             {TIMER_OPTIONS.map(t => (
               <button
                 key={t.value}
                 onClick={() => setTimeLimit(t.value)}
-                className={`px-4 py-2 rounded-lg font-mono text-xs transition-all ${timeLimit === t.value ? 'bg-arena-teal text-black font-bold' : 'bg-arena-bg3 text-arena-dim border border-arena-border hover:text-white'}`}
+                className={`px-4 py-2 rounded-lg font-mono text-xs transition-all ${timeLimit === t.value ? 'bg-indigo-600 text-black font-bold' : 'bg-slate-100 text-slate-500 border border-slate-200 hover:text-white'}`}
               >{t.label}</button>
             ))}
           </div>

@@ -57,12 +57,12 @@ export default function TournamentPage() {
   };
 
   if (loading) return (
-    <div className="flex justify-center py-24"><Spinner size={28} className="text-arena-purple2" /></div>
+    <div className="flex justify-center py-24"><Spinner size={28} className="text-blue-700" /></div>
   );
 
   if (!tournament) return (
     <div className="text-center py-24">
-      <p className="font-mono text-sm text-arena-dim">Tournament not found</p>
+      <p className="font-mono text-sm text-slate-500">Tournament not found</p>
     </div>
   );
 
@@ -79,39 +79,39 @@ export default function TournamentPage() {
   return (
     <div className="space-y-6 max-w-3xl mx-auto">
       {/* Back */}
-      <button onClick={() => navigate('/tournaments')} className="flex items-center gap-2 text-arena-dim hover:text-arena-text font-mono text-xs transition-colors">
+      <button onClick={() => navigate('/tournaments')} className="flex items-center gap-2 text-slate-500 hover:text-slate-900 font-mono text-xs transition-colors">
         <Icons.ArrowLeft size={13} /> back to tournaments
       </button>
 
       {/* Header card */}
       <div className="arena-card p-6 relative overflow-hidden">
-        {isActive && <div className="absolute inset-0 bg-arena-teal/2 pointer-events-none" />}
+        {isActive && <div className="absolute inset-0 bg-indigo-600/2 pointer-events-none" />}
         <div className="relative z-10">
           <div className="flex items-center gap-3 mb-4">
-            <TypeIc size={16} className="text-arena-muted" />
+            <TypeIc size={16} className="text-slate-600" />
             <BadgeTag variant={isActive ? 'teal' : 'gray'}>
               {isActive ? 'Live' : tournament.status}
             </BadgeTag>
-            {isActive && <span className="w-2 h-2 rounded-full bg-arena-teal animate-pulse" />}
+            {isActive && <span className="w-2 h-2 rounded-full bg-indigo-600 animate-pulse" />}
           </div>
 
           <h1 className="font-display font-black text-2xl mb-1">{tournament.title}</h1>
-          <p className="font-mono text-xs text-arena-dim mb-6">{typeLabel}</p>
+          <p className="font-mono text-xs text-slate-500 mb-6">{typeLabel}</p>
 
           <div className="grid grid-cols-3 gap-4 mb-6">
-            <div className="bg-arena-bg3 rounded-lg p-3 text-center border border-arena-border">
-              <div className="font-display font-bold text-lg text-arena-text">{tournament._count?.entries || 0}</div>
-              <div className="font-mono text-xs text-arena-dim">Participants</div>
+            <div className="bg-slate-100 rounded-lg p-3 text-center border border-slate-200">
+              <div className="font-display font-bold text-lg text-slate-900">{tournament._count?.entries || 0}</div>
+              <div className="font-mono text-xs text-slate-500">Participants</div>
             </div>
-            <div className="bg-arena-bg3 rounded-lg p-3 text-center border border-arena-border">
-              <div className="font-display font-bold text-lg text-arena-purple2">+{tournament.xpBonus}</div>
-              <div className="font-mono text-xs text-arena-dim">Winner XP</div>
+            <div className="bg-slate-100 rounded-lg p-3 text-center border border-slate-200">
+              <div className="font-display font-bold text-lg text-blue-700">+{tournament.xpBonus}</div>
+              <div className="font-mono text-xs text-slate-500">Winner XP</div>
             </div>
-            <div className="bg-arena-bg3 rounded-lg p-3 text-center border border-arena-border">
-              <div className="font-display font-bold text-sm text-arena-text">
+            <div className="bg-slate-100 rounded-lg p-3 text-center border border-slate-200">
+              <div className="font-display font-bold text-sm text-slate-900">
                 {isActive ? formatDistanceToNow(new Date(tournament.endsAt)) : format(new Date(tournament.endsAt), 'MMM d')}
               </div>
-              <div className="font-mono text-xs text-arena-dim">{isActive ? 'Remaining' : 'Ended'}</div>
+              <div className="font-mono text-xs text-slate-500">{isActive ? 'Remaining' : 'Ended'}</div>
             </div>
           </div>
 
@@ -122,9 +122,9 @@ export default function TournamentPage() {
             </Button>
           )}
           {joined && (
-            <div className="flex items-center gap-2 justify-center py-3 rounded-lg border border-arena-teal/30 bg-arena-teal/5">
-              <Icons.Check size={14} className="text-arena-teal" />
-              <span className="font-mono text-sm text-arena-teal">You are competing</span>
+            <div className="flex items-center gap-2 justify-center py-3 rounded-lg border border-indigo-600/30 bg-indigo-600/5">
+              <Icons.Check size={14} className="text-indigo-600" />
+              <span className="font-mono text-sm text-indigo-600">You are competing</span>
             </div>
           )}
         </div>
@@ -132,27 +132,27 @@ export default function TournamentPage() {
 
       {/* My rank if participating */}
       {myEntry && (
-        <div className="arena-card p-4 flex items-center gap-4 bg-arena-purple/5 border-arena-purple/30">
-          <Icons.Target size={14} className="text-arena-purple2" />
+        <div className="arena-card p-4 flex items-center gap-4 bg-blue-600/5 border-blue-600/30">
+          <Icons.Target size={14} className="text-blue-700" />
           <div>
-            <span className="font-mono text-xs text-arena-dim">Your rank</span>
-            <div className="font-display font-bold text-lg text-arena-purple2">#{myEntry.rank}</div>
+            <span className="font-mono text-xs text-slate-500">Your rank</span>
+            <div className="font-display font-bold text-lg text-blue-700">#{myEntry.rank}</div>
           </div>
           <div className="flex-1" />
           <div className="text-right">
-            <span className="font-mono text-xs text-arena-dim">Score</span>
-            <div className="font-display font-bold text-lg text-arena-text">{myEntry.score}</div>
+            <span className="font-mono text-xs text-slate-500">Score</span>
+            <div className="font-display font-bold text-lg text-slate-900">{myEntry.score}</div>
           </div>
         </div>
       )}
 
       {/* Live Scoreboard */}
       <div className="arena-card overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-3 border-b border-arena-border">
-          <span className="font-mono text-xs text-arena-dim uppercase tracking-widest">Live Scoreboard</span>
+        <div className="flex items-center justify-between px-5 py-3 border-b border-slate-200">
+          <span className="font-mono text-xs text-slate-500 uppercase tracking-widest">Live Scoreboard</span>
           {isActive && (
-            <div className="flex items-center gap-1.5 text-arena-teal">
-              <span className="w-1.5 h-1.5 rounded-full bg-arena-teal animate-pulse" />
+            <div className="flex items-center gap-1.5 text-indigo-600">
+              <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 animate-pulse" />
               <span className="font-mono text-xs">Updates every 30s</span>
             </div>
           )}
@@ -160,7 +160,7 @@ export default function TournamentPage() {
 
         {scoreboard.length === 0 ? (
           <div className="py-12 text-center">
-            <p className="font-mono text-xs text-arena-dim">No submissions yet. Be the first.</p>
+            <p className="font-mono text-xs text-slate-500">No submissions yet. Be the first.</p>
           </div>
         ) : (
           <div className="divide-y divide-arena-border/40">
@@ -169,12 +169,12 @@ export default function TournamentPage() {
               const lvl  = Math.min(entry.user?.level || 1, 10);
               return (
                 <div key={`${entry.rank}-${entry.user?.id}`}
-                  className={`flex items-center gap-4 px-5 py-3.5 ${isMe ? 'bg-arena-teal/5' : ''}`}
+                  className={`flex items-center gap-4 px-5 py-3.5 ${isMe ? 'bg-indigo-600/5' : ''}`}
                 >
                   <div className={`w-7 font-mono text-xs font-bold text-center ${
                     entry.rank === 1 ? 'text-yellow-400' :
                     entry.rank === 2 ? 'text-slate-400' :
-                    entry.rank === 3 ? 'text-amber-600' : 'text-arena-dim'
+                    entry.rank === 3 ? 'text-amber-600' : 'text-slate-500'
                   }`}>
                     {entry.rank <= 3 ? (
                       <Icons.Trophy size={13} className="mx-auto" />
@@ -182,12 +182,12 @@ export default function TournamentPage() {
                   </div>
                   <Avatar user={entry.user} size={30} />
                   <div className="flex-1 min-w-0">
-                    <span className={`font-mono text-xs font-bold ${isMe ? 'text-arena-teal' : 'text-arena-text'}`}>
+                    <span className={`font-mono text-xs font-bold ${isMe ? 'text-indigo-600' : 'text-slate-900'}`}>
                       {entry.user?.username}
                     </span>
-                    <div className="font-mono text-xs text-arena-dim">{LEVEL_NAMES[(lvl - 1)]} · Lv{lvl}</div>
+                    <div className="font-mono text-xs text-slate-500">{LEVEL_NAMES[(lvl - 1)]} · Lv{lvl}</div>
                   </div>
-                  <div className="font-display font-bold text-base text-arena-text">{entry.score}</div>
+                  <div className="font-display font-bold text-base text-slate-900">{entry.score}</div>
                 </div>
               );
             })}

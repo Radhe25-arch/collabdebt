@@ -47,7 +47,7 @@ function CategoryCard({ category, courseCount, onClick, isActive }) {
       onClick={() => onClick(category)}
       className={`relative p-5 rounded-xl border cursor-pointer transition-all duration-200 flex flex-col justify-between h-32
         ${isActive 
-          ? 'bg-[#111] border-arena-purple/50 shadow-[0_0_0_1px_rgba(124,58,237,0.3)]' 
+          ? 'bg-[#111] border-blue-600/50 shadow-[0_0_0_1px_rgba(124,58,237,0.3)]' 
           : 'bg-[#0A0A0A] border-white/5 hover:border-white/15'
         }
       `}
@@ -75,7 +75,7 @@ function CourseListCard({ course, onClick }) {
       onClick={() => onClick(course.slug)}
       className={`group flex flex-col sm:flex-row sm:items-center justify-between p-5 md:p-6 rounded-xl cursor-pointer transition-all duration-200 gap-4 border ${
         completed
-          ? 'bg-arena-teal/5 border-arena-teal/20 hover:border-arena-teal/35'
+          ? 'bg-indigo-600/5 border-indigo-600/20 hover:border-indigo-600/35'
           : 'bg-[#0A0A0A] border-white/5 hover:border-white/15'
       }`}
     >
@@ -88,7 +88,7 @@ function CourseListCard({ course, onClick }) {
             'text-purple-400 border-purple-400/25'
           }`}>{course.difficulty}</span>
           {completed
-            ? <span className="flex items-center gap-1 bg-arena-teal/15 text-arena-teal border border-arena-teal/25 font-mono text-[10px] px-2 py-0.5 rounded-full">✓ Completed</span>
+            ? <span className="flex items-center gap-1 bg-indigo-600/15 text-indigo-600 border border-indigo-600/25 font-mono text-[10px] px-2 py-0.5 rounded-full">✓ Completed</span>
             : enrolled
             ? <span className="bg-white/6 text-white/50 border border-white/10 font-mono text-[10px] px-2 py-0.5 rounded-full">{progress}% done</span>
             : null
@@ -97,7 +97,7 @@ function CourseListCard({ course, onClick }) {
         <p className="font-mono text-xs text-white/40 leading-relaxed line-clamp-1">{course.description}</p>
         {enrolled && !completed && progress > 0 && (
           <div className="mt-2.5 h-0.5 rounded-full bg-white/8 overflow-hidden max-w-xs">
-            <div className="h-full rounded-full bg-arena-teal/60" style={{ width: `${progress}%` }} />
+            <div className="h-full rounded-full bg-indigo-600/60" style={{ width: `${progress}%` }} />
           </div>
         )}
       </div>
@@ -112,10 +112,10 @@ function CourseListCard({ course, onClick }) {
           </span>
         </div>
         <div className={`w-8 h-8 rounded-full flex flex-shrink-0 items-center justify-center transition-colors border ${
-          completed ? 'bg-arena-teal/15 border-arena-teal/30' : 'border-white/10 group-hover:bg-white/5'
+          completed ? 'bg-indigo-600/15 border-indigo-600/30' : 'border-white/10 group-hover:bg-white/5'
         }`}>
           {completed
-            ? <Icons.Check size={13} className="text-arena-teal" />
+            ? <Icons.Check size={13} className="text-indigo-600" />
             : <Icons.ArrowRight size={13} className="text-white/50 group-hover:text-white transition-colors" />
           }
         </div>

@@ -23,7 +23,7 @@ function TypeIcon({ type }) {
     SPEED_COURSE:     Icons.Zap,
   };
   const Ic = map[type] || Icons.Trophy;
-  return <Ic size={14} className="text-arena-muted" />;
+  return <Ic size={14} className="text-slate-600" />;
 }
 
 function TournamentCard({ t, onJoin }) {
@@ -41,26 +41,26 @@ function TournamentCard({ t, onJoin }) {
           <TypeIcon type={t.type} />
           <TournamentStatusBadge status={t.status} />
         </div>
-        {isActive && <span className="w-2 h-2 rounded-full bg-arena-teal animate-pulse" />}
+        {isActive && <span className="w-2 h-2 rounded-full bg-indigo-600 animate-pulse" />}
       </div>
 
       <h3 className="font-display font-bold text-base mb-1">{t.title}</h3>
-      <p className="font-mono text-xs text-arena-dim mb-4">
+      <p className="font-mono text-xs text-slate-500 mb-4">
         {t.type.replace(/_/g, ' ')}
       </p>
 
-      <div className="flex items-center justify-between text-xs font-mono text-arena-dim mb-4">
+      <div className="flex items-center justify-between text-xs font-mono text-slate-500 mb-4">
         <div className="flex items-center gap-1">
           <Icons.Users size={11} />
           <span>{t._count?.entries || 0} participants</span>
         </div>
         <div className="flex items-center gap-1">
-          <Icons.Zap size={11} className="text-arena-purple2" />
-          <span className="text-arena-purple2">+{t.xpBonus} XP</span>
+          <Icons.Zap size={11} className="text-blue-700" />
+          <span className="text-blue-700">+{t.xpBonus} XP</span>
         </div>
       </div>
 
-      <div className="flex items-center gap-1 text-xs font-mono text-arena-dim mb-4">
+      <div className="flex items-center gap-1 text-xs font-mono text-slate-500 mb-4">
         <Icons.Clock size={11} />
         {isActive ? (
           <span>Ends {formatDistanceToNow(new Date(t.endsAt), { addSuffix: true })}</span>
@@ -113,7 +113,7 @@ export default function TournamentsPage() {
     <div className="space-y-6 max-w-4xl mx-auto">
       <div>
         <h1 className="font-display font-black text-2xl mb-1">Tournaments</h1>
-        <p className="font-mono text-xs text-arena-dim">// new tournament every monday · free entry · earn bonus XP</p>
+        <p className="font-mono text-xs text-slate-500">// new tournament every monday · free entry · earn bonus XP</p>
       </div>
 
       {/* Filter tabs */}
@@ -123,7 +123,7 @@ export default function TournamentsPage() {
             key={f}
             onClick={() => setFilter(f)}
             className={`badge-tag font-mono text-xs capitalize transition-all ${
-              filter === f ? 'badge-purple' : 'badge-gray hover:text-arena-text'
+              filter === f ? 'badge-purple' : 'badge-gray hover:text-slate-900'
             }`}
           >
             {f}
@@ -132,11 +132,11 @@ export default function TournamentsPage() {
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-16"><Spinner size={24} className="text-arena-purple2" /></div>
+        <div className="flex justify-center py-16"><Spinner size={24} className="text-blue-700" /></div>
       ) : filtered.length === 0 ? (
         <div className="arena-card p-16 text-center">
-          <Icons.Trophy size={32} className="text-arena-dim mx-auto mb-3" />
-          <p className="font-mono text-sm text-arena-dim">No tournaments found</p>
+          <Icons.Trophy size={32} className="text-slate-500 mx-auto mb-3" />
+          <p className="font-mono text-sm text-slate-500">No tournaments found</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

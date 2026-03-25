@@ -80,7 +80,7 @@ export default function CoursePage() {
       <div className="space-y-6 lg:mr-32">
         <div className="flex flex-wrap items-center gap-3">
           {course.category && (
-            <span className="font-mono text-xs uppercase tracking-widest text-arena-purple2">
+            <span className="font-mono text-xs uppercase tracking-widest text-blue-700">
               {course.category.name}
             </span>
           )}
@@ -136,12 +136,12 @@ export default function CoursePage() {
                 >
                   ▶ {progress > 0 ? 'Continue Learning' : 'Start Learning'}
                 </button>
-                <span className="font-mono text-sm text-arena-teal font-medium">{progress}% Complete</span>
+                <span className="font-mono text-sm text-indigo-600 font-medium">{progress}% Complete</span>
               </div>
               {progress > 0 && (
                 <div className="max-w-xs">
                   <div className="h-1 rounded-full bg-white/10 overflow-hidden">
-                    <div className="h-full rounded-full bg-arena-teal transition-all" style={{ width: `${progress}%` }} />
+                    <div className="h-full rounded-full bg-indigo-600 transition-all" style={{ width: `${progress}%` }} />
                   </div>
                 </div>
               )}
@@ -179,13 +179,13 @@ export default function CoursePage() {
                   `}
                 >
                   <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center font-mono text-xs mt-0.5 ${
-                    isCompleted ? 'bg-arena-teal/20 border border-arena-teal/40 text-arena-teal' : 'bg-white/5 border border-white/10 text-white/40'
+                    isCompleted ? 'bg-indigo-600/20 border border-indigo-600/40 text-indigo-600' : 'bg-white/5 border border-white/10 text-white/40'
                   }`}>
                     {isCompleted ? '✓' : index + 1}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-4 mb-1">
-                      <h3 className={`font-mono text-sm font-medium ${isCompleted ? 'text-arena-teal line-through opacity-70' : isEnrolled ? 'text-white/90 group-hover:text-white' : 'text-white/70'}`}>
+                      <h3 className={`font-mono text-sm font-medium ${isCompleted ? 'text-indigo-600 line-through opacity-70' : isEnrolled ? 'text-white/90 group-hover:text-white' : 'text-white/70'}`}>
                         {lesson.title}
                       </h3>
                       <div className="flex items-center gap-3">

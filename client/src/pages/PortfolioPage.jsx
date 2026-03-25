@@ -82,7 +82,7 @@ export default function PortfolioPage() {
   };
 
   if (loading) return (
-    <div className="flex justify-center py-24"><Spinner size={24} className="text-arena-purple2" /></div>
+    <div className="flex justify-center py-24"><Spinner size={24} className="text-blue-700" /></div>
   );
 
   return (
@@ -90,7 +90,7 @@ export default function PortfolioPage() {
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h1 className="font-display font-black text-2xl mb-1">Portfolio Builder</h1>
-          <p className="font-mono text-xs text-arena-dim">// auto-generate your GitHub dev profile from SkillForge stats</p>
+          <p className="font-mono text-xs text-slate-500">// auto-generate your GitHub dev profile from SkillForge stats</p>
         </div>
         <div className="flex gap-2">
           <Button onClick={handleGenerate} variant="secondary" loading={generating}>
@@ -108,41 +108,41 @@ export default function PortfolioPage() {
           {/* Status card */}
           <div className="arena-card p-5">
             <div className="flex items-center justify-between mb-4">
-              <span className="font-mono text-xs text-arena-dim uppercase tracking-widest">Portfolio Status</span>
+              <span className="font-mono text-xs text-slate-500 uppercase tracking-widest">Portfolio Status</span>
               <BadgeTag variant={portfolio?.repoUrl ? 'teal' : 'gray'}>
                 {portfolio?.repoUrl ? 'Published' : 'Not published'}
               </BadgeTag>
             </div>
             {portfolio?.repoUrl ? (
               <div className="space-y-2">
-                <div className="flex items-center gap-2 p-2.5 bg-arena-bg3 rounded-lg border border-arena-border">
-                  <Icons.ExternalLink size={12} className="text-arena-teal" />
+                <div className="flex items-center gap-2 p-2.5 bg-slate-100 rounded-lg border border-slate-200">
+                  <Icons.ExternalLink size={12} className="text-indigo-600" />
                   <a href={portfolio.repoUrl} target="_blank" rel="noreferrer"
-                    className="font-mono text-xs text-arena-teal hover:text-arena-teal2 transition-colors flex-1 truncate">
+                    className="font-mono text-xs text-indigo-600 hover:text-arena-teal2 transition-colors flex-1 truncate">
                     {portfolio.repoUrl}
                   </a>
                 </div>
                 {portfolio.lastBuiltAt && (
-                  <p className="font-mono text-xs text-arena-dim">
+                  <p className="font-mono text-xs text-slate-500">
                     Last synced: {new Date(portfolio.lastBuiltAt).toLocaleDateString()}
                   </p>
                 )}
               </div>
             ) : (
-              <p className="font-mono text-xs text-arena-muted">Generate your README and push it to GitHub to publish your portfolio.</p>
+              <p className="font-mono text-xs text-slate-600">Generate your README and push it to GitHub to publish your portfolio.</p>
             )}
           </div>
 
           {/* Settings form */}
           <div className="arena-card p-5 space-y-4">
-            <span className="font-mono text-xs text-arena-dim uppercase tracking-widest block">Profile Settings</span>
+            <span className="font-mono text-xs text-slate-500 uppercase tracking-widest block">Profile Settings</span>
             <Input label="GitHub Username" value={form.githubUsername}
               onChange={(e) => setForm({ ...form, githubUsername: e.target.value })}
               placeholder="your-github-username" icon={<Icons.Code size={14} />} />
             <div>
-              <label className="arena-label">Bio / Tagline</label>
+              <label className="block text-sm font-semibold text-slate-700 mb-1.5">Bio / Tagline</label>
               <textarea
-                className="arena-input resize-none"
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 placeholder-slate-400 text-slate-900 focus:outline-none focus:border-blue-500 transition-all text-sm resize-none"
                 rows={3}
                 value={form.bio}
                 onChange={(e) => setForm({ ...form, bio: e.target.value })}
@@ -150,16 +150,16 @@ export default function PortfolioPage() {
               />
             </div>
             <div>
-              <label className="arena-label">Accent Color</label>
+              <label className="block text-sm font-semibold text-slate-700 mb-1.5">Accent Color</label>
               <div className="flex items-center gap-3">
                 <input type="color" value={form.themeColor}
                   onChange={(e) => setForm({ ...form, themeColor: e.target.value })}
                   className="w-10 h-10 rounded cursor-pointer bg-transparent border-0" />
-                <span className="font-mono text-xs text-arena-dim">{form.themeColor}</span>
+                <span className="font-mono text-xs text-slate-500">{form.themeColor}</span>
               </div>
             </div>
             <div className="space-y-2">
-              <label className="arena-label">Social Links</label>
+              <label className="block text-sm font-semibold text-slate-700 mb-1.5">Social Links</label>
               {['github','linkedin','twitter','website'].map((k) => (
                 <Input key={k} placeholder={`${k} URL`}
                   value={form.socialLinks?.[k] || ''}
@@ -175,55 +175,55 @@ export default function PortfolioPage() {
           {/* Projects */}
           <div className="arena-card p-5">
             <div className="flex items-center justify-between mb-4">
-              <span className="font-mono text-xs text-arena-dim uppercase tracking-widest">Featured Projects</span>
-              <button onClick={() => setAddProjectModal(true)} className="text-arena-purple2 hover:text-arena-teal transition-colors">
+              <span className="font-mono text-xs text-slate-500 uppercase tracking-widest">Featured Projects</span>
+              <button onClick={() => setAddProjectModal(true)} className="text-blue-700 hover:text-indigo-600 transition-colors">
                 <Icons.Plus size={14} />
               </button>
             </div>
             {portfolio?.projects?.length ? (
               <div className="space-y-2">
                 {portfolio.projects.slice(0,5).map((p) => (
-                  <div key={p.id} className="flex items-center gap-3 p-2.5 bg-arena-bg3 rounded-lg border border-arena-border">
-                    <Icons.Code size={12} className="text-arena-muted" />
+                  <div key={p.id} className="flex items-center gap-3 p-2.5 bg-slate-100 rounded-lg border border-slate-200">
+                    <Icons.Code size={12} className="text-slate-600" />
                     <div className="flex-1 min-w-0">
-                      <p className="font-mono text-xs text-arena-text truncate">{p.title}</p>
-                      {p.language && <p className="font-mono text-xs text-arena-dim">{p.language}</p>}
+                      <p className="font-mono text-xs text-slate-900 truncate">{p.title}</p>
+                      {p.language && <p className="font-mono text-xs text-slate-500">{p.language}</p>}
                     </div>
                     {p.featured && <BadgeTag variant="gold">Featured</BadgeTag>}
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="font-mono text-xs text-arena-muted">Add projects to showcase your best work</p>
+              <p className="font-mono text-xs text-slate-600">Add projects to showcase your best work</p>
             )}
           </div>
         </div>
 
         {/* Right — README preview */}
         <div className="arena-card overflow-hidden flex flex-col">
-          <div className="flex items-center justify-between px-5 py-3 border-b border-arena-border bg-arena-bg">
+          <div className="flex items-center justify-between px-5 py-3 border-b border-slate-200 bg-slate-50">
             <div className="flex items-center gap-1.5">
               <div className="w-2.5 h-2.5 rounded-full bg-red-500/60" />
               <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/60" />
               <div className="w-2.5 h-2.5 rounded-full bg-green-500/60" />
-              <span className="font-mono text-xs text-arena-dim ml-2">README.md</span>
+              <span className="font-mono text-xs text-slate-500 ml-2">README.md</span>
             </div>
             {readme && (
               <button
                 onClick={() => { navigator.clipboard.writeText(readme); toast.success('Copied'); }}
-                className="font-mono text-xs text-arena-dim hover:text-arena-teal transition-colors"
+                className="font-mono text-xs text-slate-500 hover:text-indigo-600 transition-colors"
               >
                 copy
               </button>
             )}
           </div>
-          <div className="flex-1 overflow-y-auto p-4 bg-arena-bg min-h-96">
+          <div className="flex-1 overflow-y-auto p-4 bg-slate-50 min-h-96">
             {readme ? (
-              <pre className="font-mono text-xs text-arena-muted whitespace-pre-wrap leading-relaxed">{readme}</pre>
+              <pre className="font-mono text-xs text-slate-600 whitespace-pre-wrap leading-relaxed">{readme}</pre>
             ) : (
               <div className="flex flex-col items-center justify-center h-full gap-3 text-center py-16">
-                <Icons.Code size={28} className="text-arena-dim" />
-                <p className="font-mono text-xs text-arena-dim">
+                <Icons.Code size={28} className="text-slate-500" />
+                <p className="font-mono text-xs text-slate-500">
                   Click "Generate README" to build your<br />GitHub profile from your SkillForge data
                 </p>
               </div>
@@ -235,9 +235,9 @@ export default function PortfolioPage() {
       {/* GitHub Token Modal */}
       <Modal open={tokenModal} onClose={() => setTokenModal(false)} title="Push to GitHub">
         <div className="space-y-4">
-          <div className="p-3 bg-arena-bg3 rounded-lg border border-arena-border">
-            <p className="font-mono text-xs text-arena-muted leading-relaxed">
-              You need a GitHub Personal Access Token with <strong className="text-arena-text">repo</strong> scope.
+          <div className="p-3 bg-slate-100 rounded-lg border border-slate-200">
+            <p className="font-mono text-xs text-slate-600 leading-relaxed">
+              You need a GitHub Personal Access Token with <strong className="text-slate-900">repo</strong> scope.
               Go to GitHub → Settings → Developer settings → Personal access tokens → Generate new token.
             </p>
           </div>
@@ -245,7 +245,7 @@ export default function PortfolioPage() {
             placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
             value={ghToken} onChange={(e) => setGhToken(e.target.value)}
             icon={<Icons.Shield size={14} />} />
-          <p className="font-mono text-xs text-arena-dim">
+          <p className="font-mono text-xs text-slate-500">
             Your token is used only for this push and is not stored permanently.
           </p>
           <div className="flex gap-3">
@@ -262,8 +262,8 @@ export default function PortfolioPage() {
         <div className="space-y-4">
           <Input label="Title" value={project.title} onChange={(e) => setProject({ ...project, title: e.target.value })} />
           <div>
-            <label className="arena-label">Description</label>
-            <textarea className="arena-input resize-none" rows={3}
+            <label className="block text-sm font-semibold text-slate-700 mb-1.5">Description</label>
+            <textarea className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 placeholder-slate-400 text-slate-900 focus:outline-none focus:border-blue-500 transition-all text-sm resize-none" rows={3}
               value={project.description} onChange={(e) => setProject({ ...project, description: e.target.value })} />
           </div>
           <Input label="Language / Tech Stack" placeholder="React, Node.js, PostgreSQL"
@@ -274,10 +274,10 @@ export default function PortfolioPage() {
           <Input label="Live URL" value={project.liveUrl} onChange={(e) => setProject({ ...project, liveUrl: e.target.value })} />
           <label className="flex items-center gap-2 cursor-pointer">
             <div onClick={() => setProject({ ...project, featured: !project.featured })}
-              className={`w-4 h-4 rounded border flex items-center justify-center ${project.featured ? 'bg-arena-purple border-arena-purple' : 'border-arena-border'}`}>
+              className={`w-4 h-4 rounded border flex items-center justify-center ${project.featured ? 'bg-blue-600 border-blue-600' : 'border-slate-200'}`}>
               {project.featured && <Icons.Check size={10} className="text-white" />}
             </div>
-            <span className="font-mono text-xs text-arena-muted">Feature this project</span>
+            <span className="font-mono text-xs text-slate-600">Feature this project</span>
           </label>
           <div className="flex gap-3">
             <Button onClick={() => setAddProjectModal(false)} variant="secondary" className="flex-1">Cancel</Button>

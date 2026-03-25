@@ -11,9 +11,9 @@ const LEVEL_NAMES = ['Beginner','Apprentice','Coder','Developer','Senior Dev','A
 const THRESHOLDS  = [0,500,1200,2500,4500,7500,12000,18000,26000,36000];
 
 const RARITY_COLORS = {
-  common:    'border-arena-border text-arena-muted',
-  rare:      'border-arena-purple/40 text-arena-purple2',
-  epic:      'border-arena-teal/40 text-arena-teal',
+  common:    'border-slate-200 text-slate-600',
+  rare:      'border-blue-600/40 text-blue-700',
+  epic:      'border-indigo-600/40 text-indigo-600',
   legendary: 'border-yellow-500/40 text-yellow-400',
 };
 
@@ -27,7 +27,7 @@ function SkillRadar({ skills }) {
 
   if (!data.length) return (
     <div className="flex items-center justify-center h-48">
-      <p className="font-mono text-xs text-arena-dim">Complete courses to build your skill map</p>
+      <p className="font-mono text-xs text-slate-500">Complete courses to build your skill map</p>
     </div>
   );
 
@@ -51,11 +51,11 @@ function Heatmap({ logs }) {
   for (let i = 0; i < days.length; i += 7) weeks.push(days.slice(i, i+7));
   const col = (d) => {
     const xp = logMap[format(d, 'yyyy-MM-dd')] || 0;
-    if (!xp) return 'bg-arena-bg3';
-    if (xp < 100) return 'bg-arena-purple/30';
-    if (xp < 300) return 'bg-arena-purple/60';
-    if (xp < 600) return 'bg-arena-purple';
-    return 'bg-arena-teal';
+    if (!xp) return 'bg-slate-100';
+    if (xp < 100) return 'bg-blue-600/30';
+    if (xp < 300) return 'bg-blue-600/60';
+    if (xp < 600) return 'bg-blue-600';
+    return 'bg-indigo-600';
   };
   return (
     <div className="flex gap-1 overflow-x-auto">
@@ -101,7 +101,7 @@ export default function ProfilePage() {
   };
 
   if (loading) return (
-    <div className="flex justify-center py-24"><Spinner size={24} className="text-arena-purple2" /></div>
+    <div className="flex justify-center py-24"><Spinner size={24} className="text-blue-700" /></div>
   );
   if (!data) return null;
 
@@ -131,12 +131,12 @@ export default function ProfilePage() {
                 )}
               </div>
               <div className="flex items-center gap-2 mb-2">
-                <span className="font-mono text-xs text-arena-dim">@{profile.username}</span>
+                <span className="font-mono text-xs text-slate-500">@{profile.username}</span>
                 <span className="text-arena-border">·</span>
                 <BadgeTag variant="purple">{LEVEL_NAMES[lvl-1]}</BadgeTag>
                 <BadgeTag variant="gray">Rank #{(profile.rank||0).toLocaleString()}</BadgeTag>
               </div>
-              {profile.bio && <p className="font-body text-sm text-arena-muted max-w-sm">{profile.bio}</p>}
+              {profile.bio && <p className="font-body text-sm text-slate-600 max-w-sm">{profile.bio}</p>}
             </div>
           </div>
           <div className="flex gap-2">
@@ -163,25 +163,25 @@ export default function ProfilePage() {
       {/* Stats row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: 'Total XP',    value: xp.toLocaleString(),             icon: Icons.Zap,       color: 'text-arena-purple2' },
-          { label: 'Courses Done', value: profile.coursesCompleted || 0,   icon: Icons.Book,      color: 'text-arena-teal' },
-          { label: 'Quiz Accuracy',value: `${accuracy}%`,                 icon: Icons.Target,    color: 'text-arena-muted' },
+          { label: 'Total XP',    value: xp.toLocaleString(),             icon: Icons.Zap,       color: 'text-blue-700' },
+          { label: 'Courses Done', value: profile.coursesCompleted || 0,   icon: Icons.Book,      color: 'text-indigo-600' },
+          { label: 'Quiz Accuracy',value: `${accuracy}%`,                 icon: Icons.Target,    color: 'text-slate-600' },
           { label: 'Streak',       value: `${profile.streak||0} days`,    icon: Icons.Fire,      color: 'text-orange-400' },
         ].map(({ label, value, icon: Ic, color }) => (
           <div key={label} className="arena-card p-4 text-center">
             <Ic size={14} className={`${color} mx-auto mb-1`} />
-            <div className="font-display font-bold text-lg text-arena-text">{value}</div>
-            <div className="font-mono text-xs text-arena-dim">{label}</div>
+            <div className="font-display font-bold text-lg text-slate-900">{value}</div>
+            <div className="font-mono text-xs text-slate-500">{label}</div>
           </div>
         ))}
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-arena-bg2 border border-arena-border rounded-xl p-1">
+      <div className="flex gap-1 bg-white border border-slate-200 rounded-xl p-1">
         {['overview', 'badges', 'courses', 'activity'].map((t) => (
           <button key={t} onClick={() => setTab(t)}
             className={`flex-1 py-2 rounded-lg font-mono text-xs capitalize transition-all ${
-              tab === t ? 'bg-arena-purple text-white' : 'text-arena-muted hover:text-arena-text'
+              tab === t ? 'bg-blue-600 text-white' : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             {t}
@@ -193,13 +193,13 @@ export default function ProfilePage() {
       {tab === 'overview' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           <div className="arena-card p-5">
-            <span className="font-mono text-xs text-arena-dim uppercase tracking-widest block mb-4">Skill Map</span>
+            <span className="font-mono text-xs text-slate-500 uppercase tracking-widest block mb-4">Skill Map</span>
             <SkillRadar skills={stats?.skills || {}} />
           </div>
           <div className="arena-card p-5">
-            <span className="font-mono text-xs text-arena-dim uppercase tracking-widest block mb-4">Activity Heatmap</span>
+            <span className="font-mono text-xs text-slate-500 uppercase tracking-widest block mb-4">Activity Heatmap</span>
             <Heatmap logs={stats?.activityLogs || []} />
-            <div className="flex justify-between mt-3 font-mono text-xs text-arena-dim">
+            <div className="flex justify-between mt-3 font-mono text-xs text-slate-500">
               <span>12 weeks ago</span>
               <span>Today</span>
             </div>
@@ -210,18 +210,18 @@ export default function ProfilePage() {
       {/* BADGES */}
       {tab === 'badges' && (
         <div className="arena-card p-5">
-          <span className="font-mono text-xs text-arena-dim uppercase tracking-widest block mb-5">Badge Collection ({profile.badges?.length || 0})</span>
+          <span className="font-mono text-xs text-slate-500 uppercase tracking-widest block mb-5">Badge Collection ({profile.badges?.length || 0})</span>
           {(profile.badges?.length || 0) === 0 ? (
-            <p className="font-mono text-xs text-arena-dim text-center py-8">No badges yet. Complete courses to earn them.</p>
+            <p className="font-mono text-xs text-slate-500 text-center py-8">No badges yet. Complete courses to earn them.</p>
           ) : (
             <div className="grid grid-cols-3 md:grid-cols-5 gap-4">
               {profile.badges.map(({ badge, awardedAt }) => (
-                <div key={badge.id} className={`flex flex-col items-center gap-2 p-3 rounded-xl border ${RARITY_COLORS[badge.rarity]||'border-arena-border text-arena-muted'}`}>
-                  <div className="w-10 h-10 rounded-xl bg-arena-bg3 flex items-center justify-center">
+                <div key={badge.id} className={`flex flex-col items-center gap-2 p-3 rounded-xl border ${RARITY_COLORS[badge.rarity]||'border-slate-200 text-slate-600'}`}>
+                  <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center">
                     <Icons.Award size={18} className="text-current" />
                   </div>
                   <span className="font-mono text-xs text-center leading-tight">{badge.name}</span>
-                  <span className="font-mono text-xs text-arena-dim capitalize">{badge.rarity}</span>
+                  <span className="font-mono text-xs text-slate-500 capitalize">{badge.rarity}</span>
                 </div>
               ))}
             </div>
@@ -232,19 +232,19 @@ export default function ProfilePage() {
       {/* COURSES */}
       {tab === 'courses' && (
         <div className="arena-card overflow-hidden">
-          <div className="px-5 py-3 border-b border-arena-border">
-            <span className="font-mono text-xs text-arena-dim uppercase tracking-widest">Enrolled Courses</span>
+          <div className="px-5 py-3 border-b border-slate-200">
+            <span className="font-mono text-xs text-slate-500 uppercase tracking-widest">Enrolled Courses</span>
           </div>
           <div className="divide-y divide-arena-border/40">
             {(profile.enrollments || []).length === 0 ? (
-              <p className="px-5 py-8 font-mono text-xs text-arena-dim">No enrollments yet</p>
+              <p className="px-5 py-8 font-mono text-xs text-slate-500">No enrollments yet</p>
             ) : profile.enrollments.map((e) => (
               <div key={e.id} className="flex items-center gap-4 px-5 py-3">
-                <div className="w-8 h-8 rounded-lg bg-arena-purple/15 border border-arena-border flex items-center justify-center flex-shrink-0">
-                  <Icons.Book size={13} className="text-arena-purple2" />
+                <div className="w-8 h-8 rounded-lg bg-blue-600/15 border border-slate-200 flex items-center justify-center flex-shrink-0">
+                  <Icons.Book size={13} className="text-blue-700" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-body text-sm text-arena-text truncate">{e.course?.title}</p>
+                  <p className="font-body text-sm text-slate-900 truncate">{e.course?.title}</p>
                 </div>
                 {e.completedAt
                   ? <BadgeTag variant="teal">Done</BadgeTag>
@@ -259,14 +259,14 @@ export default function ProfilePage() {
       {/* ACTIVITY */}
       {tab === 'activity' && (
         <div className="arena-card p-5">
-          <span className="font-mono text-xs text-arena-dim uppercase tracking-widest block mb-5">Full Activity Log</span>
+          <span className="font-mono text-xs text-slate-500 uppercase tracking-widest block mb-5">Full Activity Log</span>
           <Heatmap logs={stats?.activityLogs || []} />
           <div className="mt-4 space-y-2">
             {(stats?.activityLogs||[]).slice(0,14).filter(l => l.xpEarned > 0).map((l) => (
-              <div key={l.id} className="flex items-center gap-3 py-2 border-b border-arena-border/40 last:border-0">
-                <Icons.Zap size={11} className="text-arena-purple2" />
-                <span className="font-mono text-xs text-arena-dim">{format(new Date(l.date), 'MMM d, yyyy')}</span>
-                <span className="font-mono text-xs text-arena-purple2 ml-auto">+{l.xpEarned} XP</span>
+              <div key={l.id} className="flex items-center gap-3 py-2 border-b border-slate-200/40 last:border-0">
+                <Icons.Zap size={11} className="text-blue-700" />
+                <span className="font-mono text-xs text-slate-500">{format(new Date(l.date), 'MMM d, yyyy')}</span>
+                <span className="font-mono text-xs text-blue-700 ml-auto">+{l.xpEarned} XP</span>
               </div>
             ))}
           </div>

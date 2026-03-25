@@ -62,31 +62,31 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-arena-bg flex items-center justify-center px-4">
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
       <div className="w-full max-w-lg">
         <div className="flex items-center gap-2.5 justify-center mb-8">
           <div className="w-9 h-9 rounded-xl bg-purple-teal flex items-center justify-center">
             <Icons.Code size={17} className="text-white" />
           </div>
-          <span className="font-display font-black text-xl text-gradient">SkillForge</span>
+          <span className="font-display font-black text-xl text-slate-900">SkillForge</span>
         </div>
         <div className="flex gap-2 mb-8">
           {[1,2,3,4].map((s) => (
-            <div key={s} className={`h-1 flex-1 rounded-full transition-all duration-300 ${step >= s ? 'bg-arena-purple' : 'bg-arena-bg3'}`} />
+            <div key={s} className={`h-1 flex-1 rounded-full transition-all duration-300 ${step >= s ? 'bg-blue-600' : 'bg-slate-100'}`} />
           ))}
         </div>
 
         {step === 1 && (
           <div>
-            <h1 className="font-display font-black text-2xl text-arena-text mb-1">Who are you? 👋</h1>
-            <p className="font-mono text-xs text-arena-dim mb-6">Help us personalize your journey.</p>
+            <h1 className="font-display font-black text-2xl text-slate-900 mb-1">Who are you? 👋</h1>
+            <p className="font-mono text-xs text-slate-500 mb-6">Help us personalize your journey.</p>
             <div className="space-y-3">
               {ROLE_OPTIONS.map((r) => (
                 <button key={r.value} onClick={() => setForm((f) => ({ ...f, role: r.value, ageGroup: '', goal: '', interests: [] }))}
-                  className={`w-full p-4 rounded-xl border text-left transition-all flex items-center gap-4 ${form.role === r.value ? 'border-arena-purple bg-arena-purple/10' : 'border-arena-border bg-arena-bg2 hover:border-arena-purple/40'}`}>
+                  className={`w-full p-4 rounded-xl border text-left transition-all flex items-center gap-4 ${form.role === r.value ? 'border-blue-600 bg-blue-600/10' : 'border-slate-200 bg-white hover:border-blue-600/40'}`}>
                   <span className="text-2xl">{r.icon}</span>
-                  <div><p className="font-mono text-sm font-bold text-arena-text">{r.label}</p><p className="font-mono text-xs text-arena-dim">{r.desc}</p></div>
-                  {form.role === r.value && <Icons.Check size={16} className="ml-auto text-arena-purple2 flex-shrink-0" />}
+                  <div><p className="font-mono text-sm font-bold text-slate-900">{r.label}</p><p className="font-mono text-xs text-slate-500">{r.desc}</p></div>
+                  {form.role === r.value && <Icons.Check size={16} className="ml-auto text-blue-700 flex-shrink-0" />}
                 </button>
               ))}
             </div>
@@ -96,20 +96,20 @@ export default function OnboardingPage() {
 
         {step === 2 && form.role && (
           <div>
-            <h1 className="font-display font-black text-2xl text-arena-text mb-1">Where are you at? 📍</h1>
-            <p className="font-mono text-xs text-arena-dim mb-6">We'll match content to your level.</p>
+            <h1 className="font-display font-black text-2xl text-slate-900 mb-1">Where are you at? 📍</h1>
+            <p className="font-mono text-xs text-slate-500 mb-6">We'll match content to your level.</p>
             <div className="space-y-3">
               {AGE_BY_ROLE[form.role].map((a) => (
                 <button key={a.value} onClick={() => setForm((f) => ({ ...f, ageGroup: a.value }))}
-                  className={`w-full p-4 rounded-xl border text-left transition-all flex items-center gap-4 ${form.ageGroup === a.value ? 'border-arena-purple bg-arena-purple/10' : 'border-arena-border bg-arena-bg2 hover:border-arena-purple/40'}`}>
+                  className={`w-full p-4 rounded-xl border text-left transition-all flex items-center gap-4 ${form.ageGroup === a.value ? 'border-blue-600 bg-blue-600/10' : 'border-slate-200 bg-white hover:border-blue-600/40'}`}>
                   <span className="text-2xl">{a.icon}</span>
-                  <p className="font-mono text-sm font-bold text-arena-text">{a.label}</p>
-                  {form.ageGroup === a.value && <Icons.Check size={16} className="ml-auto text-arena-purple2 flex-shrink-0" />}
+                  <p className="font-mono text-sm font-bold text-slate-900">{a.label}</p>
+                  {form.ageGroup === a.value && <Icons.Check size={16} className="ml-auto text-blue-700 flex-shrink-0" />}
                 </button>
               ))}
             </div>
             <div className="flex gap-3 mt-6">
-              <button onClick={() => setStep(1)} className="flex-1 py-3.5 rounded-xl border border-arena-border text-arena-muted font-mono text-sm hover:border-arena-purple/40 transition-all">← Back</button>
+              <button onClick={() => setStep(1)} className="flex-1 py-3.5 rounded-xl border border-slate-200 text-slate-600 font-mono text-sm hover:border-blue-600/40 transition-all">← Back</button>
               <button disabled={!form.ageGroup} onClick={() => setStep(3)} className="btn-primary flex-1 py-3.5 disabled:opacity-40">Continue →</button>
             </div>
           </div>
@@ -117,19 +117,19 @@ export default function OnboardingPage() {
 
         {step === 3 && form.role && (
           <div>
-            <h1 className="font-display font-black text-2xl text-arena-text mb-1">What's your main goal? 🎯</h1>
-            <p className="font-mono text-xs text-arena-dim mb-6">We'll focus your learning path.</p>
+            <h1 className="font-display font-black text-2xl text-slate-900 mb-1">What's your main goal? 🎯</h1>
+            <p className="font-mono text-xs text-slate-500 mb-6">We'll focus your learning path.</p>
             <div className="space-y-3">
               {GOAL_BY_ROLE[form.role].map((g) => (
                 <button key={g} onClick={() => setForm((f) => ({ ...f, goal: g }))}
-                  className={`w-full p-3.5 rounded-xl border text-left transition-all flex items-center gap-3 ${form.goal === g ? 'border-arena-purple bg-arena-purple/10' : 'border-arena-border bg-arena-bg2 hover:border-arena-purple/40'}`}>
-                  <span className="font-mono text-sm text-arena-text">{g}</span>
-                  {form.goal === g && <Icons.Check size={16} className="ml-auto text-arena-purple2 flex-shrink-0" />}
+                  className={`w-full p-3.5 rounded-xl border text-left transition-all flex items-center gap-3 ${form.goal === g ? 'border-blue-600 bg-blue-600/10' : 'border-slate-200 bg-white hover:border-blue-600/40'}`}>
+                  <span className="font-mono text-sm text-slate-900">{g}</span>
+                  {form.goal === g && <Icons.Check size={16} className="ml-auto text-blue-700 flex-shrink-0" />}
                 </button>
               ))}
             </div>
             <div className="flex gap-3 mt-6">
-              <button onClick={() => setStep(2)} className="flex-1 py-3.5 rounded-xl border border-arena-border text-arena-muted font-mono text-sm hover:border-arena-purple/40 transition-all">← Back</button>
+              <button onClick={() => setStep(2)} className="flex-1 py-3.5 rounded-xl border border-slate-200 text-slate-600 font-mono text-sm hover:border-blue-600/40 transition-all">← Back</button>
               <button disabled={!form.goal} onClick={() => setStep(4)} className="btn-primary flex-1 py-3.5 disabled:opacity-40">Continue →</button>
             </div>
           </div>
@@ -137,19 +137,19 @@ export default function OnboardingPage() {
 
         {step === 4 && form.role && (
           <div>
-            <h1 className="font-display font-black text-2xl text-arena-text mb-1">Pick your topics 🚀</h1>
-            <p className="font-mono text-xs text-arena-dim mb-6">Select at least 3 you want to master.</p>
+            <h1 className="font-display font-black text-2xl text-slate-900 mb-1">Pick your topics 🚀</h1>
+            <p className="font-mono text-xs text-slate-500 mb-6">Select at least 3 you want to master.</p>
             <div className="flex flex-wrap gap-2 max-h-60 overflow-y-auto pb-1">
               {INTERESTS_BY_ROLE[form.role].map((i) => (
                 <button key={i} onClick={() => toggleInterest(i)}
-                  className={`px-3 py-1.5 rounded-lg border font-mono text-xs transition-all ${form.interests.includes(i) ? 'border-arena-purple bg-arena-purple/15 text-arena-purple2' : 'border-arena-border bg-arena-bg2 text-arena-muted hover:border-arena-purple/40'}`}>
+                  className={`px-3 py-1.5 rounded-lg border font-mono text-xs transition-all ${form.interests.includes(i) ? 'border-blue-600 bg-blue-600/15 text-blue-700' : 'border-slate-200 bg-white text-slate-600 hover:border-blue-600/40'}`}>
                   {i}
                 </button>
               ))}
             </div>
-            <p className="font-mono text-xs text-arena-dim mt-2">{form.interests.length} selected</p>
+            <p className="font-mono text-xs text-slate-500 mt-2">{form.interests.length} selected</p>
             <div className="flex gap-3 mt-4">
-              <button onClick={() => setStep(3)} className="flex-1 py-3.5 rounded-xl border border-arena-border text-arena-muted font-mono text-sm hover:border-arena-purple/40 transition-all">← Back</button>
+              <button onClick={() => setStep(3)} className="flex-1 py-3.5 rounded-xl border border-slate-200 text-slate-600 font-mono text-sm hover:border-blue-600/40 transition-all">← Back</button>
               <button disabled={form.interests.length < 3 || loading} onClick={handleFinish} className="btn-primary flex-1 py-3.5 disabled:opacity-40">
                 {loading ? 'Setting up...' : "Let's Go! 🎉"}
               </button>

@@ -47,7 +47,7 @@ export function RoomsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-display font-black text-2xl mb-1">Code Rooms</h1>
-          <p className="font-mono text-xs text-arena-dim">// collaborative real-time coding · up to 4 devs · auto-expire 24h</p>
+          <p className="font-mono text-xs text-slate-500">// collaborative real-time coding · up to 4 devs · auto-expire 24h</p>
         </div>
         <Button onClick={() => setCreate(true)} variant="primary">
           <Icons.Plus size={14} /> Create Room
@@ -55,12 +55,12 @@ export function RoomsPage() {
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-12"><Spinner size={24} className="text-arena-purple2" /></div>
+        <div className="flex justify-center py-12"><Spinner size={24} className="text-blue-700" /></div>
       ) : rooms.length === 0 ? (
         <div className="arena-card p-16 text-center">
-          <Icons.Users size={32} className="text-arena-dim mx-auto mb-4" />
+          <Icons.Users size={32} className="text-slate-500 mx-auto mb-4" />
           <p className="font-display font-bold mb-2">No public rooms</p>
-          <p className="font-mono text-xs text-arena-dim mb-6">Be the first to create a collaborative code room</p>
+          <p className="font-mono text-xs text-slate-500 mb-6">Be the first to create a collaborative code room</p>
           <Button onClick={() => setCreate(true)} variant="primary">
             <Icons.Plus size={14} /> Create First Room
           </Button>
@@ -74,19 +74,19 @@ export function RoomsPage() {
                   <h3 className="font-display font-bold text-sm mb-1">{room.name}</h3>
                   <div className="flex items-center gap-2">
                     <BadgeTag variant="gray">{room.language}</BadgeTag>
-                    <span className="font-mono text-xs text-arena-dim">
+                    <span className="font-mono text-xs text-slate-500">
                       {room._count?.participants || 0}/{room.maxUsers} devs
                     </span>
                   </div>
                 </div>
-                <div className="w-8 h-8 rounded-lg bg-arena-purple/15 border border-arena-border flex items-center justify-center">
-                  <Icons.Code size={13} className="text-arena-purple2" />
+                <div className="w-8 h-8 rounded-lg bg-blue-600/15 border border-slate-200 flex items-center justify-center">
+                  <Icons.Code size={13} className="text-blue-700" />
                 </div>
               </div>
               <div className="flex items-center gap-2 mb-4">
                 <Avatar user={room.owner} size={20} />
-                <span className="font-mono text-xs text-arena-dim">{room.owner?.username}</span>
-                <span className="font-mono text-xs text-arena-dim ml-auto">
+                <span className="font-mono text-xs text-slate-500">{room.owner?.username}</span>
+                <span className="font-mono text-xs text-slate-500 ml-auto">
                   {formatDistanceToNow(new Date(room.createdAt), { addSuffix: true })}
                 </span>
               </div>
@@ -103,8 +103,8 @@ export function RoomsPage() {
           <Input label="Room Name" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
             placeholder="My Coding Session" />
           <div>
-            <label className="arena-label">Language</label>
-            <select className="arena-input" value={form.language} onChange={e => setForm({ ...form, language: e.target.value })}>
+            <label className="block text-sm font-semibold text-slate-700 mb-1.5">Language</label>
+            <select className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 placeholder-slate-400 text-slate-900 focus:outline-none focus:border-blue-500 transition-all text-sm" value={form.language} onChange={e => setForm({ ...form, language: e.target.value })}>
               {LANGUAGES.map(l => <option key={l} value={l}>{l}</option>)}
             </select>
           </div>
@@ -112,10 +112,10 @@ export function RoomsPage() {
             onChange={e => setForm({ ...form, maxUsers: Number(e.target.value) })} />
           <label className="flex items-center gap-2 cursor-pointer">
             <div onClick={() => setForm({ ...form, isPublic: !form.isPublic })}
-              className={`w-4 h-4 rounded border flex items-center justify-center ${form.isPublic ? 'bg-arena-purple border-arena-purple' : 'border-arena-border'}`}>
+              className={`w-4 h-4 rounded border flex items-center justify-center ${form.isPublic ? 'bg-blue-600 border-blue-600' : 'border-slate-200'}`}>
               {form.isPublic && <Icons.Check size={10} className="text-white" />}
             </div>
-            <span className="font-mono text-xs text-arena-muted">Public room (visible to everyone)</span>
+            <span className="font-mono text-xs text-slate-600">Public room (visible to everyone)</span>
           </label>
           <div className="flex gap-3">
             <Button onClick={() => setCreate(false)} variant="secondary" className="flex-1">Cancel</Button>
@@ -178,11 +178,11 @@ export function RoomPage() {
   };
 
   if (loading) return (
-    <div className="flex justify-center py-24"><Spinner size={24} className="text-arena-purple2" /></div>
+    <div className="flex justify-center py-24"><Spinner size={24} className="text-blue-700" /></div>
   );
   if (!room) return (
     <div className="text-center py-24">
-      <p className="font-mono text-sm text-arena-dim">Room not found or expired</p>
+      <p className="font-mono text-sm text-slate-500">Room not found or expired</p>
       <Button onClick={() => navigate('/rooms')} variant="secondary" className="mt-4">Back to Rooms</Button>
     </div>
   );
@@ -195,18 +195,18 @@ export function RoomPage() {
       {/* Header */}
       <div className="flex items-center justify-between flex-shrink-0">
         <div className="flex items-center gap-3">
-          <button onClick={() => navigate('/rooms')} className="text-arena-dim hover:text-arena-text transition-colors">
+          <button onClick={() => navigate('/rooms')} className="text-slate-500 hover:text-slate-900 transition-colors">
             <Icons.ArrowLeft size={15} />
           </button>
           <div>
             <h1 className="font-display font-bold text-base">{room.name}</h1>
             <div className="flex items-center gap-2">
               <BadgeTag variant="gray">{room.language}</BadgeTag>
-              <span className="flex items-center gap-1 font-mono text-xs text-arena-teal">
-                <span className="w-1.5 h-1.5 rounded-full bg-arena-teal animate-pulse" />
+              <span className="flex items-center gap-1 font-mono text-xs text-indigo-600">
+                <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 animate-pulse" />
                 {participants.length} online
               </span>
-              {saving && <span className="font-mono text-xs text-arena-dim">saving...</span>}
+              {saving && <span className="font-mono text-xs text-slate-500">saving...</span>}
             </div>
           </div>
         </div>
@@ -229,17 +229,17 @@ export function RoomPage() {
 
       {/* Editor */}
       <div className="flex-1 arena-card overflow-hidden flex flex-col">
-        <div className="flex items-center justify-between px-4 py-2.5 bg-arena-bg border-b border-arena-border flex-shrink-0">
+        <div className="flex items-center justify-between px-4 py-2.5 bg-slate-50 border-b border-slate-200 flex-shrink-0">
           <div className="flex items-center gap-1.5">
             <div className="w-2.5 h-2.5 rounded-full bg-red-500/60" />
             <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/60" />
             <div className="w-2.5 h-2.5 rounded-full bg-green-500/60" />
-            <span className="font-mono text-xs text-arena-dim ml-2">
+            <span className="font-mono text-xs text-slate-500 ml-2">
               main.{room.language === 'python' ? 'py' : room.language === 'cpp' ? 'cpp' : room.language === 'java' ? 'java' : 'js'}
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="font-mono text-xs text-arena-dim">{room.language}</span>
+            <span className="font-mono text-xs text-slate-500">{room.language}</span>
             {isOwner && (
               <select
                 value={room.language}
@@ -247,7 +247,7 @@ export function RoomPage() {
                   await api.put(`/rooms/${id}/code`, { language: e.target.value });
                   fetchRoom();
                 }}
-                className="bg-arena-bg3 border border-arena-border rounded font-mono text-xs px-2 py-1 text-arena-muted"
+                className="bg-slate-100 border border-slate-200 rounded font-mono text-xs px-2 py-1 text-slate-600"
               >
                 {LANGUAGES.map(l => <option key={l} value={l}>{l}</option>)}
               </select>
@@ -258,7 +258,7 @@ export function RoomPage() {
         <textarea
           value={code}
           onChange={e => handleCodeChange(e.target.value)}
-          className="flex-1 bg-arena-bg text-arena-text font-mono text-sm p-4 outline-none resize-none border-0 leading-relaxed"
+          className="flex-1 bg-slate-50 text-slate-900 font-mono text-sm p-4 outline-none resize-none border-0 leading-relaxed"
           spellCheck={false}
           onKeyDown={e => {
             if (e.key === 'Tab') {
@@ -271,11 +271,11 @@ export function RoomPage() {
           }}
         />
 
-        <div className="flex items-center justify-between px-4 py-2 border-t border-arena-border flex-shrink-0">
-          <span className="font-mono text-xs text-arena-dim">
+        <div className="flex items-center justify-between px-4 py-2 border-t border-slate-200 flex-shrink-0">
+          <span className="font-mono text-xs text-slate-500">
             {code.split('\n').length} lines · {code.length} chars
           </span>
-          <span className="font-mono text-xs text-arena-dim">
+          <span className="font-mono text-xs text-slate-500">
             Syncs every 3s · Expires {room.expiresAt ? formatDistanceToNow(new Date(room.expiresAt), { addSuffix: true }) : 'never'}
           </span>
         </div>

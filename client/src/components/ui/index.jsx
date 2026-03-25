@@ -43,15 +43,15 @@ export function Button({
 export function Input({ label, error, icon, className = '', ...props }) {
   return (
     <div className="flex flex-col gap-1 w-full">
-      {label && <label className="arena-label">{label}</label>}
+      {label && <label className="block text-sm font-semibold text-slate-700 mb-1.5">{label}</label>}
       <div className="relative">
         {icon && (
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-arena-dim pointer-events-none">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none">
             {icon}
           </span>
         )}
         <input
-          className={`arena-input ${icon ? 'pl-9' : ''} ${error ? 'border-red-500/50 focus:border-red-500' : ''} ${className}`}
+          className={`w-full bg-white border border-slate-200 rounded-xl px-4 py-3 placeholder-slate-400 text-slate-900 focus:outline-none focus:border-blue-500 transition-all text-sm ${icon ? 'pl-9' : ''} ${error ? 'border-red-500/50 focus:border-red-500' : ''} ${className}`}
           {...props}
         />
       </div>
@@ -64,9 +64,9 @@ export function Input({ label, error, icon, className = '', ...props }) {
 export function Select({ label, error, className = '', children, ...props }) {
   return (
     <div className="flex flex-col gap-1 w-full">
-      {label && <label className="arena-label">{label}</label>}
+      {label && <label className="block text-sm font-semibold text-slate-700 mb-1.5">{label}</label>}
       <select
-        className={`arena-input appearance-none cursor-pointer ${error ? 'border-red-500/50' : ''} ${className}`}
+        className={`w-full bg-white border border-slate-200 rounded-xl px-4 py-3 placeholder-slate-400 text-slate-900 focus:outline-none focus:border-blue-500 transition-all text-sm appearance-none cursor-pointer ${error ? 'border-red-500/50' : ''} ${className}`}
         {...props}
       >
         {children}
@@ -111,12 +111,12 @@ export function Modal({ open, onClose, title, children, width = 'max-w-lg' }) {
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in"
       onClick={(e) => { if (e.target === overlayRef.current) onClose?.(); }}
     >
-      <div className={`w-full ${width} bg-arena-bg2 border border-arena-border rounded-xl shadow-2xl animate-fade-up flex flex-col max-h-[90vh]`}>
+      <div className={`w-full ${width} bg-white border border-slate-200 rounded-xl shadow-2xl animate-fade-up flex flex-col max-h-[90vh]`}>
         {(title || onClose) && (
-          <div className="flex items-center justify-between px-5 py-4 border-b border-arena-border flex-shrink-0">
-            {title && <h3 className="font-display font-bold text-base text-arena-text">{title}</h3>}
+          <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 flex-shrink-0">
+            {title && <h3 className="font-display font-bold text-base text-slate-900">{title}</h3>}
             {onClose && (
-              <button onClick={onClose} className="text-arena-dim hover:text-arena-text transition-colors p-1">
+              <button onClick={onClose} className="text-slate-500 hover:text-slate-900 transition-colors p-1">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                   <path d="M18 6L6 18M6 6l12 12" />
                 </svg>
@@ -149,7 +149,7 @@ export function Avatar({ user, size = 36, className = '' }) {
       <img
         src={user.avatarUrl}
         alt={user?.username || 'user'}
-        className={`rounded-full object-cover border border-arena-border flex-shrink-0 ${className}`}
+        className={`rounded-full object-cover border border-slate-200 flex-shrink-0 ${className}`}
         style={{ width: size, height: size }}
       />
     );
@@ -172,10 +172,10 @@ export function XPBar({ current, max, level, levelName, showLabel = true, classN
     <div className={`flex flex-col gap-1.5 ${className}`}>
       {showLabel && (
         <div className="flex justify-between items-center">
-          <span className="font-mono text-xs text-arena-purple2 font-medium">
+          <span className="font-mono text-xs text-blue-700 font-medium">
             Lv{level} · {levelName}
           </span>
-          <span className="font-mono text-xs text-arena-dim">
+          <span className="font-mono text-xs text-slate-500">
             {(current || 0).toLocaleString()} / {(max || 0).toLocaleString()} XP
           </span>
         </div>
@@ -191,8 +191,8 @@ export function XPBar({ current, max, level, levelName, showLabel = true, classN
 export function ProgressBar({ value = 0, max = 100, color = 'purple', height = 4, className = '' }) {
   const pct = max > 0 ? Math.min(Math.round((value / max) * 100), 100) : 0;
   const colors = {
-    purple: 'bg-arena-purple',
-    teal:   'bg-arena-teal',
+    purple: 'bg-blue-600',
+    teal:   'bg-indigo-600',
     grad:   'bg-gradient-to-r from-arena-purple to-arena-teal',
   };
   return (
@@ -228,12 +228,12 @@ export function StatCard({ label, value, icon, trend, className = '' }) {
   return (
     <div className={`arena-card p-4 ${className}`}>
       <div className="flex items-start justify-between mb-2">
-        <span className="font-mono text-xs text-arena-dim uppercase tracking-widest">{label}</span>
-        {icon && <span className="text-arena-dim">{icon}</span>}
+        <span className="font-mono text-xs text-slate-500 uppercase tracking-widest">{label}</span>
+        {icon && <span className="text-slate-500">{icon}</span>}
       </div>
-      <div className="font-display font-bold text-2xl text-arena-text">{value}</div>
+      <div className="font-display font-bold text-2xl text-slate-900">{value}</div>
       {trend !== undefined && (
-        <div className={`text-xs font-mono mt-1 ${trend >= 0 ? 'text-arena-teal' : 'text-red-400'}`}>
+        <div className={`text-xs font-mono mt-1 ${trend >= 0 ? 'text-indigo-600' : 'text-red-400'}`}>
           {trend >= 0 ? '+' : ''}{trend} this week
         </div>
       )}
@@ -250,11 +250,11 @@ export function SectionHeader({ tag, title, subtitle, action, center = false }) 
           {tag}
         </span>
       )}
-      <h2 className="font-display font-bold text-2xl md:text-3xl text-arena-text leading-tight mb-2">
+      <h2 className="font-display font-bold text-2xl md:text-3xl text-slate-900 leading-tight mb-2">
         {title}
       </h2>
       {subtitle && (
-        <p className="text-arena-muted text-sm leading-relaxed max-w-xl">{subtitle}</p>
+        <p className="text-slate-600 text-sm leading-relaxed max-w-xl">{subtitle}</p>
       )}
       {action && <div className="mt-4">{action}</div>}
     </div>
@@ -265,10 +265,10 @@ export function SectionHeader({ tag, title, subtitle, action, center = false }) 
 export function EmptyState({ icon, title, description, action }) {
   return (
     <div className="flex flex-col items-center justify-center py-16 text-center">
-      {icon && <div className="text-arena-dim mb-4">{icon}</div>}
-      <h3 className="font-display font-bold text-arena-text mb-2">{title}</h3>
+      {icon && <div className="text-slate-500 mb-4">{icon}</div>}
+      <h3 className="font-display font-bold text-slate-900 mb-2">{title}</h3>
       {description && (
-        <p className="text-arena-muted text-sm mb-6 max-w-xs leading-relaxed">{description}</p>
+        <p className="text-slate-600 text-sm mb-6 max-w-xs leading-relaxed">{description}</p>
       )}
       {action}
     </div>
@@ -278,11 +278,11 @@ export function EmptyState({ icon, title, description, action }) {
 // ─── LOADING SCREEN ───────────────────────────────────────
 export function LoadingScreen() {
   return (
-    <div className="min-h-screen bg-arena-bg flex flex-col items-center justify-center gap-4">
-      <div className="font-display font-black text-2xl text-gradient tracking-widest">
+    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center gap-4">
+      <div className="font-display font-black text-2xl text-slate-900 tracking-widest">
         CODEARENA
       </div>
-      <Spinner size={24} className="text-arena-purple2" />
+      <Spinner size={24} className="text-blue-700" />
     </div>
   );
 }
@@ -294,11 +294,11 @@ export function CodeBlock({ code, language = 'javascript' }) {
   };
   return (
     <div className="relative group">
-      <div className="flex items-center justify-between px-4 py-2 bg-arena-bg border border-arena-border/50 border-b-0 rounded-t-lg">
-        <span className="font-mono text-xs text-arena-dim">{language}</span>
+      <div className="flex items-center justify-between px-4 py-2 bg-slate-50 border border-slate-200/50 border-b-0 rounded-t-lg">
+        <span className="font-mono text-xs text-slate-500">{language}</span>
         <button
           onClick={copy}
-          className="font-mono text-xs text-arena-dim hover:text-arena-teal transition-colors"
+          className="font-mono text-xs text-slate-500 hover:text-indigo-600 transition-colors"
         >
           copy
         </button>
@@ -315,7 +315,7 @@ export function Divider({ label, className = '' }) {
   return (
     <div className={`flex items-center gap-3 ${className}`}>
       <div className="flex-1 h-px bg-arena-border" />
-      {label && <span className="font-mono text-xs text-arena-dim">{label}</span>}
+      {label && <span className="font-mono text-xs text-slate-500">{label}</span>}
       <div className="flex-1 h-px bg-arena-border" />
     </div>
   );
@@ -326,7 +326,7 @@ export function Tooltip({ text, children }) {
   return (
     <span className="relative group inline-flex">
       {children}
-      <span className="absolute -top-8 left-1/2 -translate-x-1/2 z-50 px-2 py-1 bg-arena-bg3 border border-arena-border rounded-md font-mono text-xs text-arena-text whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+      <span className="absolute -top-8 left-1/2 -translate-x-1/2 z-50 px-2 py-1 bg-slate-100 border border-slate-200 rounded-md font-mono text-xs text-slate-900 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
         {text}
       </span>
     </span>

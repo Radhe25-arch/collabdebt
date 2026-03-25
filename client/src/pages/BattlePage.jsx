@@ -36,7 +36,7 @@ function BattleTimer({ endsAt, onExpire }) {
            style={{ fontSize: 44, letterSpacing: '-2px', color }}>
         {String(mins).padStart(2,'0')}:{String(secs).padStart(2,'0')}
       </div>
-      <div className="w-40 h-1.5 bg-arena-bg3 rounded-full overflow-hidden">
+      <div className="w-40 h-1.5 bg-slate-100 rounded-full overflow-hidden">
         <div className="h-full rounded-full transition-all duration-1000"
              style={{ width: `${pct}%`, background: color }} />
       </div>
@@ -73,41 +73,41 @@ function PlayerCard({ user, submission, isMe, isWinner, isLoser, isFetching }) {
       <div className="flex items-center gap-3 mb-4">
         <div className={`relative w-11 h-11 rounded-full flex items-center justify-center font-mono font-bold text-sm border-2 ${
           isWinner ? 'border-yellow-400/60 bg-yellow-500/10 text-yellow-400' :
-          isMe     ? 'border-arena-teal/60  bg-arena-teal/10  text-arena-teal' :
-                     'border-arena-border   bg-arena-bg3      text-arena-muted'
+          isMe     ? 'border-indigo-600/60  bg-indigo-600/10  text-indigo-600' :
+                     'border-slate-200   bg-slate-100      text-slate-600'
         }`}>
           {user?.avatarUrl
             ? <img src={user.avatarUrl} alt="" className="w-full h-full rounded-full object-cover" />
             : (user?.username || '?').slice(0,2).toUpperCase()
           }
           {isMe && (
-            <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-arena-teal flex items-center justify-center border border-arena-bg text-arena-bg text-xs">
+            <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-indigo-600 flex items-center justify-center border border-arena-bg text-arena-bg text-xs">
               ✓
             </span>
           )}
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
-            <span className={`font-mono font-bold text-sm truncate ${isMe ? 'text-arena-teal' : 'text-arena-text'}`}>
+            <span className={`font-mono font-bold text-sm truncate ${isMe ? 'text-indigo-600' : 'text-slate-900'}`}>
               {user?.username || 'Unknown'}
             </span>
             {isMe && <BadgeTag variant="teal" className="text-xs">You</BadgeTag>}
           </div>
-          <span className="font-mono text-xs text-arena-dim">{LEVEL_NAMES[lvl-1]} · Lv{lvl}</span>
+          <span className="font-mono text-xs text-slate-500">{LEVEL_NAMES[lvl-1]} · Lv{lvl}</span>
         </div>
       </div>
 
       {/* Stats row */}
       <div className="grid grid-cols-3 gap-2 mb-4">
         {[
-          { label: 'XP',       value: (user?.xp||0).toLocaleString(), icon: Icons.Zap,      color: 'text-arena-purple2' },
-          { label: 'Accuracy', value: `${accuracy}%`,                  icon: Icons.Target,   color: 'text-arena-teal'   },
+          { label: 'XP',       value: (user?.xp||0).toLocaleString(), icon: Icons.Zap,      color: 'text-blue-700' },
+          { label: 'Accuracy', value: `${accuracy}%`,                  icon: Icons.Target,   color: 'text-indigo-600'   },
           { label: 'Streak',   value: `${user?.streak||0}d`,           icon: Icons.Fire,     color: 'text-orange-400'   },
         ].map(({ label, value, icon: Ic, color }) => (
-          <div key={label} className="bg-arena-bg3/60 border border-arena-border/50 rounded-lg p-2 text-center">
+          <div key={label} className="bg-slate-100/60 border border-slate-200/50 rounded-lg p-2 text-center">
             <Ic size={11} className={`${color} mx-auto mb-1`} />
-            <p className="font-mono text-sm font-bold text-arena-text">{isFetching ? '…' : value}</p>
-            <p className="font-mono text-xs text-arena-dim">{label}</p>
+            <p className="font-mono text-sm font-bold text-slate-900">{isFetching ? '…' : value}</p>
+            <p className="font-mono text-xs text-slate-500">{label}</p>
           </div>
         ))}
       </div>
@@ -116,8 +116,8 @@ function PlayerCard({ user, submission, isMe, isWinner, isLoser, isFetching }) {
       {hasSub ? (
         <div>
           <div className="flex items-center justify-between mb-1.5">
-            <span className="font-mono text-xs text-arena-dim">Problems solved</span>
-            <span className={`font-mono text-sm font-bold ${pct >= 80 ? 'text-arena-teal' : pct >= 50 ? 'text-yellow-400' : 'text-red-400'}`}>
+            <span className="font-mono text-xs text-slate-500">Problems solved</span>
+            <span className={`font-mono text-sm font-bold ${pct >= 80 ? 'text-indigo-600' : pct >= 50 ? 'text-yellow-400' : 'text-red-400'}`}>
               {submission.passed}/{submission.total}
             </span>
           </div>
@@ -136,7 +136,7 @@ function PlayerCard({ user, submission, isMe, isWinner, isLoser, isFetching }) {
           </div>
         </div>
       ) : (
-        <div className="flex items-center gap-2 text-arena-dim">
+        <div className="flex items-center gap-2 text-slate-500">
           {isFetching
             ? <><Spinner size={13} /> <span className="font-mono text-xs">Evaluating...</span></>
             : <span className="font-mono text-xs">Waiting for submission...</span>
@@ -164,7 +164,7 @@ function BattleReportCard({ battle, myId, onClose, onRematch }) {
   const resultColor = isDraw
     ? { text: 'text-yellow-400', bg: 'bg-yellow-500/10', border: 'border-yellow-500/30', glow: '' }
     : iWon
-    ? { text: 'text-arena-teal',   bg: 'bg-arena-teal/10',   border: 'border-arena-teal/30',   glow: 'glow-teal'   }
+    ? { text: 'text-indigo-600',   bg: 'bg-indigo-600/10',   border: 'border-indigo-600/30',   glow: 'glow-teal'   }
     : { text: 'text-red-400',      bg: 'bg-red-500/10',       border: 'border-red-500/30',       glow: ''            };
 
   // Breakdown per problem
@@ -172,7 +172,7 @@ function BattleReportCard({ battle, myId, onClose, onRematch }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/75 backdrop-blur-sm animate-fade-in">
-      <div className="w-full max-w-2xl bg-arena-bg2 border border-arena-border rounded-2xl overflow-hidden animate-fade-up shadow-2xl">
+      <div className="w-full max-w-2xl bg-white border border-slate-200 rounded-2xl overflow-hidden animate-fade-up shadow-2xl">
 
         {/* Header strip */}
         <div className={`px-6 py-4 ${resultColor.bg} border-b ${resultColor.border} flex items-center justify-between`}>
@@ -184,12 +184,12 @@ function BattleReportCard({ battle, myId, onClose, onRematch }) {
               <p className={`font-display font-black text-2xl ${resultColor.text}`} style={{ letterSpacing: '-1px' }}>
                 {resultLabel}
               </p>
-              <p className="font-mono text-xs text-arena-dim">
+              <p className="font-mono text-xs text-slate-500">
                 {battle.language?.toUpperCase()} · {battle.difficulty?.toUpperCase()} · {battle.totalProblems} problems
               </p>
             </div>
           </div>
-          <button onClick={onClose} className="text-arena-dim hover:text-arena-text transition-colors p-1">
+          <button onClick={onClose} className="text-slate-500 hover:text-slate-900 transition-colors p-1">
             <Icons.X size={18} />
           </button>
         </div>
@@ -203,34 +203,34 @@ function BattleReportCard({ battle, myId, onClose, onRematch }) {
               <span className={`font-display font-black text-2xl ${resultColor.text}`}>
                 {iWon ? '+' : isDraw ? '±' : ''}{battle.xpAwarded} XP
               </span>
-              {iWon && <span className="font-mono text-xs text-arena-dim">added to your profile</span>}
+              {iWon && <span className="font-mono text-xs text-slate-500">added to your profile</span>}
             </div>
           )}
 
           {/* Head-to-head stat comparison */}
           <div>
-            <p className="font-mono text-xs text-arena-dim uppercase tracking-widest mb-3">Head-to-Head</p>
+            <p className="font-mono text-xs text-slate-500 uppercase tracking-widest mb-3">Head-to-Head</p>
             <div className="arena-card overflow-hidden">
               {/* Players header */}
-              <div className="grid grid-cols-3 gap-2 px-4 py-3 border-b border-arena-border bg-arena-bg3/40">
+              <div className="grid grid-cols-3 gap-2 px-4 py-3 border-b border-slate-200 bg-slate-100/40">
                 <div className="flex items-center gap-2">
-                  <div className={`w-7 h-7 rounded-full flex items-center justify-center font-mono text-xs font-bold border ${iWon ? 'border-arena-teal/60 bg-arena-teal/10 text-arena-teal' : 'border-arena-border bg-arena-bg3 text-arena-muted'}`}>
+                  <div className={`w-7 h-7 rounded-full flex items-center justify-center font-mono text-xs font-bold border ${iWon ? 'border-indigo-600/60 bg-indigo-600/10 text-indigo-600' : 'border-slate-200 bg-slate-100 text-slate-600'}`}>
                     {(me?.username||'?').slice(0,2).toUpperCase()}
                   </div>
                   <div>
-                    <p className="font-mono text-xs font-bold text-arena-text truncate">{me?.username}</p>
-                    <p className="font-mono text-xs text-arena-dim">Lv{myLvl}</p>
+                    <p className="font-mono text-xs font-bold text-slate-900 truncate">{me?.username}</p>
+                    <p className="font-mono text-xs text-slate-500">Lv{myLvl}</p>
                   </div>
                 </div>
                 <div className="flex items-center justify-center">
-                  <span className="font-mono text-xs text-arena-dim uppercase tracking-widest">VS</span>
+                  <span className="font-mono text-xs text-slate-500 uppercase tracking-widest">VS</span>
                 </div>
                 <div className="flex items-center gap-2 justify-end">
                   <div>
-                    <p className="font-mono text-xs font-bold text-arena-text text-right truncate">{opp?.username}</p>
-                    <p className="font-mono text-xs text-arena-dim text-right">Lv{Math.min(opp?.level||1,10)}</p>
+                    <p className="font-mono text-xs font-bold text-slate-900 text-right truncate">{opp?.username}</p>
+                    <p className="font-mono text-xs text-slate-500 text-right">Lv{Math.min(opp?.level||1,10)}</p>
                   </div>
-                  <div className="w-7 h-7 rounded-full flex items-center justify-center font-mono text-xs font-bold border border-arena-border bg-arena-bg3 text-arena-muted">
+                  <div className="w-7 h-7 rounded-full flex items-center justify-center font-mono text-xs font-bold border border-slate-200 bg-slate-100 text-slate-600">
                     {(opp?.username||'?').slice(0,2).toUpperCase()}
                   </div>
                 </div>
@@ -264,12 +264,12 @@ function BattleReportCard({ battle, myId, onClose, onRematch }) {
                   myBetter: null,
                 },
               ].map(({ label, my, opp: oppV, myBetter }) => (
-                <div key={label} className="grid grid-cols-3 gap-2 px-4 py-3 border-b border-arena-border/50 last:border-0">
-                  <span className={`font-mono text-sm font-bold ${myBetter === true ? 'text-arena-teal' : myBetter === false ? 'text-arena-text' : 'text-arena-text'}`}>
+                <div key={label} className="grid grid-cols-3 gap-2 px-4 py-3 border-b border-slate-200/50 last:border-0">
+                  <span className={`font-mono text-sm font-bold ${myBetter === true ? 'text-indigo-600' : myBetter === false ? 'text-slate-900' : 'text-slate-900'}`}>
                     {my}
                   </span>
-                  <span className="font-mono text-xs text-arena-dim text-center self-center">{label}</span>
-                  <span className={`font-mono text-sm font-bold text-right ${myBetter === false ? 'text-arena-teal' : myBetter === true ? 'text-arena-text' : 'text-arena-text'}`}>
+                  <span className="font-mono text-xs text-slate-500 text-center self-center">{label}</span>
+                  <span className={`font-mono text-sm font-bold text-right ${myBetter === false ? 'text-indigo-600' : myBetter === true ? 'text-slate-900' : 'text-slate-900'}`}>
                     {oppV}
                   </span>
                 </div>
@@ -280,22 +280,22 @@ function BattleReportCard({ battle, myId, onClose, onRematch }) {
           {/* Problem-by-problem breakdown */}
           {problems.length > 0 && (
             <div>
-              <p className="font-mono text-xs text-arena-dim uppercase tracking-widest mb-3">Problem Breakdown</p>
+              <p className="font-mono text-xs text-slate-500 uppercase tracking-widest mb-3">Problem Breakdown</p>
               <div className="space-y-2">
                 {problems.map((p, i) => (
-                  <div key={i} className="flex items-center gap-3 px-4 py-3 bg-arena-bg3/50 border border-arena-border/50 rounded-xl">
+                  <div key={i} className="flex items-center gap-3 px-4 py-3 bg-slate-100/50 border border-slate-200/50 rounded-xl">
                     <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-mono font-bold flex-shrink-0 ${
-                      p.passed ? 'bg-arena-teal/15 text-arena-teal border border-arena-teal/30' : 'bg-red-500/10 text-red-400 border border-red-500/20'
+                      p.passed ? 'bg-indigo-600/15 text-indigo-600 border border-indigo-600/30' : 'bg-red-500/10 text-red-400 border border-red-500/20'
                     }`}>
                       {p.passed ? '✓' : '✗'}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-mono text-xs text-arena-text truncate">{p.title || `Problem ${i+1}`}</p>
-                      <p className="font-mono text-xs text-arena-dim">{p.difficulty}</p>
+                      <p className="font-mono text-xs text-slate-900 truncate">{p.title || `Problem ${i+1}`}</p>
+                      <p className="font-mono text-xs text-slate-500">{p.difficulty}</p>
                     </div>
                     <div className="text-right">
-                      {p.timeMs && <p className="font-mono text-xs text-arena-dim">{(p.timeMs/1000).toFixed(1)}s</p>}
-                      <p className={`font-mono text-xs font-bold ${p.passed ? 'text-arena-teal' : 'text-red-400'}`}>
+                      {p.timeMs && <p className="font-mono text-xs text-slate-500">{(p.timeMs/1000).toFixed(1)}s</p>}
+                      <p className={`font-mono text-xs font-bold ${p.passed ? 'text-indigo-600' : 'text-red-400'}`}>
                         {p.passed ? `+${p.xp||50} XP` : '—'}
                       </p>
                     </div>
@@ -414,10 +414,10 @@ export default function BattlePage() {
   };
 
   if (loading) return (
-    <div className="min-h-screen bg-arena-bg flex items-center justify-center">
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center">
       <div className="flex flex-col items-center gap-4">
-        <Spinner size={32} className="text-arena-purple2" />
-        <p className="font-mono text-sm text-arena-dim">Loading battle...</p>
+        <Spinner size={32} className="text-blue-700" />
+        <p className="font-mono text-sm text-slate-500">Loading battle...</p>
       </div>
     </div>
   );
@@ -436,17 +436,17 @@ export default function BattlePage() {
   const LANGUAGES_AVAILABLE = ['javascript', 'python', 'cpp', 'java', 'typescript', 'rust', 'go'];
 
   return (
-    <div className="min-h-screen bg-arena-bg text-arena-text font-body flex flex-col">
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-body flex flex-col">
 
       {/* ─── TOP BAR ─── */}
-      <div className="h-14 flex items-center justify-between px-6 bg-arena-bg2 border-b border-arena-border flex-shrink-0">
+      <div className="h-14 flex items-center justify-between px-6 bg-white border-b border-slate-200 flex-shrink-0">
         <div className="flex items-center gap-3">
-          <button onClick={() => navigate('/battles')} className="text-arena-dim hover:text-arena-text transition-colors p-1 rounded hover:bg-arena-bg3">
+          <button onClick={() => navigate('/battles')} className="text-slate-500 hover:text-slate-900 transition-colors p-1 rounded hover:bg-slate-100">
             <Icons.ArrowLeft size={16} />
           </button>
           <div className="flex items-center gap-2">
             <div className={`w-2 h-2 rounded-full ${isActive ? 'bg-red-400 animate-pulse' : 'bg-arena-dim'}`} />
-            <span className="font-mono text-xs text-arena-dim uppercase tracking-widest">
+            <span className="font-mono text-xs text-slate-500 uppercase tracking-widest">
               {isActive ? 'LIVE BATTLE' : battle.status}
             </span>
           </div>
@@ -481,23 +481,23 @@ export default function BattlePage() {
       </div>
 
       {/* ─── PLAYER STATUS BAR ─── */}
-      <div className="flex gap-0 border-b border-arena-border flex-shrink-0">
+      <div className="flex gap-0 border-b border-slate-200 flex-shrink-0">
         {/* Me */}
-        <div className={`flex-1 flex items-center gap-3 px-5 py-3 ${isChallenger ? 'bg-arena-teal/5 border-r-2 border-r-arena-teal' : 'border-r border-arena-border'}`}>
-          <div className="w-8 h-8 rounded-full bg-arena-teal/15 border border-arena-teal/30 flex items-center justify-center font-mono text-xs font-bold text-arena-teal flex-shrink-0">
+        <div className={`flex-1 flex items-center gap-3 px-5 py-3 ${isChallenger ? 'bg-indigo-600/5 border-r-2 border-r-arena-teal' : 'border-r border-slate-200'}`}>
+          <div className="w-8 h-8 rounded-full bg-indigo-600/15 border border-indigo-600/30 flex items-center justify-center font-mono text-xs font-bold text-indigo-600 flex-shrink-0">
             {(me?.username||'?').slice(0,2).toUpperCase()}
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <span className="font-mono text-sm font-bold text-arena-teal truncate">{me?.username}</span>
+              <span className="font-mono text-sm font-bold text-indigo-600 truncate">{me?.username}</span>
               <BadgeTag variant="teal" className="text-xs">You</BadgeTag>
             </div>
             <div className="flex items-center gap-3">
-              <span className="font-mono text-xs text-arena-dim">
+              <span className="font-mono text-xs text-slate-500">
                 {mySub ? `${mySub.passed}/${mySub.total} solved` : 'Not submitted'}
               </span>
               {mySub?.accuracy != null && (
-                <span className="font-mono text-xs text-arena-teal">{mySub.accuracy}% acc</span>
+                <span className="font-mono text-xs text-indigo-600">{mySub.accuracy}% acc</span>
               )}
             </div>
           </div>
@@ -505,10 +505,10 @@ export default function BattlePage() {
           <div className="flex gap-1">
             {Array.from({ length: battle.totalProblems || 5 }, (_, i) => (
               <div key={i} className={`w-5 h-5 rounded text-xs font-mono font-bold flex items-center justify-center cursor-pointer transition-all ${
-                results[i]?.passed ? 'bg-arena-teal/20 text-arena-teal border border-arena-teal/30' :
+                results[i]?.passed ? 'bg-indigo-600/20 text-indigo-600 border border-indigo-600/30' :
                 results[i]        ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
-                i === currentProblem ? 'bg-arena-purple/20 text-arena-purple2 border border-arena-purple/30' :
-                'bg-arena-bg3 text-arena-dim border border-arena-border/50'
+                i === currentProblem ? 'bg-blue-600/20 text-blue-700 border border-blue-600/30' :
+                'bg-slate-100 text-slate-500 border border-slate-200/50'
               }`} onClick={() => setCurrentProblem(i)}>
                 {i+1}
               </div>
@@ -517,22 +517,22 @@ export default function BattlePage() {
         </div>
 
         {/* VS divider */}
-        <div className="flex items-center justify-center px-4 bg-arena-bg3/50">
-          <span className="font-mono text-xs text-arena-dim">VS</span>
+        <div className="flex items-center justify-center px-4 bg-slate-100/50">
+          <span className="font-mono text-xs text-slate-500">VS</span>
         </div>
 
         {/* Opponent */}
-        <div className={`flex-1 flex items-center gap-3 px-5 py-3 ${!isChallenger ? 'bg-arena-teal/5 border-l-2 border-l-arena-teal' : 'border-l border-arena-border'} flex-row-reverse`}>
-          <div className="w-8 h-8 rounded-full bg-arena-bg3 border border-arena-border flex items-center justify-center font-mono text-xs font-bold text-arena-muted flex-shrink-0">
+        <div className={`flex-1 flex items-center gap-3 px-5 py-3 ${!isChallenger ? 'bg-indigo-600/5 border-l-2 border-l-arena-teal' : 'border-l border-slate-200'} flex-row-reverse`}>
+          <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center font-mono text-xs font-bold text-slate-600 flex-shrink-0">
             {(opponent?.username||'?').slice(0,2).toUpperCase()}
           </div>
           <div className="flex-1 min-w-0 text-right">
-            <p className="font-mono text-sm font-bold text-arena-text truncate">{opponent?.username || 'Opponent'}</p>
+            <p className="font-mono text-sm font-bold text-slate-900 truncate">{opponent?.username || 'Opponent'}</p>
             <div className="flex items-center gap-3 justify-end">
               {oppSub?.accuracy != null && (
-                <span className="font-mono text-xs text-arena-teal">{oppSub.accuracy}% acc</span>
+                <span className="font-mono text-xs text-indigo-600">{oppSub.accuracy}% acc</span>
               )}
-              <span className="font-mono text-xs text-arena-dim">
+              <span className="font-mono text-xs text-slate-500">
                 {oppSub ? `${oppSub.passed}/${oppSub.total} solved` : 'Not submitted'}
               </span>
             </div>
@@ -543,7 +543,7 @@ export default function BattlePage() {
               const solved = (oppSub?.passed || 0) > i;
               return (
                 <div key={i} className={`w-5 h-5 rounded text-xs font-mono font-bold flex items-center justify-center ${
-                  solved ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-arena-bg3 text-arena-dim border border-arena-border/50'
+                  solved ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-slate-100 text-slate-500 border border-slate-200/50'
                 }`}>
                   {i+1}
                 </div>
@@ -557,17 +557,17 @@ export default function BattlePage() {
       <div className="flex-1 flex overflow-hidden min-h-0">
 
         {/* Left: Problem */}
-        <div className="w-[38%] flex flex-col border-r border-arena-border overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-2.5 bg-arena-bg2 border-b border-arena-border flex-shrink-0">
-            <span className="font-mono text-xs text-arena-dim uppercase tracking-widest">Problem {currentProblem + 1}</span>
+        <div className="w-[38%] flex flex-col border-r border-slate-200 overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-2.5 bg-white border-b border-slate-200 flex-shrink-0">
+            <span className="font-mono text-xs text-slate-500 uppercase tracking-widest">Problem {currentProblem + 1}</span>
             <div className="flex gap-1">
               {Array.from({ length: battle.totalProblems || 5 }, (_, i) => (
                 <button key={i} onClick={() => setCurrentProblem(i)}
                   className={`w-6 h-6 rounded text-xs font-mono font-bold transition-all ${
-                    results[i]?.passed ? 'bg-arena-teal/20 text-arena-teal' :
+                    results[i]?.passed ? 'bg-indigo-600/20 text-indigo-600' :
                     results[i]        ? 'bg-red-500/10 text-red-400' :
-                    i === currentProblem ? 'bg-arena-purple/20 text-arena-purple2' :
-                    'text-arena-dim hover:text-arena-text'
+                    i === currentProblem ? 'bg-blue-600/20 text-blue-700' :
+                    'text-slate-500 hover:text-slate-900'
                   }`}>
                   {i+1}
                 </button>
@@ -586,17 +586,17 @@ export default function BattlePage() {
                       problem.difficulty === 'MEDIUM' ? 'badge-gold' : 'badge-teal'
                     }`}>{problem.difficulty}</span>
                   </div>
-                  <p className="text-arena-muted text-sm leading-relaxed">{problem.description}</p>
+                  <p className="text-slate-600 text-sm leading-relaxed">{problem.description}</p>
                 </div>
 
                 {problem.examples?.length > 0 && (
                   <div>
-                    <p className="font-mono text-xs text-arena-dim uppercase tracking-widest mb-2">Examples</p>
+                    <p className="font-mono text-xs text-slate-500 uppercase tracking-widest mb-2">Examples</p>
                     {problem.examples.map((ex, i) => (
-                      <div key={i} className="bg-arena-bg3 border border-arena-border/50 rounded-lg p-3 mb-2 code-block text-xs">
-                        <p><span className="text-arena-teal">Input:</span>  {ex.input}</p>
-                        <p><span className="text-arena-teal">Output:</span> {ex.output}</p>
-                        {ex.explanation && <p className="text-arena-dim mt-1">{ex.explanation}</p>}
+                      <div key={i} className="bg-slate-100 border border-slate-200/50 rounded-lg p-3 mb-2 code-block text-xs">
+                        <p><span className="text-indigo-600">Input:</span>  {ex.input}</p>
+                        <p><span className="text-indigo-600">Output:</span> {ex.output}</p>
+                        {ex.explanation && <p className="text-slate-500 mt-1">{ex.explanation}</p>}
                       </div>
                     ))}
                   </div>
@@ -604,11 +604,11 @@ export default function BattlePage() {
 
                 {problem.constraints?.length > 0 && (
                   <div>
-                    <p className="font-mono text-xs text-arena-dim uppercase tracking-widest mb-2">Constraints</p>
+                    <p className="font-mono text-xs text-slate-500 uppercase tracking-widest mb-2">Constraints</p>
                     <ul className="space-y-1">
                       {problem.constraints.map((c, i) => (
-                        <li key={i} className="font-mono text-xs text-arena-muted flex items-start gap-2">
-                          <span className="text-arena-purple2 mt-0.5">·</span> {c}
+                        <li key={i} className="font-mono text-xs text-slate-600 flex items-start gap-2">
+                          <span className="text-blue-700 mt-0.5">·</span> {c}
                         </li>
                       ))}
                     </ul>
@@ -616,15 +616,15 @@ export default function BattlePage() {
                 )}
 
                 {/* XP reward */}
-                <div className="flex items-center gap-2 pt-2 border-t border-arena-border/50">
-                  <Icons.Zap size={12} className="text-arena-purple2" />
-                  <span className="font-mono text-xs text-arena-dim">Solve to earn</span>
-                  <span className="font-mono text-xs text-arena-purple2 font-bold">+{problem.xpReward || 100} XP</span>
+                <div className="flex items-center gap-2 pt-2 border-t border-slate-200/50">
+                  <Icons.Zap size={12} className="text-blue-700" />
+                  <span className="font-mono text-xs text-slate-500">Solve to earn</span>
+                  <span className="font-mono text-xs text-blue-700 font-bold">+{problem.xpReward || 100} XP</span>
                 </div>
               </>
             ) : (
               <div className="flex items-center justify-center h-40">
-                <p className="font-mono text-sm text-arena-dim">No problem loaded</p>
+                <p className="font-mono text-sm text-slate-500">No problem loaded</p>
               </div>
             )}
           </div>
@@ -633,11 +633,11 @@ export default function BattlePage() {
         {/* Right: Code editor */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Editor toolbar */}
-          <div className="flex items-center gap-3 px-4 py-2.5 bg-arena-bg2 border-b border-arena-border flex-shrink-0">
+          <div className="flex items-center gap-3 px-4 py-2.5 bg-white border-b border-slate-200 flex-shrink-0">
             <select
               value={selectedLang}
               onChange={e => setSelectedLang(e.target.value)}
-              className="arena-input text-xs w-auto py-1.5"
+              className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 placeholder-slate-400 text-slate-900 focus:outline-none focus:border-blue-500 transition-all text-sm text-xs w-auto py-1.5"
               disabled={!isActive}
             >
               {LANGUAGES_AVAILABLE.map(l => (
@@ -663,7 +663,7 @@ export default function BattlePage() {
               value={code}
               onChange={e => setCode(e.target.value)}
               disabled={!isActive}
-              className="flex-1 w-full bg-arena-bg resize-none outline-none p-4 font-mono text-sm text-arena-text leading-relaxed"
+              className="flex-1 w-full bg-slate-50 resize-none outline-none p-4 font-mono text-sm text-slate-900 leading-relaxed"
               style={{ fontFamily: "'JetBrains Mono', Consolas, monospace", minHeight: 0 }}
               placeholder={isActive
                 ? `// Write your ${selectedLang} solution here\n// Problem ${currentProblem + 1} of ${battle.totalProblems || 5}\n`
@@ -674,14 +674,14 @@ export default function BattlePage() {
 
             {/* Test output */}
             {testOutput && (
-              <div className="border-t border-arena-border flex-shrink-0 max-h-52 overflow-y-auto">
-                <div className="flex items-center justify-between px-4 py-2 bg-arena-bg2 border-b border-arena-border/50">
-                  <span className="font-mono text-xs text-arena-dim uppercase tracking-widest">Test Results</span>
+              <div className="border-t border-slate-200 flex-shrink-0 max-h-52 overflow-y-auto">
+                <div className="flex items-center justify-between px-4 py-2 bg-white border-b border-slate-200/50">
+                  <span className="font-mono text-xs text-slate-500 uppercase tracking-widest">Test Results</span>
                   <div className="flex items-center gap-2">
-                    <span className={`font-mono text-xs font-bold ${testOutput.passed === testOutput.total ? 'text-arena-teal' : 'text-red-400'}`}>
+                    <span className={`font-mono text-xs font-bold ${testOutput.passed === testOutput.total ? 'text-indigo-600' : 'text-red-400'}`}>
                       {testOutput.passed}/{testOutput.total} passed
                     </span>
-                    <button onClick={() => setTestOutput(null)} className="text-arena-dim hover:text-arena-text">
+                    <button onClick={() => setTestOutput(null)} className="text-slate-500 hover:text-slate-900">
                       <Icons.X size={12} />
                     </button>
                   </div>
@@ -689,15 +689,15 @@ export default function BattlePage() {
                 <div className="p-3 space-y-2">
                   {(testOutput.results || []).map((r, i) => (
                     <div key={i} className={`flex items-start gap-2 px-3 py-2 rounded-lg text-xs font-mono ${
-                      r.passed ? 'bg-arena-teal/8 border border-arena-teal/20' : 'bg-red-500/8 border border-red-500/20'
+                      r.passed ? 'bg-indigo-600/8 border border-indigo-600/20' : 'bg-red-500/8 border border-red-500/20'
                     }`}>
-                      <span className={r.passed ? 'text-arena-teal mt-0.5' : 'text-red-400 mt-0.5'}>{r.passed ? '✓' : '✗'}</span>
+                      <span className={r.passed ? 'text-indigo-600 mt-0.5' : 'text-red-400 mt-0.5'}>{r.passed ? '✓' : '✗'}</span>
                       <div>
-                        <p className="text-arena-text">Case {i+1}</p>
+                        <p className="text-slate-900">Case {i+1}</p>
                         {!r.passed && r.expected && (
                           <>
-                            <p className="text-arena-dim">Expected: <span className="text-arena-teal">{r.expected}</span></p>
-                            <p className="text-arena-dim">Got: <span className="text-red-400">{r.actual}</span></p>
+                            <p className="text-slate-500">Expected: <span className="text-indigo-600">{r.expected}</span></p>
+                            <p className="text-slate-500">Got: <span className="text-red-400">{r.actual}</span></p>
                           </>
                         )}
                         {r.error && <p className="text-red-400">{r.error}</p>}

@@ -30,16 +30,16 @@ function MsgContent({ content }) {
           const code    = lines.slice(1, -1).join('\n');
           return (
             <div key={i} className="relative group">
-              <div className="flex items-center justify-between px-3 py-1.5 bg-arena-bg rounded-t-lg border border-arena-border border-b-0">
-                <span className="font-mono text-xs text-arena-dim">{lang}</span>
+              <div className="flex items-center justify-between px-3 py-1.5 bg-slate-50 rounded-t-lg border border-slate-200 border-b-0">
+                <span className="font-mono text-xs text-slate-500">{lang}</span>
                 <button
                   onClick={() => { navigator.clipboard.writeText(code); toast.success('Copied'); }}
-                  className="font-mono text-xs text-arena-dim hover:text-arena-teal transition-colors opacity-0 group-hover:opacity-100"
+                  className="font-mono text-xs text-slate-500 hover:text-indigo-600 transition-colors opacity-0 group-hover:opacity-100"
                 >
                   copy
                 </button>
               </div>
-              <pre className="bg-arena-bg border border-arena-border rounded-b-lg p-3 overflow-x-auto text-xs font-mono text-arena-muted leading-relaxed">
+              <pre className="bg-slate-50 border border-slate-200 rounded-b-lg p-3 overflow-x-auto text-xs font-mono text-slate-600 leading-relaxed">
                 <code>{code}</code>
               </pre>
             </div>
@@ -51,9 +51,9 @@ function MsgContent({ content }) {
           .split(/(\*\*.*?\*\*|`.*?`)/g)
           .map((chunk, ci) => {
             if (chunk.startsWith('**') && chunk.endsWith('**'))
-              return <strong key={ci} className="text-arena-text font-semibold">{chunk.slice(2,-2)}</strong>;
+              return <strong key={ci} className="text-slate-900 font-semibold">{chunk.slice(2,-2)}</strong>;
             if (chunk.startsWith('`') && chunk.endsWith('`'))
-              return <code key={ci} className="font-mono text-xs bg-arena-bg3 border border-arena-border px-1.5 py-0.5 rounded text-arena-teal">{chunk.slice(1,-1)}</code>;
+              return <code key={ci} className="font-mono text-xs bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded text-indigo-600">{chunk.slice(1,-1)}</code>;
             return <span key={ci}>{chunk}</span>;
           });
 
@@ -73,19 +73,19 @@ function Message({ msg }) {
   return (
     <div className={`flex gap-3 ${isUser ? 'flex-row-reverse' : ''}`}>
       <div className={`w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center font-mono text-xs font-bold ${
-        isUser ? 'bg-arena-purple text-white' : 'bg-arena-teal/20 border border-arena-teal/30 text-arena-teal'
+        isUser ? 'bg-blue-600 text-white' : 'bg-indigo-600/20 border border-indigo-600/30 text-indigo-600'
       }`}>
         {isUser ? 'U' : 'AI'}
       </div>
       <div className={`max-w-[85%] ${isUser ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
-        <div className={`px-4 py-3 rounded-xl text-arena-text ${
+        <div className={`px-4 py-3 rounded-xl text-slate-900 ${
           isUser
-            ? 'bg-arena-purple/20 border border-arena-purple/30 rounded-tr-sm'
-            : 'bg-arena-bg2 border border-arena-border rounded-tl-sm'
+            ? 'bg-blue-600/20 border border-blue-600/30 rounded-tr-sm'
+            : 'bg-white border border-slate-200 rounded-tl-sm'
         }`}>
           <MsgContent content={msg.content} />
         </div>
-        <span className="font-mono text-xs text-arena-dim px-1">
+        <span className="font-mono text-xs text-slate-500 px-1">
           {msg.timestamp ? format(new Date(msg.timestamp), 'HH:mm') : ''}
         </span>
       </div>
@@ -173,7 +173,7 @@ export default function MentorPage() {
   }, [input, code, activeSession]);
 
   if (loading) return (
-    <div className="flex justify-center py-24"><Spinner size={24} className="text-arena-purple2" /></div>
+    <div className="flex justify-center py-24"><Spinner size={24} className="text-blue-700" /></div>
   );
 
   return (
@@ -186,7 +186,7 @@ export default function MentorPage() {
 
         <div className="flex-1 overflow-y-auto space-y-1">
           {sessions.length === 0 && (
-            <p className="font-mono text-xs text-arena-dim text-center py-4">No sessions yet</p>
+            <p className="font-mono text-xs text-slate-500 text-center py-4">No sessions yet</p>
           )}
           {sessions.map(s => (
             <button
@@ -194,20 +194,20 @@ export default function MentorPage() {
               onClick={() => selectSession(s)}
               className={`w-full text-left px-3 py-2.5 rounded-lg group flex items-center gap-2 transition-colors ${
                 activeSession?.id === s.id
-                  ? 'bg-arena-purple/15 border border-arena-border'
-                  : 'hover:bg-arena-bg3'
+                  ? 'bg-blue-600/15 border border-slate-200'
+                  : 'hover:bg-slate-100'
               }`}
             >
-              <Icons.Shield size={12} className="text-arena-dim flex-shrink-0" />
+              <Icons.Shield size={12} className="text-slate-500 flex-shrink-0" />
               <div className="flex-1 min-w-0">
-                <p className="font-mono text-xs text-arena-text truncate">{s.topic || 'Session'}</p>
-                <p className="font-mono text-xs text-arena-dim">
+                <p className="font-mono text-xs text-slate-900 truncate">{s.topic || 'Session'}</p>
+                <p className="font-mono text-xs text-slate-500">
                   {Array.isArray(s.messages) ? s.messages.length : 0} msgs
                 </p>
               </div>
               <button
                 onClick={(e) => deleteSession(s.id, e)}
-                className="opacity-0 group-hover:opacity-100 text-arena-dim hover:text-red-400 transition-all"
+                className="opacity-0 group-hover:opacity-100 text-slate-500 hover:text-red-400 transition-all"
               >
                 <Icons.XIcon size={11} />
               </button>
@@ -219,14 +219,14 @@ export default function MentorPage() {
       {/* Main chat area */}
       <div className="flex-1 flex flex-col arena-card overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-3 border-b border-arena-border flex-shrink-0">
+        <div className="flex items-center justify-between px-5 py-3 border-b border-slate-200 flex-shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-arena-teal/15 border border-arena-teal/20 flex items-center justify-center">
-              <Icons.Shield size={14} className="text-arena-teal" />
+            <div className="w-8 h-8 rounded-lg bg-indigo-600/15 border border-indigo-600/20 flex items-center justify-center">
+              <Icons.Shield size={14} className="text-indigo-600" />
             </div>
             <div>
               <p className="font-display font-bold text-sm">AI Code Mentor</p>
-              <p className="font-mono text-xs text-arena-dim">Senior engineer · always available</p>
+              <p className="font-mono text-xs text-slate-500">Senior engineer · always available</p>
             </div>
           </div>
           <BadgeTag variant="teal">Online</BadgeTag>
@@ -236,12 +236,12 @@ export default function MentorPage() {
         <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5">
           {messages.length === 0 && (
             <div className="flex flex-col items-center justify-center h-full gap-6">
-              <div className="w-14 h-14 rounded-2xl bg-arena-teal/15 border border-arena-teal/20 flex items-center justify-center">
-                <Icons.Shield size={24} className="text-arena-teal" />
+              <div className="w-14 h-14 rounded-2xl bg-indigo-600/15 border border-indigo-600/20 flex items-center justify-center">
+                <Icons.Shield size={24} className="text-indigo-600" />
               </div>
               <div className="text-center">
                 <p className="font-display font-bold text-base mb-2">Ask me anything about code</p>
-                <p className="font-mono text-xs text-arena-dim max-w-xs">
+                <p className="font-mono text-xs text-slate-500 max-w-xs">
                   Code review, debugging, concepts, DSA problems, interview prep — I'm here 24/7
                 </p>
               </div>
@@ -261,11 +261,11 @@ export default function MentorPage() {
           {messages.map((msg, i) => <Message key={i} msg={msg} />)}
           {sending && (
             <div className="flex gap-3">
-              <div className="w-7 h-7 rounded-full bg-arena-teal/20 border border-arena-teal/30 flex items-center justify-center text-arena-teal font-mono text-xs font-bold">AI</div>
-              <div className="px-4 py-3 rounded-xl rounded-tl-sm bg-arena-bg2 border border-arena-border">
+              <div className="w-7 h-7 rounded-full bg-indigo-600/20 border border-indigo-600/30 flex items-center justify-center text-indigo-600 font-mono text-xs font-bold">AI</div>
+              <div className="px-4 py-3 rounded-xl rounded-tl-sm bg-white border border-slate-200">
                 <div className="flex items-center gap-1.5">
                   {[0,1,2].map(i => (
-                    <div key={i} className="w-1.5 h-1.5 rounded-full bg-arena-teal animate-bounce" style={{ animationDelay: `${i * 0.15}s` }} />
+                    <div key={i} className="w-1.5 h-1.5 rounded-full bg-indigo-600 animate-bounce" style={{ animationDelay: `${i * 0.15}s` }} />
                   ))}
                 </div>
               </div>
@@ -275,17 +275,17 @@ export default function MentorPage() {
         </div>
 
         {/* Input area */}
-        <div className="flex-shrink-0 border-t border-arena-border">
+        <div className="flex-shrink-0 border-t border-slate-200">
           {showCode && (
             <div className="px-4 pt-3">
               <div className="flex items-center justify-between mb-1">
-                <span className="font-mono text-xs text-arena-dim">Code to review (optional)</span>
-                <button onClick={() => setShowCode(false)} className="text-arena-dim hover:text-arena-text">
+                <span className="font-mono text-xs text-slate-500">Code to review (optional)</span>
+                <button onClick={() => setShowCode(false)} className="text-slate-500 hover:text-slate-900">
                   <Icons.XIcon size={12} />
                 </button>
               </div>
               <textarea
-                className="w-full arena-input font-mono text-xs resize-none"
+                className="w-full w-full bg-white border border-slate-200 rounded-xl px-4 py-3 placeholder-slate-400 text-slate-900 focus:outline-none focus:border-blue-500 transition-all text-sm font-mono text-xs resize-none"
                 rows={5}
                 value={code}
                 onChange={e => setCode(e.target.value)}
@@ -298,7 +298,7 @@ export default function MentorPage() {
             <button
               onClick={() => setShowCode(v => !v)}
               className={`flex-shrink-0 p-2.5 rounded-lg border transition-colors ${
-                showCode ? 'border-arena-teal/40 text-arena-teal bg-arena-teal/10' : 'border-arena-border text-arena-dim hover:text-arena-text'
+                showCode ? 'border-indigo-600/40 text-indigo-600 bg-indigo-600/10' : 'border-slate-200 text-slate-500 hover:text-slate-900'
               }`}
               title="Attach code"
             >
@@ -306,7 +306,7 @@ export default function MentorPage() {
             </button>
             <div className="flex-1 relative">
               <textarea
-                className="w-full arena-input text-sm resize-none pr-12"
+                className="w-full w-full bg-white border border-slate-200 rounded-xl px-4 py-3 placeholder-slate-400 text-slate-900 focus:outline-none focus:border-blue-500 transition-all text-sm text-sm resize-none pr-12"
                 rows={1}
                 style={{ minHeight: 42, maxHeight: 120 }}
                 value={input}
