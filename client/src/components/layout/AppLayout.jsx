@@ -14,6 +14,7 @@ const MAIN_LINKS = [
   { to: '/community',   label: 'Community',   Icon: Icons.Users },
   { to: '/quests',      label: 'Quests',      Icon: Icons.Target },
   { to: '/friends',     label: 'Friends',     Icon: Icons.MessageSquare },
+  { to: '/typing-test', label: 'Speed Test',  Icon: Icons.Keyboard },
   { to: '/mentor',      label: 'AI Mentor',   Icon: Icons.Terminal },
 ];
 

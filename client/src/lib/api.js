@@ -35,6 +35,10 @@ let refreshing = false;
 let queue = [];
 const SKIP_REFRESH_URLS = ['/auth/login', '/auth/register', '/auth/refresh', '/auth/logout'];
 
+// Debounce 500 error toasts — max 1 per 5 seconds to prevent toast spam
+let lastErrorToast = 0;
+const ERROR_TOAST_COOLDOWN = 5000;
+
 api.interceptors.response.use(
   (res) => res,
   async (err) => {
@@ -72,7 +76,13 @@ api.interceptors.response.use(
       }
     }
     const message = err.response?.data?.error || err.message;
-    if (err.response?.status >= 500) toast.error('Server error. Try again.');
+    if (err.response?.status >= 500) {
+      const now = Date.now();
+      if (now - lastErrorToast > ERROR_TOAST_COOLDOWN) {
+        lastErrorToast = now;
+        toast.error('Server error. Try again.');
+      }
+    }
     return Promise.reject({ ...err, message });
   }
 );
