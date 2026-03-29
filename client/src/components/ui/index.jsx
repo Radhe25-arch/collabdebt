@@ -280,7 +280,7 @@ export function LoadingScreen() {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center gap-4">
       <div className="font-display font-black text-2xl text-slate-900 tracking-widest">
-        CODEARENA
+        SKILLFORGE
       </div>
       <Spinner size={24} className="text-blue-700" />
     </div>

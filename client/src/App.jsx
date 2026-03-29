@@ -26,6 +26,8 @@ import TypingTestPage  from '@/pages/TypingTestPage';
 import CommunityPage   from '@/pages/CommunityPage';
 import FriendsPage     from '@/pages/FriendsPage';
 import RoomsPage, { RoomPage } from '@/pages/RoomsPage';
+import SupportPage     from '@/pages/SupportPage';
+import PrivacyPage     from '@/pages/PrivacyPage';
 import ProfilePage     from '@/pages/ProfilePage';
 import SettingsPage    from '@/pages/SettingsPage';
 import AdminPage       from '@/pages/AdminPage';
@@ -103,6 +105,9 @@ export default function App() {
           <Route path="/friends"               element={<FriendsPage />} />
           <Route path="/rooms"                 element={<RoomsPage />} />
           <Route path="/rooms/:id"             element={<RoomPage />} />
+          
+          <Route path="/support"               element={<SupportPage />} />
+          <Route path="/privacy"               element={<PrivacyPage />} />
           <Route path="/profile"              element={<ProfilePage />} />
           <Route path="/settings"             element={<SettingsPage />} />
           <Route path="/admin"                element={<AdminPage />} />

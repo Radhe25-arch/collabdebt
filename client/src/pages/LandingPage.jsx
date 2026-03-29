@@ -106,7 +106,7 @@ function DashboardPreview() {
         <div className="w-3 h-3 rounded-full bg-amber-400" />
         <div className="w-3 h-3 rounded-full bg-green-400" />
         <div className="ml-3 bg-slate-200 rounded h-5 flex items-center px-2 max-w-[200px] w-full">
-          <span className="text-slate-400 text-[10px] font-mono truncate">codearena.io/dashboard</span>
+          <span className="text-slate-400 text-[10px] font-mono truncate">skillforge.io/dashboard</span>
         </div>
       </div>
 
@@ -249,7 +249,7 @@ export default function LandingPage() {
             <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center shadow-sm group-hover:shadow-md group-hover:shadow-blue-200 transition-shadow">
               <Icons.Code size={15} className="text-white" />
             </div>
-            <span className="font-display font-bold text-lg text-slate-900 tracking-tight">CodeArena</span>
+            <span className="font-display font-bold text-lg text-slate-900 tracking-tight">SkillForge</span>
           </motion.button>
 
           {/* Nav links */}
@@ -572,7 +572,7 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {[
               {
-                quote: 'CodeArena is the only platform where I feel real competitive pressure. Within 3 weeks I went from struggling with arrays to confidently solving graph problems.',
+                quote: 'SkillForge is the only platform where I feel real competitive pressure. Within 3 weeks I went from struggling with arrays to confidently solving graph problems.',
                 name: 'Arjun Shah', role: 'SDE at Swiggy', avatarColor: 'bg-blue-600',
               },
               {
@@ -580,7 +580,7 @@ export default function LandingPage() {
                 name: 'Neha Kulkarni', role: 'CS Grad, IIT Bombay', avatarColor: 'bg-green-600',
               },
               {
-                quote: 'I prepped for FAANG interviews mostly on CodeArena. Battle mode trains you to think fast under pressure — nothing else really does that.',
+                quote: 'I prepped for FAANG interviews mostly on SkillForge. Battle mode trains you to think fast under pressure — nothing else really does that.',
                 name: 'Marco Diaz', role: 'Software Engineer, Google', avatarColor: 'bg-amber-600',
               },
             ].map((t, i) => (
@@ -649,7 +649,7 @@ export default function LandingPage() {
                 <div className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center shadow-sm">
                   <Icons.Code size={13} className="text-white" />
                 </div>
-                <span className="font-display font-bold text-slate-900">CodeArena</span>
+                <span className="font-display font-bold text-slate-900">SkillForge</span>
               </div>
               <p className="text-sm text-slate-400 leading-relaxed">
                 The competitive coding platform for developers who want to grow fast.
@@ -696,7 +696,7 @@ export default function LandingPage() {
           </div>
 
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 pt-8 border-t border-slate-100">
-            <p className="text-xs text-slate-400">© 2025 CodeArena. All rights reserved.</p>
+            <p className="text-xs text-slate-400">© 2026 SkillForge. All rights reserved.</p>
             <div className="flex gap-6 text-xs text-slate-400">
               <a href="#" className="hover:text-slate-700 transition-colors">Privacy Policy</a>
               <a href="#" className="hover:text-slate-700 transition-colors">Terms of Service</a>

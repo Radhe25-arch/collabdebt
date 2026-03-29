@@ -8,18 +8,18 @@ import api from '@/lib/api';
 const MAIN_LINKS = [
   { to: '/dashboard',   label: 'Home',        Icon: Icons.Home },
   { to: '/courses',     label: 'Catalog',     Icon: Icons.Book },
-  { to: '/tournaments', label: 'Tournaments', Icon: Icons.Trophy },
+  { to: '/mentor',      label: 'AI Mentor',   Icon: Icons.Terminal },
+  { to: '/typing-test', label: 'Speed Test',  Icon: Icons.Keyboard },
+  { to: '/quests',      label: 'Quests',      Icon: Icons.Target },
   { to: '/battles',     label: '1v1 Arena',   Icon: Icons.Zap },
+  { to: '/tournaments', label: 'Tournaments', Icon: Icons.Trophy },
   { to: '/leaderboard', label: 'Rankings',    Icon: Icons.Leaderboard },
   { to: '/community',   label: 'Community',   Icon: Icons.Users },
-  { to: '/quests',      label: 'Quests',      Icon: Icons.Target },
   { to: '/friends',     label: 'Friends',     Icon: Icons.MessageSquare },
-  { to: '/typing-test', label: 'Speed Test',  Icon: Icons.Keyboard },
-  { to: '/mentor',      label: 'AI Mentor',   Icon: Icons.Terminal },
 ];
 
 const BOTTOM_LINKS = [
-  { to: '/support', label: 'Support', Icon: Icons.Globe },
+  { to: '/support', label: 'Support', Icon: Icons.HelpCircle },
   { to: '/privacy', label: 'Privacy', Icon: Icons.Shield },
 ];
 
@@ -60,7 +60,7 @@ function Sidebar({ open }) {
         <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center shadow-sm">
           <Icons.Code size={16} className="text-white" />
         </div>
-        <span className="font-display font-bold text-xl text-slate-900 tracking-tight">CodeArena</span>
+        <span className="font-display font-bold text-xl text-slate-900 tracking-tight">SkillForge</span>
       </div>
 
       <nav className="flex-1 px-4 py-6 overflow-y-auto space-y-1.5 flex flex-col">

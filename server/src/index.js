@@ -22,7 +22,7 @@ const badgeRoutes        = require('./routes/badges');
 const notificationRoutes = require('./routes/notifications');
 const { battleRouter, questRouter, portfolioRouter } = require('./routes/new-features');
 const { adminRouter, skillRouter } = require('./routes/admin');
-const { mentorRouter, roomRouter } = require('./routes/mentor-rooms');
+const { mentorRouter, roomRouter, codeRouter } = require('./routes/mentor-rooms');
 const socialRoutes       = require('./routes/social');
 
 const app = express();
@@ -89,6 +89,7 @@ app.use('/api/admin',         adminRouter);
 app.use('/api/skills',        skillRouter);
 app.use('/api/mentor',        mentorRouter);
 app.use('/api/rooms',         roomRouter);
+app.use('/api/code',          codeRouter);
 app.use('/api/social',        socialRoutes);
 
 setupOAuthRoutes(app);

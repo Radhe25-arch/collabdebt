@@ -1,9 +1,11 @@
 const express      = require('express');
 const mentorRouter = express.Router();
 const roomRouter   = express.Router();
+const codeRouter   = express.Router();
 
 const mentorCtrl   = require('../controllers/mentor.controller');
 const roomCtrl     = require('../controllers/room.controller');
+const codeCtrl     = require('../controllers/code.controller');
 const { authenticate, optionalAuth } = require('../middleware/auth');
 
 // Mentor routes — all protected
@@ -24,4 +26,9 @@ roomRouter.post('/:id/join', authenticate,  roomCtrl.joinRoom);
 roomRouter.put('/:id/code',  authenticate,  roomCtrl.updateCode);
 roomRouter.delete('/:id/leave', authenticate, roomCtrl.leaveRoom);
 
-module.exports = { mentorRouter, roomRouter };
+// Code execution routes
+codeRouter.use(authenticate);
+codeRouter.post('/execute',    codeCtrl.executeCode);
+codeRouter.get('/languages',   codeCtrl.getSupportedLanguages);
+
+module.exports = { mentorRouter, roomRouter, codeRouter };

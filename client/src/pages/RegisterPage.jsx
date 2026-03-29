@@ -96,7 +96,7 @@ export default function RegisterPage() {
           <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center shadow-sm group-hover:shadow-md group-hover:shadow-blue-200 transition-shadow">
             <Icons.Code size={16} className="text-white" />
           </div>
-          <span className="font-display font-bold text-xl text-slate-900 tracking-tight">CodeArena</span>
+          <span className="font-display font-bold text-xl text-slate-900 tracking-tight">SkillForge</span>
         </Link>
 
         <div className="relative z-10">
@@ -142,7 +142,7 @@ export default function RegisterPage() {
             <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center shadow-sm">
               <Icons.Code size={16} className="text-white" />
             </div>
-            <span className="font-display font-bold text-xl text-slate-900 tracking-tight">CodeArena</span>
+            <span className="font-display font-bold text-xl text-slate-900 tracking-tight">SkillForge</span>
           </Link>
 
           <div className="mb-6 text-center lg:text-left">

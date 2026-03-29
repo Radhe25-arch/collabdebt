@@ -9,57 +9,54 @@ const SUGGESTION_CHIPS = [
   'Explain closures in JavaScript',
   'Review my code for bugs',
   'How does Big O work?',
-  'Debug this async function',
-  'Explain recursion with examples',
+  'Explain recursion visually',
   'What is the event loop?',
   'How do React hooks work?',
   'Explain promises vs async/await',
+  'Design a REST API',
+];
+
+const LANGUAGES = [
+  { id: 'javascript', label: 'JavaScript' },
+  { id: 'python',     label: 'Python' },
+  { id: 'java',       label: 'Java' },
+  { id: 'cpp',        label: 'C++' },
+  { id: 'c',          label: 'C' },
+  { id: 'go',         label: 'Go' },
+  { id: 'rust',       label: 'Rust' },
+  { id: 'typescript', label: 'TypeScript' },
+  { id: 'ruby',       label: 'Ruby' },
+  { id: 'php',        label: 'PHP' },
+  { id: 'bash',       label: 'Bash' },
 ];
 
 // ─── MARKDOWN RENDERER ────────────────────────────────────
 function MsgContent({ content }) {
   const parts = content.split(/(```[\s\S]*?```)/g);
-
   return (
     <div className="space-y-2">
       {parts.map((part, i) => {
         if (part.startsWith('```')) {
-          const lines   = part.split('\n');
-          const lang    = lines[0].replace('```', '').trim() || 'code';
-          const code    = lines.slice(1, -1).join('\n');
+          const lines = part.split('\n');
+          const lang  = lines[0].replace('```', '').trim() || 'code';
+          const code  = lines.slice(1, -1).join('\n');
           return (
-            <div key={i} className="relative group">
-              <div className="flex items-center justify-between px-3 py-1.5 bg-slate-50 rounded-t-lg border border-slate-200 border-b-0">
-                <span className="font-mono text-xs text-slate-500">{lang}</span>
-                <button
-                  onClick={() => { navigator.clipboard.writeText(code); toast.success('Copied'); }}
-                  className="font-mono text-xs text-slate-500 hover:text-indigo-600 transition-colors opacity-0 group-hover:opacity-100"
-                >
-                  copy
-                </button>
+            <div key={i} className="relative group rounded-lg overflow-hidden border border-slate-200">
+              <div className="flex items-center justify-between px-3 py-1.5 bg-slate-50 border-b border-slate-200">
+                <span className="font-mono text-[10px] text-slate-400 uppercase tracking-wider">{lang}</span>
+                <button onClick={() => { navigator.clipboard.writeText(code); toast.success('Copied'); }}
+                  className="font-mono text-[10px] text-slate-400 hover:text-blue-600 opacity-0 group-hover:opacity-100 transition-all">copy</button>
               </div>
-              <pre className="bg-slate-50 border border-slate-200 rounded-b-lg p-3 overflow-x-auto text-xs font-mono text-slate-600 leading-relaxed">
-                <code>{code}</code>
-              </pre>
+              <pre className="bg-slate-50 p-3 overflow-x-auto text-xs font-mono text-slate-700 leading-relaxed"><code>{code}</code></pre>
             </div>
           );
         }
-
-        const rendered = part
-          .split(/(\*\*.*?\*\*|`.*?`)/g)
-          .map((chunk, ci) => {
-            if (chunk.startsWith('**') && chunk.endsWith('**'))
-              return <strong key={ci} className="text-slate-900 font-semibold">{chunk.slice(2,-2)}</strong>;
-            if (chunk.startsWith('`') && chunk.endsWith('`'))
-              return <code key={ci} className="font-mono text-xs bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded text-indigo-600">{chunk.slice(1,-1)}</code>;
-            return <span key={ci}>{chunk}</span>;
-          });
-
-        return (
-          <div key={i} className="text-sm leading-relaxed whitespace-pre-wrap">
-            {rendered}
-          </div>
-        );
+        const rendered = part.split(/(\*\*.*?\*\*|`.*?`)/g).map((chunk, ci) => {
+          if (chunk.startsWith('**') && chunk.endsWith('**')) return <strong key={ci} className="font-semibold text-slate-900">{chunk.slice(2,-2)}</strong>;
+          if (chunk.startsWith('`') && chunk.endsWith('`')) return <code key={ci} className="font-mono text-xs bg-slate-100 border border-slate-200 px-1 py-0.5 rounded text-blue-700">{chunk.slice(1,-1)}</code>;
+          return <span key={ci}>{chunk}</span>;
+        });
+        return <div key={i} className="text-[13px] leading-relaxed whitespace-pre-wrap text-slate-700">{rendered}</div>;
       })}
     </div>
   );
@@ -71,35 +68,32 @@ function Message({ msg, onRetry }) {
   const isError = msg.error;
 
   return (
-    <div className={`flex gap-3 ${isUser ? 'flex-row-reverse' : ''}`}>
-      <div className={`w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center font-mono text-xs font-bold ${
-        isUser ? 'bg-blue-600 text-white' : isError ? 'bg-red-100 border border-red-300 text-red-500' : 'bg-indigo-600/20 border border-indigo-600/30 text-indigo-600'
+    <div className={`flex gap-3 ${isUser ? 'flex-row-reverse' : ''} group`}>
+      <div className={`w-6 h-6 rounded-md flex-shrink-0 flex items-center justify-center text-[10px] font-mono font-bold mt-0.5 ${
+        isUser ? 'bg-blue-600 text-white' : isError ? 'bg-red-100 text-red-500 border border-red-200' : 'bg-slate-800 text-white'
       }`}>
         {isUser ? 'U' : isError ? '!' : 'AI'}
       </div>
-      <div className={`max-w-[80%] ${isUser ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
-        <div className={`px-4 py-3 rounded-xl text-slate-900 ${
-          isError
-            ? 'bg-red-50 border border-red-200 rounded-tl-sm'
-            : isUser
-            ? 'bg-blue-600/20 border border-blue-600/30 rounded-tr-sm'
-            : 'bg-white border border-slate-200 rounded-tl-sm'
+      <div className={`max-w-[75%] flex flex-col gap-1`}>
+        <div className={`px-4 py-3 rounded-2xl ${
+          isError ? 'bg-red-50 border border-red-200 rounded-tl-md'
+            : isUser ? 'bg-blue-600 text-white rounded-tr-md'
+            : 'bg-white border border-slate-200 rounded-tl-md shadow-sm'
         }`}>
           {isError ? (
             <div className="space-y-2">
-              <p className="text-sm text-red-600">Failed to get response. The AI service may be temporarily unavailable.</p>
-              <button
-                onClick={onRetry}
-                className="flex items-center gap-1.5 text-xs font-mono text-red-600 hover:text-red-700 bg-red-100 px-3 py-1.5 rounded-lg transition-colors"
-              >
-                <Icons.ArrowRight size={11} /> Retry
+              <p className="text-sm text-red-600">AI service is temporarily unavailable.</p>
+              <button onClick={onRetry} className="flex items-center gap-1 text-xs text-red-500 hover:text-red-700 underline transition-colors">
+                Retry this message
               </button>
             </div>
+          ) : isUser ? (
+            <div className="text-[13px] leading-relaxed whitespace-pre-wrap">{msg.content}</div>
           ) : (
             <MsgContent content={msg.content} />
           )}
         </div>
-        <span className="font-mono text-xs text-slate-500 px-1">
+        <span className="font-mono text-[10px] text-slate-400 px-1">
           {msg.timestamp ? format(new Date(msg.timestamp), 'HH:mm') : ''}
         </span>
       </div>
@@ -107,38 +101,82 @@ function Message({ msg, onRetry }) {
   );
 }
 
-// ─── CODE PANEL ───────────────────────────────────────────
-function CodePanel({ code, setCode, output, onRun, running }) {
+// ─── CODE EDITOR PANEL ─────────────────────────────────────
+function CodePanel({ visible }) {
+  const [code, setCode]       = useState('');
+  const [language, setLang]   = useState('python');
+  const [output, setOutput]   = useState('');
+  const [running, setRunning] = useState(false);
+
+  const runCode = async () => {
+    if (!code.trim()) return;
+    setRunning(true);
+    setOutput('Running...');
+    try {
+      const r = await api.post('/code/execute', { code, language });
+      setOutput(r.data.output || r.data.error || '// No output');
+      if (r.data.error && r.data.output) {
+        setOutput(r.data.output + '\n\n--- Errors ---\n' + r.data.error);
+      }
+    } catch (err) {
+      // Fallback: client-side JS execution
+      if (language === 'javascript') {
+        try {
+          const logs = [];
+          const mock = { log: (...a) => logs.push(a.map(String).join(' ')), error: (...a) => logs.push('Error: ' + a.map(String).join(' ')), warn: (...a) => logs.push('Warn: ' + a.map(String).join(' ')) };
+          new Function('console', code)(mock);
+          setOutput(logs.join('\n') || '// No output');
+        } catch (e) { setOutput(`Error: ${e.message}`); }
+      } else {
+        setOutput(`Error: Code execution service unavailable.\nTip: Make sure JUDGE0_URL and JUDGE0_KEY are set in your server environment variables.`);
+      }
+    }
+    setRunning(false);
+  };
+
+  if (!visible) return null;
+
   return (
-    <div className="w-80 flex-shrink-0 flex flex-col border-l border-slate-200 bg-white">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200">
-        <span className="font-mono text-xs text-slate-500 uppercase tracking-widest">Code Compiler</span>
-        <button
-          onClick={onRun}
-          disabled={running || !code.trim()}
-          className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white px-3 py-1.5 rounded-lg text-xs font-mono transition-colors"
-        >
-          {running ? <Spinner size={11} /> : <Icons.Play size={11} />}
-          Run
+    <div className="w-[340px] flex-shrink-0 flex flex-col bg-white border-l border-slate-200 overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-2.5 border-b border-slate-100 bg-slate-50/50">
+        <div className="flex items-center gap-2">
+          <Icons.Terminal size={13} className="text-slate-500" />
+          <span className="font-mono text-[11px] text-slate-600 font-medium">Code Runner</span>
+        </div>
+        <button onClick={runCode} disabled={running || !code.trim()}
+          className="flex items-center gap-1.5 bg-green-600 hover:bg-green-700 disabled:opacity-40 text-white px-3 py-1 rounded-md text-[11px] font-mono font-medium transition-colors">
+          {running ? <Spinner size={10} /> : <Icons.Play size={10} />} Run
         </button>
       </div>
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <textarea
-          value={code}
-          onChange={e => setCode(e.target.value)}
-          className="flex-1 w-full bg-slate-50 resize-none outline-none p-4 font-mono text-xs text-slate-800 leading-relaxed border-b border-slate-200"
-          placeholder="// Write or paste code here to run..."
-          spellCheck={false}
-          style={{ fontFamily: "'JetBrains Mono', Consolas, monospace", minHeight: 180 }}
-        />
-        <div className="flex-shrink-0 max-h-48 overflow-y-auto">
-          <div className="px-4 py-2 bg-slate-50 border-b border-slate-200">
-            <span className="font-mono text-xs text-slate-500">Output</span>
-          </div>
-          <pre className="p-4 text-xs font-mono text-slate-700 whitespace-pre-wrap bg-white min-h-[60px]">
-            {output || '// Run your code to see output here'}
-          </pre>
+
+      {/* Language selector */}
+      <div className="flex items-center gap-1 px-3 py-2 border-b border-slate-100 overflow-x-auto">
+        {LANGUAGES.map(l => (
+          <button key={l.id} onClick={() => setLang(l.id)}
+            className={`px-2 py-1 rounded text-[10px] font-mono whitespace-nowrap transition-all ${
+              language === l.id ? 'bg-blue-600 text-white' : 'text-slate-500 hover:bg-slate-100'
+            }`}>{l.label}</button>
+        ))}
+      </div>
+
+      {/* Editor */}
+      <textarea value={code} onChange={e => setCode(e.target.value)}
+        className="flex-1 w-full bg-white resize-none outline-none p-4 font-mono text-xs text-slate-800 leading-relaxed border-b border-slate-100"
+        placeholder={language === 'python' ? 'print("Hello, World!")' : language === 'javascript' ? 'console.log("Hello, World!")' : '// Write code here...'}
+        spellCheck={false}
+        style={{ fontFamily: "'JetBrains Mono', Consolas, monospace", minHeight: 200 }}
+      />
+
+      {/* Output */}
+      <div className="flex-shrink-0 max-h-52 overflow-y-auto">
+        <div className="px-4 py-1.5 bg-slate-50 border-b border-slate-100 sticky top-0">
+          <span className="font-mono text-[10px] text-slate-400 uppercase tracking-wider">Output</span>
         </div>
+        <pre className="p-4 text-xs font-mono text-slate-700 whitespace-pre-wrap bg-white min-h-[50px] leading-relaxed"
+          style={{ fontFamily: "'JetBrains Mono', Consolas, monospace" }}>
+          {output || `// Click "Run" to execute your ${language} code`}
+        </pre>
       </div>
     </div>
   );
@@ -150,33 +188,22 @@ export default function MentorPage() {
   const [activeSession, setActive]    = useState(null);
   const [messages, setMessages]       = useState([]);
   const [input, setInput]             = useState('');
-  const [attachCode, setAttachCode]   = useState('');
-  const [showAttach, setShowAttach]   = useState(false);
   const [sending, setSending]         = useState(false);
   const [loading, setLoading]         = useState(true);
   const [sidebarTab, setSidebarTab]   = useState('sessions');
   const [historySearch, setHistorySearch] = useState('');
   const [showCodePanel, setShowCodePanel] = useState(false);
-  const [compilerCode, setCompilerCode]   = useState('');
-  const [compilerOutput, setCompilerOutput] = useState('');
-  const [runningCode, setRunningCode]     = useState(false);
   const bottomRef = useRef(null);
 
   useEffect(() => {
     api.get('/mentor').then(r => {
       const s = r.data.sessions || [];
       setSessions(s);
-      const first = s[0];
-      if (first) { setActive(first); setMessages(Array.isArray(first.messages) ? first.messages : []); }
-    }).catch(() => {
-      // Graceful fallback if mentor endpoint fails
-      setSessions([]);
-    }).finally(() => setLoading(false));
+      if (s[0]) { setActive(s[0]); setMessages(Array.isArray(s[0].messages) ? s[0].messages : []); }
+    }).catch(() => setSessions([])).finally(() => setLoading(false));
   }, []);
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
   const newSession = async () => {
     try {
@@ -185,16 +212,10 @@ export default function MentorPage() {
       setActive(r.data.session);
       setMessages([]);
       setSidebarTab('sessions');
-    } catch {
-      toast.error('Failed to create session');
-    }
+    } catch { toast.error('Failed to create session'); }
   };
 
-  const selectSession = (s) => {
-    setActive(s);
-    setMessages(Array.isArray(s.messages) ? s.messages : []);
-    setSidebarTab('sessions');
-  };
+  const selectSession = (s) => { setActive(s); setMessages(Array.isArray(s.messages) ? s.messages : []); };
 
   const deleteSession = async (id, e) => {
     e.stopPropagation();
@@ -202,14 +223,12 @@ export default function MentorPage() {
       await api.delete(`/mentor/sessions/${id}`);
       setSessions(s => s.filter(x => x.id !== id));
       if (activeSession?.id === id) { setActive(null); setMessages([]); }
-    } catch {
-      toast.error('Failed to delete session');
-    }
+    } catch { toast.error('Failed to delete'); }
   };
 
   const send = useCallback(async (msgText, retryIndex) => {
     const text = (msgText || input).trim();
-    if (!text && !attachCode) return;
+    if (!text) return;
 
     let sessionId = activeSession?.id;
     if (!sessionId) {
@@ -218,74 +237,36 @@ export default function MentorPage() {
         setSessions(s => [r.data.session, ...s]);
         setActive(r.data.session);
         sessionId = r.data.session.id;
-      } catch {
-        toast.error('Failed to create session');
-        return;
-      }
+      } catch { toast.error('Failed to create session'); return; }
     }
 
-    const userContent = attachCode ? `${text}\n\n\`\`\`\n${attachCode}\n\`\`\`` : text;
-
-    // If retrying, remove the error message first
     if (retryIndex != null) {
       setMessages(m => m.filter((_, i) => i !== retryIndex));
     } else {
-      const userMsg = { role: 'user', content: userContent, timestamp: new Date().toISOString() };
-      setMessages(m => [...m, userMsg]);
+      setMessages(m => [...m, { role: 'user', content: text, timestamp: new Date().toISOString() }]);
     }
 
     setInput('');
-    setAttachCode('');
-    setShowAttach(false);
     setSending(true);
 
     try {
-      const r = await api.post(`/mentor/sessions/${sessionId}/message`, { message: text, code: attachCode || undefined });
+      const r = await api.post(`/mentor/sessions/${sessionId}/message`, { message: text });
       const aiMsg = { role: 'assistant', content: r.data.response, timestamp: new Date().toISOString() };
       setMessages(m => [...m, aiMsg]);
-
-      setSessions(s => s.map(x =>
-        x.id === sessionId
-          ? { ...x, messages: [...(Array.isArray(x.messages) ? x.messages : []), { role: 'user', content: userContent }, aiMsg] }
-          : x
-      ));
+      setSessions(s => s.map(x => x.id === sessionId ? { ...x, messages: [...(Array.isArray(x.messages) ? x.messages : []), { role: 'user', content: text }, aiMsg] } : x));
     } catch {
-      // Add inline error message instead of just a toast
-      const errorMsg = { role: 'assistant', content: '', timestamp: new Date().toISOString(), error: true, originalText: text, originalCode: attachCode };
-      setMessages(m => [...m, errorMsg]);
+      setMessages(m => [...m, { role: 'assistant', content: '', timestamp: new Date().toISOString(), error: true, originalText: text }]);
     }
     setSending(false);
-  }, [input, attachCode, activeSession]);
+  }, [input, activeSession]);
 
-  const handleRetry = (index) => {
-    const errorMsg = messages[index];
-    if (errorMsg?.originalText) {
-      send(errorMsg.originalText, index);
-    }
-  };
+  const handleRetry = (i) => { const m = messages[i]; if (m?.originalText) send(m.originalText, i); };
 
-  const runCode = async () => {
-    if (!compilerCode.trim()) return;
-    setRunningCode(true);
-    try {
-      // Use Function constructor for simple JS execution (client-side)
-      const logs = [];
-      const mockConsole = { log: (...args) => logs.push(args.map(String).join(' ')), error: (...args) => logs.push('Error: ' + args.map(String).join(' ')), warn: (...args) => logs.push('Warn: ' + args.map(String).join(' ')) };
-      const fn = new Function('console', compilerCode);
-      fn(mockConsole);
-      setCompilerOutput(logs.join('\n') || '// No output');
-    } catch (err) {
-      setCompilerOutput(`Error: ${err.message}`);
-    }
-    setRunningCode(false);
-  };
-
-  // Filter sessions for history search
+  // Filter for history search
   const filteredSessions = historySearch
     ? sessions.filter(s => (s.topic || '').toLowerCase().includes(historySearch.toLowerCase()))
     : sessions;
 
-  // Group sessions by date for history
   const groupedHistory = {};
   filteredSessions.forEach(s => {
     const date = s.updatedAt ? format(new Date(s.updatedAt), 'MMM d, yyyy') : 'Unknown';
@@ -293,239 +274,165 @@ export default function MentorPage() {
     groupedHistory[date].push(s);
   });
 
-  if (loading) return (
-    <div className="flex justify-center py-24"><Spinner size={24} className="text-blue-700" /></div>
-  );
+  if (loading) return <div className="flex justify-center py-24"><Spinner size={20} className="text-blue-600" /></div>;
 
   return (
-    <div className="flex gap-0 h-[calc(100vh-7rem)] overflow-hidden">
-      {/* Sidebar — sessions & history */}
-      <div className="w-64 flex-shrink-0 flex flex-col bg-white border-r border-slate-200 overflow-hidden">
-        {/* Tab switcher */}
-        <div className="flex border-b border-slate-200 flex-shrink-0">
+    <div className="flex h-[calc(100vh-7rem)] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+
+      {/* ── LEFT: Sessions Sidebar ── */}
+      <div className="w-60 flex-shrink-0 flex flex-col border-r border-slate-100 bg-slate-50/50">
+        {/* Tabs */}
+        <div className="flex border-b border-slate-200">
           {['sessions', 'history'].map(t => (
             <button key={t} onClick={() => setSidebarTab(t)}
-              className={`flex-1 py-3 font-mono text-xs capitalize transition-all ${
-                sidebarTab === t ? 'text-blue-700 border-b-2 border-blue-600 bg-blue-50/40' : 'text-slate-500 hover:text-slate-900'
-              }`}
-            >{t}</button>
+              className={`flex-1 py-2.5 text-[11px] font-mono capitalize transition-all ${
+                sidebarTab === t ? 'text-blue-700 border-b-2 border-blue-600 bg-white' : 'text-slate-400 hover:text-slate-600'
+              }`}>{t}</button>
           ))}
         </div>
 
-        <div className="p-3 flex-shrink-0">
-          <Button onClick={newSession} variant="primary" size="sm" className="w-full">
-            <Icons.Plus size={13} /> New Session
-          </Button>
+        {/* New Session */}
+        <div className="p-3">
+          <button onClick={newSession}
+            className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-mono font-medium transition-colors">
+            <Icons.Plus size={11} /> New Chat
+          </button>
         </div>
 
-        {/* Sessions list */}
-        {sidebarTab === 'sessions' && (
-          <div className="flex-1 overflow-y-auto px-3 pb-3 space-y-1">
-            {sessions.length === 0 && (
-              <p className="font-mono text-xs text-slate-500 text-center py-4">No sessions yet</p>
-            )}
-            {sessions.map(s => (
-              <button
-                key={s.id}
-                onClick={() => selectSession(s)}
-                className={`w-full text-left px-3 py-2.5 rounded-lg group flex items-center gap-2 transition-colors ${
-                  activeSession?.id === s.id
-                    ? 'bg-blue-50 border border-blue-200'
-                    : 'hover:bg-slate-50 border border-transparent'
-                }`}
-              >
-                <Icons.Terminal size={12} className="text-slate-400 flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="font-mono text-xs text-slate-900 truncate">{s.topic || 'Session'}</p>
-                  <p className="font-mono text-xs text-slate-400">
-                    {Array.isArray(s.messages) ? s.messages.length : 0} msgs
-                  </p>
-                </div>
-                <button
-                  onClick={(e) => deleteSession(s.id, e)}
-                  className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-400 transition-all p-0.5"
-                >
-                  <Icons.X size={11} />
-                </button>
-              </button>
-            ))}
-          </div>
-        )}
-
-        {/* History tab */}
-        {sidebarTab === 'history' && (
-          <div className="flex-1 overflow-y-auto px-3 pb-3">
-            <div className="relative mb-3">
-              <Icons.Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 pl-8 text-xs font-mono text-slate-700 placeholder:text-slate-400 outline-none focus:border-blue-400 transition-colors"
-                placeholder="Search sessions..."
-                value={historySearch}
-                onChange={e => setHistorySearch(e.target.value)}
-              />
+        {/* Session/History Lists */}
+        <div className="flex-1 overflow-y-auto px-2 pb-3">
+          {sidebarTab === 'history' && (
+            <div className="px-1 mb-2">
+              <div className="relative">
+                <Icons.Search size={11} className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input className="w-full bg-white border border-slate-200 rounded-md py-1.5 pl-7 pr-2 text-[11px] font-mono outline-none focus:border-blue-400 placeholder:text-slate-400"
+                  placeholder="Search..." value={historySearch} onChange={e => setHistorySearch(e.target.value)} />
+              </div>
             </div>
-            {Object.entries(groupedHistory).length === 0 && (
-              <p className="font-mono text-xs text-slate-500 text-center py-4">No sessions found</p>
-            )}
-            {Object.entries(groupedHistory).map(([date, items]) => (
-              <div key={date} className="mb-3">
-                <p className="font-mono text-xs text-slate-400 uppercase tracking-wider mb-1.5 px-1">{date}</p>
-                <div className="space-y-1">
-                  {items.map(s => (
-                    <button
-                      key={s.id}
-                      onClick={() => selectSession(s)}
-                      className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
-                        activeSession?.id === s.id ? 'bg-blue-50 border border-blue-200' : 'hover:bg-slate-50 border border-transparent'
-                      }`}
-                    >
-                      <p className="font-mono text-xs text-slate-800 truncate">{s.topic || 'Session'}</p>
-                      <p className="font-mono text-xs text-slate-400">
-                        {Array.isArray(s.messages) ? s.messages.length : 0} messages
-                      </p>
+          )}
+
+          {sidebarTab === 'sessions' ? (
+            sessions.length === 0
+              ? <p className="text-center text-[11px] font-mono text-slate-400 py-6">No sessions yet</p>
+              : <div className="space-y-0.5">
+                  {sessions.map(s => (
+                    <button key={s.id} onClick={() => selectSession(s)}
+                      className={`w-full text-left px-3 py-2 rounded-lg group flex items-center gap-2 transition-all ${
+                        activeSession?.id === s.id ? 'bg-white border border-blue-200 shadow-sm' : 'hover:bg-white border border-transparent'
+                      }`}>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[11px] font-medium text-slate-800 truncate">{s.topic || 'Session'}</p>
+                        <p className="text-[10px] font-mono text-slate-400">{Array.isArray(s.messages) ? s.messages.length : 0} msgs</p>
+                      </div>
+                      <button onClick={(e) => deleteSession(s.id, e)}
+                        className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-400 transition-all p-0.5">
+                        <Icons.X size={10} />
+                      </button>
                     </button>
                   ))}
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
+          ) : (
+            Object.entries(groupedHistory).length === 0
+              ? <p className="text-center text-[11px] font-mono text-slate-400 py-6">No sessions found</p>
+              : Object.entries(groupedHistory).map(([date, items]) => (
+                  <div key={date} className="mb-2.5">
+                    <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wider mb-1 px-2">{date}</p>
+                    <div className="space-y-0.5">
+                      {items.map(s => (
+                        <button key={s.id} onClick={() => selectSession(s)}
+                          className={`w-full text-left px-3 py-1.5 rounded-lg text-[11px] transition-all ${
+                            activeSession?.id === s.id ? 'bg-white border border-blue-200' : 'hover:bg-white border border-transparent'
+                          }`}>
+                          <p className="text-slate-700 truncate">{s.topic || 'Session'}</p>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))
+          )}
+        </div>
       </div>
 
-      {/* Main chat area */}
-      <div className="flex-1 flex flex-col bg-white overflow-hidden min-w-0">
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 py-3 border-b border-slate-200 flex-shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-indigo-600/15 border border-indigo-600/20 flex items-center justify-center">
-              <Icons.Terminal size={14} className="text-indigo-600" />
+      {/* ── MIDDLE: Chat ── */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Chat Header */}
+        <div className="flex items-center justify-between px-5 py-2.5 border-b border-slate-100 bg-white flex-shrink-0">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-lg bg-slate-900 flex items-center justify-center">
+              <Icons.Terminal size={13} className="text-white" />
             </div>
             <div>
-              <p className="font-display font-bold text-sm">AI Code Mentor</p>
-              <p className="font-mono text-xs text-slate-500">Senior engineer · always available</p>
+              <p className="font-semibold text-sm text-slate-900">AI Mentor</p>
+              <p className="text-[10px] text-slate-400 font-mono">Senior engineer · Code reviews · DSA · System design</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => setShowCodePanel(v => !v)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-mono transition-all ${
-                showCodePanel ? 'border-blue-300 bg-blue-50 text-blue-700' : 'border-slate-200 text-slate-500 hover:text-slate-900 hover:border-slate-300'
-              }`}
-            >
-              <Icons.Code size={12} /> Compiler
+            <button onClick={() => setShowCodePanel(v => !v)}
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-mono border transition-all ${
+                showCodePanel ? 'border-blue-300 bg-blue-50 text-blue-700' : 'border-slate-200 text-slate-500 hover:text-slate-700'
+              }`}>
+              <Icons.Code size={12} /> {showCodePanel ? 'Hide' : 'Code'}
             </button>
-            <BadgeTag variant="teal">Online</BadgeTag>
+            <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+            <span className="text-[10px] font-mono text-green-600">Online</span>
           </div>
         </div>
 
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5 min-h-0">
+        {/* Messages Area */}
+        <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4 min-h-0 bg-slate-50/30">
           {messages.length === 0 && (
-            <div className="flex flex-col items-center justify-center h-full gap-6">
-              <div className="w-14 h-14 rounded-2xl bg-indigo-600/15 border border-indigo-600/20 flex items-center justify-center">
-                <Icons.Terminal size={24} className="text-indigo-600" />
+            <div className="flex flex-col items-center justify-center h-full gap-5 max-w-md mx-auto">
+              <div className="w-12 h-12 rounded-xl bg-slate-900 flex items-center justify-center">
+                <Icons.Terminal size={20} className="text-white" />
               </div>
               <div className="text-center">
-                <p className="font-display font-bold text-base mb-2">Ask me anything about code</p>
-                <p className="font-mono text-xs text-slate-500 max-w-xs">
-                  Code review, debugging, concepts, DSA problems, interview prep — I'm here 24/7
-                </p>
+                <p className="font-semibold text-base text-slate-900 mb-1">How can I help you today?</p>
+                <p className="text-xs text-slate-500">Code reviews, debugging, DSA problems, interview prep, system design</p>
               </div>
-              <div className="flex flex-wrap gap-2 justify-center max-w-lg">
+              <div className="flex flex-wrap gap-1.5 justify-center">
                 {SUGGESTION_CHIPS.map(chip => (
-                  <button
-                    key={chip}
-                    onClick={() => send(chip)}
-                    className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:border-blue-300 hover:text-blue-700 hover:bg-blue-50 font-mono text-xs transition-all cursor-pointer"
-                  >
+                  <button key={chip} onClick={() => send(chip)}
+                    className="px-3 py-1.5 rounded-full border border-slate-200 bg-white text-slate-600 hover:border-blue-300 hover:text-blue-700 text-[11px] transition-all">
                     {chip}
                   </button>
                 ))}
               </div>
             </div>
           )}
-          {messages.map((msg, i) => (
-            <Message key={i} msg={msg} onRetry={() => handleRetry(i)} />
-          ))}
+          {messages.map((msg, i) => <Message key={i} msg={msg} onRetry={() => handleRetry(i)} />)}
           {sending && (
             <div className="flex gap-3">
-              <div className="w-7 h-7 rounded-full bg-indigo-600/20 border border-indigo-600/30 flex items-center justify-center text-indigo-600 font-mono text-xs font-bold">AI</div>
-              <div className="px-4 py-3 rounded-xl rounded-tl-sm bg-white border border-slate-200">
-                <div className="flex items-center gap-1.5">
-                  {[0,1,2].map(i => (
-                    <div key={i} className="w-1.5 h-1.5 rounded-full bg-indigo-600 animate-bounce" style={{ animationDelay: `${i * 0.15}s` }} />
-                  ))}
-                </div>
+              <div className="w-6 h-6 rounded-md bg-slate-800 flex items-center justify-center text-[10px] font-mono font-bold text-white mt-0.5">AI</div>
+              <div className="px-4 py-3 rounded-2xl rounded-tl-md bg-white border border-slate-200 shadow-sm">
+                <div className="flex items-center gap-1">{[0,1,2].map(i => (
+                  <div key={i} className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce" style={{ animationDelay: `${i * 0.15}s` }} />
+                ))}</div>
               </div>
             </div>
           )}
           <div ref={bottomRef} />
         </div>
 
-        {/* Input area */}
-        <div className="flex-shrink-0 border-t border-slate-200 bg-white">
-          {showAttach && (
-            <div className="px-4 pt-3">
-              <div className="flex items-center justify-between mb-1">
-                <span className="font-mono text-xs text-slate-500">Code to review (optional)</span>
-                <button onClick={() => setShowAttach(false)} className="text-slate-400 hover:text-slate-700 transition-colors">
-                  <Icons.X size={12} />
-                </button>
-              </div>
-              <textarea
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 font-mono text-xs text-slate-700 resize-none outline-none focus:border-blue-400 transition-colors"
-                rows={4}
-                value={attachCode}
-                onChange={e => setAttachCode(e.target.value)}
-                placeholder="// Paste your code here..."
-                spellCheck={false}
-              />
-            </div>
-          )}
-          <div className="flex items-end gap-2 p-4">
-            <button
-              onClick={() => setShowAttach(v => !v)}
-              className={`flex-shrink-0 p-2.5 rounded-lg border transition-colors ${
-                showAttach ? 'border-blue-300 text-blue-700 bg-blue-50' : 'border-slate-200 text-slate-400 hover:text-slate-700 hover:border-slate-300'
-              }`}
-              title="Attach code"
-            >
-              <Icons.Code size={14} />
-            </button>
-            <div className="flex-1 relative">
-              <textarea
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-700 resize-none pr-12 outline-none focus:border-blue-400 transition-colors placeholder:text-slate-400"
-                rows={1}
-                style={{ minHeight: 42, maxHeight: 120 }}
-                value={input}
-                onChange={e => setInput(e.target.value)}
-                placeholder="Ask about code, algorithms, debugging..."
-                onKeyDown={e => {
-                  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
-                }}
-                onInput={e => {
-                  e.target.style.height = 'auto';
-                  e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
-                }}
-              />
-            </div>
-            <Button onClick={() => send()} variant="primary" size="sm" loading={sending} disabled={!input.trim() && !attachCode}>
+        {/* Input Area */}
+        <div className="flex-shrink-0 border-t border-slate-100 bg-white p-3">
+          <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 focus-within:border-blue-400 focus-within:ring-1 focus-within:ring-blue-100 transition-all">
+            <textarea className="flex-1 bg-transparent resize-none outline-none text-sm text-slate-700 placeholder:text-slate-400 py-1.5"
+              rows={1} style={{ minHeight: 32, maxHeight: 100 }}
+              value={input} onChange={e => setInput(e.target.value)}
+              placeholder="Ask about code, algorithms, debugging..."
+              onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
+              onInput={e => { e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 100) + 'px'; }}
+            />
+            <button onClick={() => send()} disabled={!input.trim() || sending}
+              className="w-8 h-8 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:opacity-30 flex items-center justify-center text-white flex-shrink-0 transition-colors">
               <Icons.ArrowRight size={14} />
-            </Button>
+            </button>
           </div>
         </div>
       </div>
 
-      {/* Code Compiler Panel */}
-      {showCodePanel && (
-        <CodePanel
-          code={compilerCode}
-          setCode={setCompilerCode}
-          output={compilerOutput}
-          onRun={runCode}
-          running={runningCode}
-        />
-      )}
+      {/* ── RIGHT: Code Panel ── */}
+      <CodePanel visible={showCodePanel} />
     </div>
   );
 }
