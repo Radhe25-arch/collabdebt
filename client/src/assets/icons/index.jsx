@@ -62,6 +62,7 @@ export const MessageSquareIcon = (p) => <Icon {...p} d="M21 15a2 2 0 01-2 2H7l-4
 export const UserIcon          = (p) => <Icon {...p} d={["M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2","M12 11a4 4 0 100-8 4 4 0 000 8z"]} />;
 export const UserPlusIcon      = (p) => <Icon {...p} d={["M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2","M9 11a4 4 0 100-8 4 4 0 000 8z","M19 8v6","M16 11h6"]} />;
 export const KeyboardIcon      = (p) => <Icon {...p} d={["M2 6a2 2 0 012-2h16a2 2 0 012 2v12a2 2 0 01-2 2H4a2 2 0 01-2-2V6z","M6 10h.01 M10 10h.01 M14 10h.01 M18 10h.01 M8 14h8"]} />;
+export const HelpCircleIcon    = (p) => <Icon {...p} d={["M12 22a10 10 0 100-20 10 10 0 000 20z","M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3","M12 17h.01"]} />;
 
 export default {
   Home: HomeIcon, Courses: CoursesIcon, Trophy: TrophyIcon,
@@ -79,5 +80,5 @@ export default {
   Book: BookIcon, Video: VideoIcon, Clock: ClockIcon,
   Calendar: CalendarIcon, Users: UsersIcon, Globe: GlobeIcon,
   MessageSquare: MessageSquareIcon, User: UserIcon, UserPlus: UserPlusIcon,
-  Keyboard: KeyboardIcon,
+  Keyboard: KeyboardIcon, HelpCircle: HelpCircleIcon,
 };
