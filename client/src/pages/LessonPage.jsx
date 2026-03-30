@@ -241,8 +241,14 @@ export default function LessonPage() {
   };
 
   if (loading) return (
-    <div className="flex justify-center items-center min-h-[60vh]">
-      <Spinner size={28} className="text-blue-600" />
+    <div className="flex flex-col justify-center items-center gap-4 min-h-[60vh]">
+      <Spinner size={32} className="text-blue-600" />
+      <div className="text-center space-y-1">
+        <p className="text-slate-800 font-semibold text-lg">Loading Lesson...</p>
+        <p className="text-slate-500 text-sm max-w-sm mx-auto">
+          If this is the first time this expert topic is being accessed, our AI is architecting the curriculum Just-In-Time. This can take up to 15 seconds.
+        </p>
+      </div>
     </div>
   );
   if (!lesson) return null;

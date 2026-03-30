@@ -1,7 +1,9 @@
 const express = require('express');
-const { authenticate, optionalAuth } = require('../middleware/auth');
 const { prisma } = require('../config/db');
-const { awardXP, triggerQuestProgress, checkMilestoneBadges } = require('../utils/xp');
+const { authenticate, optionalAuth } = require('../middleware/auth');
+const AppError = require('../utils/AppError');
+const { awardXP, triggerQuestProgress, checkMilestoneBadges } = require('../controllers/gamification.controller');
+const { generateLessonContent } = require('../services/courseGenerator');
 const AppError = require('../utils/AppError');
 
 const courseRouter = express.Router();
@@ -123,19 +125,43 @@ lessonRouter.get('/:id', optionalAuth, async (req, res, next) => {
     });
     if (!lesson) throw new AppError('Lesson not found', 404);
 
+    let currentLesson = lesson;
+
+    // --- JIT AI COURSE GENERATOR ---
+    // If the content is an empty string, generate it on demand so we don't hit rate limits pre-generating 200 courses.
+    if (!currentLesson.content || currentLesson.content.trim() === '') {
+      console.log(`[JIT] Generating lesson content for: ${currentLesson.course.title} - ${currentLesson.title}`);
+      
+      try {
+        await generateLessonContent(currentLesson.id, currentLesson.course.title, currentLesson.title);
+        
+        // Re-fetch the freshly generated lesson and its quizzes securely
+        currentLesson = await prisma.lesson.findFirst({
+          where: { id: currentLesson.id },
+          include: {
+            course: { select: { id: true, title: true, slug: true } },
+            quiz: { include: { questions: { orderBy: { order: 'asc' } } } },
+          },
+        });
+      } catch (genError) {
+        console.error("AI Generation Failed:", genError.message);
+        // Fallback or ignore
+      }
+    }
+
     let isCompleted = false;
     if (req.user) {
       const lp = await prisma.lessonProgress.findUnique({
-        where: { userId_lessonId: { userId: req.user.id, lessonId: lesson.id } },
+        where: { userId_lessonId: { userId: req.user.id, lessonId: currentLesson.id } },
       });
       isCompleted = !!lp;
     }
 
     const sanitizedLesson = {
-      ...lesson,
-      quiz: lesson.quiz ? {
-        ...lesson.quiz,
-        questions: lesson.quiz.questions.map(({ correctIndex, explanation, ...q }) => q),
+      ...currentLesson,
+      quiz: currentLesson.quiz ? {
+        ...currentLesson.quiz,
+        questions: currentLesson.quiz.questions.map(({ correctIndex, explanation, ...q }) => q),
       } : null,
     };
 
