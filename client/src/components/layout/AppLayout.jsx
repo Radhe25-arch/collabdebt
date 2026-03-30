@@ -81,14 +81,27 @@ function Sidebar({ open }) {
           ))}
           
           {user && (
-            <Link to="/profile" className="mt-4 p-3 rounded-2xl bg-slate-50 border border-slate-100 flex items-center gap-3 hover:bg-slate-100 transition-all group">
-              <Avatar user={user} size={36} className="ring-2 ring-white shadow-sm transition-transform group-hover:scale-105" />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-slate-900 truncate">{user.username || user.name}</p>
-                <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">View Profile</p>
+            <div className="mt-auto border-t border-slate-100 pt-6 pb-4 px-3 bg-slate-50/50">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 px-3">Account Hub</p>
+              <div className="space-y-1.5 pt-1">
+                <Link to="/profile" className="flex items-center gap-3 p-2.5 rounded-2xl hover:bg-white hover:shadow-sm border border-transparent hover:border-slate-200/50 transition-all group">
+                  <Avatar user={user} size={36} className="rounded-xl shadow-sm" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-bold text-slate-800 truncate">{user.username}</p>
+                    <p className="text-[10px] text-slate-500">Manage Profile</p>
+                  </div>
+                </Link>
+                <Link to="/settings" className="flex items-center gap-3 p-2.5 rounded-2xl hover:bg-white hover:shadow-sm border border-transparent hover:border-slate-200/50 transition-all group">
+                  <div className="w-9 h-9 rounded-xl bg-white shadow-sm flex items-center justify-center text-slate-400 group-hover:text-blue-600 transition-colors border border-slate-100">
+                    <Icons.Settings size={18} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <span className="text-xs font-bold text-slate-700 group-hover:text-slate-900 block">Preferences</span>
+                    <p className="text-[10px] text-slate-500">Settings & UI</p>
+                  </div>
+                </Link>
               </div>
-              <Icons.ChevronRight size={14} className="text-slate-300 group-hover:text-slate-500" />
-            </Link>
+            </div>
           )}
         </div>
       </nav>
@@ -191,6 +204,10 @@ function Topbar({ sidebarOpen, toggleSidebar }) {
                 </div>
               )}
             </div>
+
+            <Link to="/profile" className="flex items-center gap-2 group">
+              <Avatar user={user} size={36} className="ring-2 ring-slate-100 hover:ring-blue-200 transition-all cursor-pointer" />
+            </Link>
           </div>
         ) : (
           <div className="flex items-center gap-3">

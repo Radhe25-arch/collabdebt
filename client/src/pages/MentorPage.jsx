@@ -182,6 +182,32 @@ function CodePanel({ visible }) {
   );
 }
 
+// ─── QUOTA MODAL ──────────────────────────────────────────
+function QuotaModal({ isOpen, onClose }) {
+  if (!isOpen) return null;
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200">
+        <div className="p-8 text-center">
+          <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <Icons.Zap size={32} />
+          </div>
+          <h3 className="text-xl font-bold text-slate-900 mb-2">Daily Limit Reached</h3>
+          <p className="text-sm text-slate-500 leading-relaxed mb-8">
+            You've reached your daily quota of 100 mentor requests. To maintain high performance for everyone, quotas refill every day at 12:00 UTC.
+          </p>
+          <Button onClick={onClose} variant="primary" className="w-full py-4 rounded-2xl font-bold tracking-tight">
+            Got it, see you tomorrow
+          </Button>
+        </div>
+        <div className="bg-slate-50 px-8 py-4 border-t border-slate-100 flex justify-center">
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">SkillForge Professional</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── MAIN MENTOR PAGE ─────────────────────────────────────
 export default function MentorPage() {
   const [sessions, setSessions]       = useState([]);
@@ -193,6 +219,7 @@ export default function MentorPage() {
   const [sidebarTab, setSidebarTab]   = useState('sessions');
   const [historySearch, setHistorySearch] = useState('');
   const [showCodePanel, setShowCodePanel] = useState(false);
+  const [showQuotaModal, setShowQuotaModal] = useState(false);
   const bottomRef = useRef(null);
 
   useEffect(() => {
@@ -237,7 +264,13 @@ export default function MentorPage() {
         setSessions(s => [r.data.session, ...s]);
         setActive(r.data.session);
         sessionId = r.data.session.id;
-      } catch { toast.error('Failed to create session'); return; }
+      } catch (err) { 
+        if (err.response?.data?.error === 'DAILY_LIMIT_REACHED') {
+          setShowQuotaModal(true);
+          return;
+        }
+        toast.error('Failed to create session'); return; 
+      }
     }
 
     if (retryIndex != null) {
@@ -253,9 +286,14 @@ export default function MentorPage() {
       const r = await api.post(`/mentor/sessions/${sessionId}/message`, { message: text });
       const aiMsg = { role: 'assistant', content: r.data.response, timestamp: new Date().toISOString() };
       setMessages(m => [...m, aiMsg]);
-      setSessions(s => s.map(x => x.id === sessionId ? { ...x, messages: [...(Array.isArray(x.messages) ? x.messages : []), { role: 'user', content: text }, aiMsg] } : x));
-    } catch {
-      setMessages(m => [...m, { role: 'assistant', content: '', timestamp: new Date().toISOString(), error: true, originalText: text }]);
+      setSessions(s => s.map(x => x.id === sessionId ? { ...x, messages: [...(Array.isArray(x.messages) ? x.messages : []), { role: 'user', content: text, timestamp: new Date().toISOString() }, aiMsg] } : x));
+    } catch (err) {
+      if (err.response?.status === 429 && err.response?.data?.error === 'DAILY_LIMIT_REACHED') {
+        setMessages(m => m.filter(msg => msg.content !== text)); // Remove the failed user message
+        setShowQuotaModal(true);
+      } else {
+        setMessages(m => [...m, { role: 'assistant', content: '', timestamp: new Date().toISOString(), error: true, originalText: text }]);
+      }
     }
     setSending(false);
   }, [input, activeSession]);
@@ -277,162 +315,166 @@ export default function MentorPage() {
   if (loading) return <div className="flex justify-center py-24"><Spinner size={20} className="text-blue-600" /></div>;
 
   return (
-    <div className="flex h-[calc(100vh-7rem)] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+    <>
+      <div className="flex h-[calc(100vh-7rem)] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
 
-      {/* ── LEFT: Sessions Sidebar ── */}
-      <div className="w-60 flex-shrink-0 flex flex-col border-r border-slate-100 bg-slate-50/50">
-        {/* Tabs */}
-        <div className="flex border-b border-slate-200">
-          {['sessions', 'history'].map(t => (
-            <button key={t} onClick={() => setSidebarTab(t)}
-              className={`flex-1 py-2.5 text-[11px] font-mono capitalize transition-all ${
-                sidebarTab === t ? 'text-blue-700 border-b-2 border-blue-600 bg-white' : 'text-slate-400 hover:text-slate-600'
-              }`}>{t}</button>
-          ))}
+        {/* ── LEFT: Sessions Sidebar ── */}
+        <div className="w-60 flex-shrink-0 flex flex-col border-r border-slate-100 bg-slate-50/50">
+          {/* Tabs */}
+          <div className="flex border-b border-slate-200">
+            {['sessions', 'history'].map(t => (
+              <button key={t} onClick={() => setSidebarTab(t)}
+                className={`flex-1 py-2.5 text-[11px] font-mono capitalize transition-all ${
+                  sidebarTab === t ? 'text-blue-700 border-b-2 border-blue-600 bg-white' : 'text-slate-400 hover:text-slate-600'
+                }`}>{t}</button>
+            ))}
+          </div>
+
+          {/* New Session */}
+          <div className="p-3">
+            <button onClick={newSession}
+              className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-mono font-medium transition-colors">
+              <Icons.Plus size={11} /> New Chat
+            </button>
+          </div>
+
+          {/* Session/History Lists */}
+          <div className="flex-1 overflow-y-auto px-2 pb-3">
+            {sidebarTab === 'history' && (
+              <div className="px-1 mb-2">
+                <div className="relative">
+                  <Icons.Search size={11} className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input className="w-full bg-white border border-slate-200 rounded-md py-1.5 pl-7 pr-2 text-[11px] font-mono outline-none focus:border-blue-400 placeholder:text-slate-400"
+                    placeholder="Search..." value={historySearch} onChange={e => setHistorySearch(e.target.value)} />
+                </div>
+              </div>
+            )}
+
+            {sidebarTab === 'sessions' ? (
+              sessions.length === 0
+                ? <p className="text-center text-[11px] font-mono text-slate-400 py-6">No sessions yet</p>
+                : <div className="space-y-0.5">
+                    {sessions.map(s => (
+                      <button key={s.id} onClick={() => selectSession(s)}
+                        className={`w-full text-left px-3 py-2 rounded-lg group flex items-center gap-2 transition-all ${
+                          activeSession?.id === s.id ? 'bg-white border border-blue-200 shadow-sm' : 'hover:bg-white border border-transparent'
+                        }`}>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[11px] font-medium text-slate-800 truncate">{s.topic || 'Session'}</p>
+                          <p className="text-[10px] font-mono text-slate-400">{Array.isArray(s.messages) ? s.messages.length : 0} msgs</p>
+                        </div>
+                        <button onClick={(e) => deleteSession(s.id, e)}
+                          className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-400 transition-all p-0.5">
+                          <Icons.X size={10} />
+                        </button>
+                      </button>
+                    ))}
+                  </div>
+            ) : (
+              Object.entries(groupedHistory).length === 0
+                ? <p className="text-center text-[11px] font-mono text-slate-400 py-6">No sessions found</p>
+                : Object.entries(groupedHistory).map(([date, items]) => (
+                    <div key={date} className="mb-2.5">
+                      <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wider mb-1 px-2">{date}</p>
+                      <div className="space-y-0.5">
+                        {items.map(s => (
+                          <button key={s.id} onClick={() => selectSession(s)}
+                            className={`w-full text-left px-3 py-1.5 rounded-lg text-[11px] transition-all ${
+                              activeSession?.id === s.id ? 'bg-white border border-blue-200' : 'hover:bg-white border border-transparent'
+                            }`}>
+                            <p className="text-slate-700 truncate">{s.topic || 'Session'}</p>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))
+            )}
+          </div>
         </div>
 
-        {/* New Session */}
-        <div className="p-3">
-          <button onClick={newSession}
-            className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-mono font-medium transition-colors">
-            <Icons.Plus size={11} /> New Chat
-          </button>
-        </div>
-
-        {/* Session/History Lists */}
-        <div className="flex-1 overflow-y-auto px-2 pb-3">
-          {sidebarTab === 'history' && (
-            <div className="px-1 mb-2">
-              <div className="relative">
-                <Icons.Search size={11} className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input className="w-full bg-white border border-slate-200 rounded-md py-1.5 pl-7 pr-2 text-[11px] font-mono outline-none focus:border-blue-400 placeholder:text-slate-400"
-                  placeholder="Search..." value={historySearch} onChange={e => setHistorySearch(e.target.value)} />
+        {/* ── MIDDLE: Chat ── */}
+        <div className="flex-1 flex flex-col min-w-0">
+          {/* Chat Header */}
+          <div className="flex items-center justify-between px-5 py-2.5 border-b border-slate-100 bg-white flex-shrink-0">
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-lg bg-slate-900 flex items-center justify-center">
+                <Icons.Terminal size={13} className="text-white" />
+              </div>
+              <div>
+                <p className="font-semibold text-sm text-slate-900">AI Mentor</p>
+                <p className="text-[10px] text-slate-400 font-mono">Senior engineer · Code reviews · DSA · System design</p>
               </div>
             </div>
-          )}
+            <div className="flex items-center gap-2">
+              <button onClick={() => setShowCodePanel(v => !v)}
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-mono border transition-all ${
+                  showCodePanel ? 'border-blue-300 bg-blue-50 text-blue-700' : 'border-slate-200 text-slate-500 hover:text-slate-700'
+                }`}>
+                <Icons.Code size={12} /> {showCodePanel ? 'Hide' : 'Code'}
+              </button>
+              <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+              <span className="text-[10px] font-mono text-green-600">Online</span>
+            </div>
+          </div>
 
-          {sidebarTab === 'sessions' ? (
-            sessions.length === 0
-              ? <p className="text-center text-[11px] font-mono text-slate-400 py-6">No sessions yet</p>
-              : <div className="space-y-0.5">
-                  {sessions.map(s => (
-                    <button key={s.id} onClick={() => selectSession(s)}
-                      className={`w-full text-left px-3 py-2 rounded-lg group flex items-center gap-2 transition-all ${
-                        activeSession?.id === s.id ? 'bg-white border border-blue-200 shadow-sm' : 'hover:bg-white border border-transparent'
-                      }`}>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[11px] font-medium text-slate-800 truncate">{s.topic || 'Session'}</p>
-                        <p className="text-[10px] font-mono text-slate-400">{Array.isArray(s.messages) ? s.messages.length : 0} msgs</p>
-                      </div>
-                      <button onClick={(e) => deleteSession(s.id, e)}
-                        className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-400 transition-all p-0.5">
-                        <Icons.X size={10} />
-                      </button>
+          {/* Messages Area */}
+          <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4 min-h-0 bg-slate-50/30">
+            {messages.length === 0 && (
+              <div className="flex flex-col items-center justify-center h-full gap-5 max-w-md mx-auto">
+                <div className="w-12 h-12 rounded-xl bg-slate-900 flex items-center justify-center">
+                  <Icons.Terminal size={20} className="text-white" />
+                </div>
+                <div className="text-center">
+                  <p className="font-semibold text-base text-slate-900 mb-1">How can I help you today?</p>
+                  <p className="text-xs text-slate-500">Code reviews, debugging, DSA problems, interview prep, system design</p>
+                </div>
+                <div className="flex flex-wrap gap-1.5 justify-center">
+                  {SUGGESTION_CHIPS.map(chip => (
+                    <button key={chip} onClick={() => send(chip)}
+                      className="px-3 py-1.5 rounded-full border border-slate-200 bg-white text-slate-600 hover:border-blue-300 hover:text-blue-700 text-[11px] transition-all">
+                      {chip}
                     </button>
                   ))}
                 </div>
-          ) : (
-            Object.entries(groupedHistory).length === 0
-              ? <p className="text-center text-[11px] font-mono text-slate-400 py-6">No sessions found</p>
-              : Object.entries(groupedHistory).map(([date, items]) => (
-                  <div key={date} className="mb-2.5">
-                    <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wider mb-1 px-2">{date}</p>
-                    <div className="space-y-0.5">
-                      {items.map(s => (
-                        <button key={s.id} onClick={() => selectSession(s)}
-                          className={`w-full text-left px-3 py-1.5 rounded-lg text-[11px] transition-all ${
-                            activeSession?.id === s.id ? 'bg-white border border-blue-200' : 'hover:bg-white border border-transparent'
-                          }`}>
-                          <p className="text-slate-700 truncate">{s.topic || 'Session'}</p>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                ))
-          )}
+              </div>
+            )}
+            {messages.map((msg, i) => <Message key={i} msg={msg} onRetry={() => handleRetry(i)} />)}
+            {sending && (
+              <div className="flex gap-3">
+                <div className="w-6 h-6 rounded-md bg-slate-800 flex items-center justify-center text-[10px] font-mono font-bold text-white mt-0.5">AI</div>
+                <div className="px-4 py-3 rounded-2xl rounded-tl-md bg-white border border-slate-200 shadow-sm">
+                  <div className="flex items-center gap-1">{[0,1,2].map(i => (
+                    <div key={i} className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce" style={{ animationDelay: `${i * 0.15}s` }} />
+                  ))}</div>
+                </div>
+              </div>
+            )}
+            <div ref={bottomRef} />
+          </div>
+
+          {/* Input Area */}
+          <div className="flex-shrink-0 border-t border-slate-100 bg-white p-3">
+            <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 focus-within:border-blue-400 focus-within:ring-1 focus-within:ring-blue-100 transition-all">
+              <textarea className="flex-1 bg-transparent resize-none outline-none text-sm text-slate-700 placeholder:text-slate-400 py-1.5"
+                rows={1} style={{ minHeight: 32, maxHeight: 100 }}
+                value={input} onChange={e => setInput(e.target.value)}
+                placeholder="Ask about code, algorithms, debugging..."
+                onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
+                onInput={e => { e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 100) + 'px'; }}
+              />
+              <button onClick={() => send()} disabled={!input.trim() || sending}
+                className="w-8 h-8 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:opacity-30 flex items-center justify-center text-white flex-shrink-0 transition-colors">
+                <Icons.ArrowRight size={14} />
+              </button>
+            </div>
+          </div>
         </div>
+
+        {/* ── RIGHT: Code Panel ── */}
+        <CodePanel visible={showCodePanel} />
       </div>
-
-      {/* ── MIDDLE: Chat ── */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Chat Header */}
-        <div className="flex items-center justify-between px-5 py-2.5 border-b border-slate-100 bg-white flex-shrink-0">
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-slate-900 flex items-center justify-center">
-              <Icons.Terminal size={13} className="text-white" />
-            </div>
-            <div>
-              <p className="font-semibold text-sm text-slate-900">AI Mentor</p>
-              <p className="text-[10px] text-slate-400 font-mono">Senior engineer · Code reviews · DSA · System design</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <button onClick={() => setShowCodePanel(v => !v)}
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-mono border transition-all ${
-                showCodePanel ? 'border-blue-300 bg-blue-50 text-blue-700' : 'border-slate-200 text-slate-500 hover:text-slate-700'
-              }`}>
-              <Icons.Code size={12} /> {showCodePanel ? 'Hide' : 'Code'}
-            </button>
-            <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
-            <span className="text-[10px] font-mono text-green-600">Online</span>
-          </div>
-        </div>
-
-        {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4 min-h-0 bg-slate-50/30">
-          {messages.length === 0 && (
-            <div className="flex flex-col items-center justify-center h-full gap-5 max-w-md mx-auto">
-              <div className="w-12 h-12 rounded-xl bg-slate-900 flex items-center justify-center">
-                <Icons.Terminal size={20} className="text-white" />
-              </div>
-              <div className="text-center">
-                <p className="font-semibold text-base text-slate-900 mb-1">How can I help you today?</p>
-                <p className="text-xs text-slate-500">Code reviews, debugging, DSA problems, interview prep, system design</p>
-              </div>
-              <div className="flex flex-wrap gap-1.5 justify-center">
-                {SUGGESTION_CHIPS.map(chip => (
-                  <button key={chip} onClick={() => send(chip)}
-                    className="px-3 py-1.5 rounded-full border border-slate-200 bg-white text-slate-600 hover:border-blue-300 hover:text-blue-700 text-[11px] transition-all">
-                    {chip}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-          {messages.map((msg, i) => <Message key={i} msg={msg} onRetry={() => handleRetry(i)} />)}
-          {sending && (
-            <div className="flex gap-3">
-              <div className="w-6 h-6 rounded-md bg-slate-800 flex items-center justify-center text-[10px] font-mono font-bold text-white mt-0.5">AI</div>
-              <div className="px-4 py-3 rounded-2xl rounded-tl-md bg-white border border-slate-200 shadow-sm">
-                <div className="flex items-center gap-1">{[0,1,2].map(i => (
-                  <div key={i} className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce" style={{ animationDelay: `${i * 0.15}s` }} />
-                ))}</div>
-              </div>
-            </div>
-          )}
-          <div ref={bottomRef} />
-        </div>
-
-        {/* Input Area */}
-        <div className="flex-shrink-0 border-t border-slate-100 bg-white p-3">
-          <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 focus-within:border-blue-400 focus-within:ring-1 focus-within:ring-blue-100 transition-all">
-            <textarea className="flex-1 bg-transparent resize-none outline-none text-sm text-slate-700 placeholder:text-slate-400 py-1.5"
-              rows={1} style={{ minHeight: 32, maxHeight: 100 }}
-              value={input} onChange={e => setInput(e.target.value)}
-              placeholder="Ask about code, algorithms, debugging..."
-              onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
-              onInput={e => { e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 100) + 'px'; }}
-            />
-            <button onClick={() => send()} disabled={!input.trim() || sending}
-              className="w-8 h-8 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:opacity-30 flex items-center justify-center text-white flex-shrink-0 transition-colors">
-              <Icons.ArrowRight size={14} />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* ── RIGHT: Code Panel ── */}
-      <CodePanel visible={showCodePanel} />
-    </div>
+      
+      <QuotaModal isOpen={showQuotaModal} onClose={() => setShowQuotaModal(false)} />
+    </>
   );
 }

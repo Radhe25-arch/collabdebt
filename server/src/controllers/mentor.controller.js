@@ -1,14 +1,20 @@
 const { prisma } = require('../config/db');
 const AppError = require('../utils/AppError');
-const Anthropic = require('@anthropic-ai/sdk');
+const axios = require('axios');
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
+// Groq API Configuration
+const GROQ_KEYS = [
+  process.env.GROQ_API_KEY_1,
+  process.env.GROQ_API_KEY_2,
+  process.env.GROQ_API_KEY_3,
+  process.env.GROQ_API_KEY_4,
+  process.env.GROQ_API_KEY_5,
+].filter(Boolean);
 
-// AI Mentor — server-side proxy for code mentorship
+const GROQ_ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions';
+const DAILY_LIMIT = 100;
 
-const SYSTEM_PROMPT = `You are CodeArena's Lead System Architect — a world-class engineer with deep expertise in distributed systems, clean architecture, and product engineering.
+const SYSTEM_PROMPT = `You are SkillForge's Lead System Architect — a world-class engineer with deep expertise in distributed systems, clean architecture, and product engineering.
 
 Your objective is to mentor developers by:
 - Engineering high-level solutions for complex problems.
@@ -22,6 +28,25 @@ Operational Directives:
 - Provide 'Senior Tips' — non-obvious insights from years of experience.
 - Maintain a professional, encouraging, and authoritative tone.
 - Format all technical assets (code, diagrams, sequences) using clear markdown blocks.`;
+
+// Utility to check and reset daily quota
+async function checkQuota(user) {
+  const now = new Date();
+  
+  // Calculate the most recent 12:00 UTC reset time
+  const lastReset = new Date(now);
+  lastReset.setUTCHours(12, 0, 0, 0);
+  if (now < lastReset) {
+    lastReset.setUTCDate(lastReset.getUTCDate() - 1);
+  }
+
+  // If user hasn't requested since the last reset, reset their count
+  if (!user.lastMentorRequestAt || new Date(user.lastMentorRequestAt) < lastReset) {
+    return { count: 0, shouldUpdate: true };
+  }
+
+  return { count: user.mentorRequests, shouldUpdate: false };
+}
 
 async function getSession(req, res, next) {
   try {
@@ -54,7 +79,19 @@ async function sendMessage(req, res, next) {
     const { sessionId, message, code } = req.body;
     if (!message?.trim()) throw new AppError('Message required', 400);
 
-    // Load session
+    const user = await prisma.user.findUnique({ where: { id: req.user.id } });
+    if (!user) throw new AppError('User not found', 404);
+
+    // 1. Quota Check
+    const { count, shouldUpdate } = await checkQuota(user);
+    if (count >= DAILY_LIMIT) {
+      return res.status(429).json({ 
+        error: 'DAILY_LIMIT_REACHED',
+        message: 'You have reached your daily limit of 100 mentor requests. Your quota will refill at 12:00 UTC.' 
+      });
+    }
+
+    // 2. Load session
     const session = await prisma.mentorSession.findUnique({
       where: { id: sessionId },
     });
@@ -64,59 +101,80 @@ async function sendMessage(req, res, next) {
 
     const messages = Array.isArray(session.messages) ? session.messages : [];
 
-    // Build user message
-    const userContent = code
-      ? `${message}\n\n\`\`\`\n${code}\n\`\`\``
-      : message;
-
+    // 3. Build user message
+    const userContent = code ? `${message}\n\n\`\`\`\n${code}\n\`\`\`` : message;
     const history = messages.map(msg => ({
       role: msg.role === 'assistant' ? 'assistant' : 'user',
       content: msg.content
     }));
 
-    // Call Anthropic API
-    const response = await anthropic.messages.create({
-      model: "claude-3-haiku-20240307",
-      max_tokens: 1024,
-      system: SYSTEM_PROMPT,
-      messages: [
-        ...history.filter((msg, i) => {
-          // Ensure alternating roles: user, assistant, user, assistant...
-          if (i === 0) return msg.role === 'user';
-          return msg.role !== history[i-1].role;
-        }),
-        { role: "user", content: userContent }
-      ].filter((msg, i, arr) => {
-        // Final safety check: no consecutive roles
-        if (i === 0) return true;
-        return msg.role !== arr[i-1].role;
-      }),
-    });
+    // 4. Groq API Call with Rotation
+    let aiResponse = null;
+    let lastError = null;
 
-    const aiResponse = response.content[0].text;
+    for (let i = 0; i < GROQ_KEYS.length; i++) {
+      try {
+        const response = await axios.post(GROQ_ENDPOINT, {
+          model: "llama-3.3-70b-versatile",
+          messages: [
+            { role: "system", content: SYSTEM_PROMPT },
+            ...history,
+            { role: "user", content: userContent }
+          ],
+          temperature: 0.7,
+          max_tokens: 2048,
+        }, {
+          headers: {
+            'Authorization': `Bearer ${GROQ_KEYS[i]}`,
+            'Content-Type': 'application/json'
+          }
+        });
 
+        aiResponse = response.data.choices[0].message.content;
+        break; // Success!
+      } catch (err) {
+        lastError = err;
+        if (err.response?.status === 429) {
+          console.warn(`Groq Key ${i + 1} rate limited, rotating...`);
+          continue; // Try next key
+        }
+        throw err; // Re-throw other errors
+      }
+    }
+
+    if (!aiResponse) {
+      console.error('All Groq keys failed:', lastError);
+      throw new AppError('AI Mentor pathways are currently busy. Please try again in a few moments.', 503);
+    }
+
+    // 5. Update session & User Quota
     const newMessages = [
       ...messages,
       { role: 'user', content: userContent, timestamp: new Date().toISOString() },
       { role: 'assistant', content: aiResponse, timestamp: new Date().toISOString() },
     ];
 
-    // Update session
-    await prisma.mentorSession.update({
-      where: { id: sessionId },
-      data: {
-        messages: newMessages,
-        topic: session.topic === 'General' ? extractTopic(message) : session.topic,
-      },
-    });
+    await prisma.$transaction([
+      prisma.mentorSession.update({
+        where: { id: sessionId },
+        data: {
+          messages: newMessages,
+          topic: session.topic === 'General' ? extractTopic(message) : session.topic,
+        },
+      }),
+      prisma.user.update({
+        where: { id: req.user.id },
+        data: {
+          mentorRequests: shouldUpdate ? 1 : count + 1,
+          lastMentorRequestAt: new Date(),
+        },
+      })
+    ]);
 
-    res.json({
-      response: aiResponse,
-      sessionId,
-    });
+    res.json({ response: aiResponse, sessionId });
   } catch (err) { 
-    console.error('Anthropic API Error:', err);
-    next(new AppError('AI Mentor is temporarily unavailable', 500)); 
+    console.error('AI Mentor Error:', err.response?.data || err.message);
+    next(new AppError(err.message || 'AI Mentor is temporarily unavailable', 500)); 
   }
 }
 

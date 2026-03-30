@@ -63,6 +63,8 @@ export const UserIcon          = (p) => <Icon {...p} d={["M20 21v-2a4 4 0 00-4-4
 export const UserPlusIcon      = (p) => <Icon {...p} d={["M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2","M9 11a4 4 0 100-8 4 4 0 000 8z","M19 8v6","M16 11h6"]} />;
 export const KeyboardIcon      = (p) => <Icon {...p} d={["M2 6a2 2 0 012-2h16a2 2 0 012 2v12a2 2 0 01-2 2H4a2 2 0 01-2-2V6z","M6 10h.01 M10 10h.01 M14 10h.01 M18 10h.01 M8 14h8"]} />;
 export const HelpCircleIcon    = (p) => <Icon {...p} d={["M12 22a10 10 0 100-20 10 10 0 000 20z","M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3","M12 17h.01"]} />;
+export const RefreshCwIcon    = (p) => <Icon {...p} d={["M23 4v6h-6","M20.49 15a9 9 0 11-2.12-9.36L23 10"]} />;
+export const InfinityIcon     = (p) => <Icon {...p} d="M18.18 17.77l-5.64-5.64a.5.5 0 010-.7l5.64-5.64a5 5 0 017.07 7.07 5 5 0 01-7.07 4.91z M5.82 6.23a5 5 0 017.07 0l5.64 5.64a.5.5 0 010 .7l-5.64 5.64a5 5 0 01-7.07-7.07z" />;
 
 export default {
   Home: HomeIcon, Courses: CoursesIcon, Trophy: TrophyIcon,
@@ -81,4 +83,5 @@ export default {
   Calendar: CalendarIcon, Users: UsersIcon, Globe: GlobeIcon,
   MessageSquare: MessageSquareIcon, User: UserIcon, UserPlus: UserPlusIcon,
   Keyboard: KeyboardIcon, HelpCircle: HelpCircleIcon,
+  RefreshCw: RefreshCwIcon, Infinity: InfinityIcon,
 };

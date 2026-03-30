@@ -98,6 +98,10 @@ model User {
   isActive      Boolean   @default(true)
   onboarded     Boolean   @default(false)
 
+  // AI Mentor Limits
+  mentorRequests     Int       @default(0)
+  lastMentorRequestAt DateTime?
+
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
