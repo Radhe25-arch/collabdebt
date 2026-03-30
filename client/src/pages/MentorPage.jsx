@@ -208,6 +208,84 @@ function QuotaModal({ isOpen, onClose }) {
   );
 }
 
+// ─── CODE RUNNER / PANEL ──────────────────────────────────
+function CodePanel({ visible, onClose }) {
+  const [code, setCode]         = useState('// write or paste code here\nconsole.log("Hello, SkillForge!");');
+  const [language, setLanguage] = useState('javascript');
+  const [output, setOutput]     = useState('');
+  const [running, setRunning]   = useState(false);
+  const [status, setStatus]     = useState(null);
+
+  const runCode = async () => {
+    setRunning(true); setOutput(''); setStatus('Running...');
+    try {
+      const r = await api.post('/code/execute', { code, language });
+      setOutput(r.data.output);
+      setStatus(r.data.status || 'Finished');
+      if (r.data.fallback) toast.success('Running in sandbox mode');
+    } catch (err) {
+      if (err.response?.status === 503) {
+        setOutput('Error: Code execution service unavailable.\n\nTip: Please add JUDGE0_URL and JUDGE0_KEY to your server .env file to enable the fully-powered multi-language runner.');
+      } else {
+        setOutput('Error: ' + (err.response?.data?.error || 'Execution failed'));
+      }
+      setStatus('Failed');
+    }
+    setRunning(false);
+  };
+
+  if (!visible) return null;
+
+  return (
+    <div className="w-[450px] flex-shrink-0 flex flex-col bg-[#0D1117] border-l border-[#30363D] animate-in slide-in-from-right duration-300">
+      {/* Panel Header */}
+      <div className="flex items-center justify-between px-5 py-3 border-b border-[#30363D] bg-[#161B22]">
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]" />
+          <span className="text-[11px] font-mono font-bold text-slate-300 uppercase tracking-widest">Interactive Console</span>
+        </div>
+        <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors">
+          <Icons.X size={14} />
+        </button>
+      </div>
+
+      {/* Editor Area */}
+      <div className="flex-1 flex flex-col min-h-0">
+        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-[#0D1117] border-b border-[#30363D]">
+          {['javascript', 'python', 'java', 'cpp', 'go'].map(lang => (
+            <button key={lang} onClick={() => setLanguage(lang)}
+              className={`px-2.5 py-1 rounded-md text-[10px] font-mono capitalize transition-all ${
+                language === lang ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-300'
+              }`}>{lang}</button>
+          ))}
+          <div className="flex-1" />
+          <button onClick={runCode} disabled={running}
+            className="flex items-center gap-1.5 px-3 py-1 rounded-md bg-green-600 hover:bg-green-700 text-white text-[10px] font-bold transition-all disabled:opacity-50">
+            {running ? <Spinner size={10} /> : <Icons.Zap size={10} className="fill-white" />} RUN
+          </button>
+        </div>
+
+        <div className="flex-1 relative overflow-hidden bg-[#0D1117]">
+          <textarea className="absolute inset-0 w-full h-full bg-transparent text-[#E6EDF3] font-mono text-sm p-5 outline-none resize-none selection:bg-blue-500/30"
+            spellCheck={false} value={code} onChange={e => setCode(e.target.value)}
+          />
+        </div>
+
+        {/* Terminal Output */}
+        <div className="h-60 border-t border-[#30363D] bg-[#010409] flex flex-col">
+          <div className="px-4 py-1.5 border-b border-[#30363D] flex justify-between items-center bg-[#161B22]">
+            <span className="text-[9px] font-mono text-slate-500 font-bold uppercase tracking-widest">Execution Output</span>
+            {status && <span className="text-[9px] font-mono text-blue-400 font-bold">{status}</span>}
+          </div>
+          <div className="flex-1 p-4 font-mono text-xs text-green-500/90 overflow-y-auto whitespace-pre-wrap leading-relaxed">
+            {output || <span className="text-slate-600 italic">No output yet. Click 'RUN' to execute code.</span>}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── MAIN MENTOR PAGE ─────────────────────────────────────
 export default function MentorPage() {
   const [sessions, setSessions]       = useState([]);
@@ -218,7 +296,7 @@ export default function MentorPage() {
   const [loading, setLoading]         = useState(true);
   const [sidebarTab, setSidebarTab]   = useState('sessions');
   const [historySearch, setHistorySearch] = useState('');
-  const [showCodePanel, setShowCodePanel] = useState(false);
+  const [showCodePanel, setShowCodePanel] = useState(true);
   const [showQuotaModal, setShowQuotaModal] = useState(false);
   const bottomRef = useRef(null);
 
@@ -289,7 +367,7 @@ export default function MentorPage() {
       setSessions(s => s.map(x => x.id === sessionId ? { ...x, messages: [...(Array.isArray(x.messages) ? x.messages : []), { role: 'user', content: text, timestamp: new Date().toISOString() }, aiMsg] } : x));
     } catch (err) {
       if (err.response?.status === 429 && err.response?.data?.error === 'DAILY_LIMIT_REACHED') {
-        setMessages(m => m.filter(msg => msg.content !== text)); // Remove the failed user message
+        setMessages(m => m.filter(msg => msg.content !== text)); 
         setShowQuotaModal(true);
       } else {
         setMessages(m => [...m, { role: 'assistant', content: '', timestamp: new Date().toISOString(), error: true, originalText: text }]);
@@ -300,7 +378,6 @@ export default function MentorPage() {
 
   const handleRetry = (i) => { const m = messages[i]; if (m?.originalText) send(m.originalText, i); };
 
-  // Filter for history search
   const filteredSessions = historySearch
     ? sessions.filter(s => (s.topic || '').toLowerCase().includes(historySearch.toLowerCase()))
     : sessions;
@@ -316,164 +393,142 @@ export default function MentorPage() {
 
   return (
     <>
-      <div className="flex h-[calc(100vh-7rem)] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div className="flex h-[calc(100vh-7rem)] overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl shadow-slate-200/50">
 
         {/* ── LEFT: Sessions Sidebar ── */}
-        <div className="w-60 flex-shrink-0 flex flex-col border-r border-slate-100 bg-slate-50/50">
-          {/* Tabs */}
-          <div className="flex border-b border-slate-200">
+        <div className="w-64 flex-shrink-0 flex flex-col border-r border-slate-100 bg-[#FBFBFC]">
+          <div className="flex p-1 m-3 bg-white rounded-xl border border-slate-200/60 shadow-sm">
             {['sessions', 'history'].map(t => (
               <button key={t} onClick={() => setSidebarTab(t)}
-                className={`flex-1 py-2.5 text-[11px] font-mono capitalize transition-all ${
-                  sidebarTab === t ? 'text-blue-700 border-b-2 border-blue-600 bg-white' : 'text-slate-400 hover:text-slate-600'
+                className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all ${
+                  sidebarTab === t ? 'bg-slate-900 text-white shadow-md' : 'text-slate-400 hover:text-slate-600'
                 }`}>{t}</button>
             ))}
           </div>
 
-          {/* New Session */}
-          <div className="p-3">
-            <button onClick={newSession}
-              className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-mono font-medium transition-colors">
-              <Icons.Plus size={11} /> New Chat
-            </button>
-          </div>
-
-          {/* Session/History Lists */}
-          <div className="flex-1 overflow-y-auto px-2 pb-3">
-            {sidebarTab === 'history' && (
-              <div className="px-1 mb-2">
-                <div className="relative">
-                  <Icons.Search size={11} className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <input className="w-full bg-white border border-slate-200 rounded-md py-1.5 pl-7 pr-2 text-[11px] font-mono outline-none focus:border-blue-400 placeholder:text-slate-400"
-                    placeholder="Search..." value={historySearch} onChange={e => setHistorySearch(e.target.value)} />
-                </div>
-              </div>
-            )}
-
+          <div className="flex-1 overflow-y-auto px-3 pb-4 space-y-4">
             {sidebarTab === 'sessions' ? (
-              sessions.length === 0
-                ? <p className="text-center text-[11px] font-mono text-slate-400 py-6">No sessions yet</p>
-                : <div className="space-y-0.5">
-                    {sessions.map(s => (
+              <div className="space-y-1">
+                <button onClick={newSession} className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-blue-600/5 text-blue-600 text-xs font-bold border border-blue-200/50 hover:bg-blue-600/10 transition-all mb-4 group">
+                  <Icons.Plus size={14} className="group-hover:rotate-90 transition-transform" /> New Discussion
+                </button>
+                {sessions.map(s => (
+                  <button key={s.id} onClick={() => selectSession(s)}
+                    className={`w-full text-left p-3 rounded-2xl group flex items-center gap-3 transition-all ${
+                      activeSession?.id === s.id ? 'bg-white border border-blue-200 shadow-sm ring-1 ring-blue-50' : 'hover:bg-white border border-transparent hover:shadow-sm'
+                    }`}>
+                    <div className={`w-1.5 h-1.5 rounded-full transition-colors ${activeSession?.id === s.id ? 'bg-blue-500' : 'bg-slate-300 group-hover:bg-blue-400'}`} />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[11px] font-bold text-slate-800 truncate tracking-tight">{s.topic || 'New Session'}</p>
+                      <p className="text-[9px] font-mono text-slate-400 mt-0.5">{Array.isArray(s.messages) ? s.messages.length : 0} interactions</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              Object.entries(groupedHistory).map(([date, items]) => (
+                <div key={date}>
+                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-2 px-1">{date}</p>
+                  <div className="space-y-1">
+                    {items.map(s => (
                       <button key={s.id} onClick={() => selectSession(s)}
-                        className={`w-full text-left px-3 py-2 rounded-lg group flex items-center gap-2 transition-all ${
-                          activeSession?.id === s.id ? 'bg-white border border-blue-200 shadow-sm' : 'hover:bg-white border border-transparent'
-                        }`}>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-[11px] font-medium text-slate-800 truncate">{s.topic || 'Session'}</p>
-                          <p className="text-[10px] font-mono text-slate-400">{Array.isArray(s.messages) ? s.messages.length : 0} msgs</p>
-                        </div>
-                        <button onClick={(e) => deleteSession(s.id, e)}
-                          className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-400 transition-all p-0.5">
-                          <Icons.X size={10} />
-                        </button>
-                      </button>
+                        className={`w-full text-left px-3 py-2 rounded-xl text-[11px] font-medium transition-all ${
+                          activeSession?.id === s.id ? 'bg-blue-50 text-blue-700 border border-blue-100' : 'hover:bg-white'
+                        }`}>{s.topic || 'Session'}</button>
                     ))}
                   </div>
-            ) : (
-              Object.entries(groupedHistory).length === 0
-                ? <p className="text-center text-[11px] font-mono text-slate-400 py-6">No sessions found</p>
-                : Object.entries(groupedHistory).map(([date, items]) => (
-                    <div key={date} className="mb-2.5">
-                      <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wider mb-1 px-2">{date}</p>
-                      <div className="space-y-0.5">
-                        {items.map(s => (
-                          <button key={s.id} onClick={() => selectSession(s)}
-                            className={`w-full text-left px-3 py-1.5 rounded-lg text-[11px] transition-all ${
-                              activeSession?.id === s.id ? 'bg-white border border-blue-200' : 'hover:bg-white border border-transparent'
-                            }`}>
-                            <p className="text-slate-700 truncate">{s.topic || 'Session'}</p>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  ))
+                </div>
+              ))
             )}
           </div>
         </div>
 
-        {/* ── MIDDLE: Chat ── */}
-        <div className="flex-1 flex flex-col min-w-0">
-          {/* Chat Header */}
-          <div className="flex items-center justify-between px-5 py-2.5 border-b border-slate-100 bg-white flex-shrink-0">
-            <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg bg-slate-900 flex items-center justify-center">
-                <Icons.Terminal size={13} className="text-white" />
+        {/* ── MIDDLE: Systematic Chat (2-Pane Layout) ── */}
+        <div className="flex-1 flex flex-col min-w-0 bg-white">
+          {/* Aligned Header */}
+          <div className="h-16 flex items-center justify-between px-6 border-b border-slate-100 flex-shrink-0">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-xl bg-slate-900 flex items-center justify-center shadow-lg shadow-slate-200">
+                <Icons.Terminal size={14} className="text-white" />
               </div>
               <div>
-                <p className="font-semibold text-sm text-slate-900">AI Mentor</p>
-                <p className="text-[10px] text-slate-400 font-mono">Senior engineer · Code reviews · DSA · System design</p>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-bold text-sm text-slate-900 tracking-tight">AI Engineering Mentor</h3>
+                  <div className="flex items-center gap-1 bg-green-50 text-green-600 px-2 py-0.5 rounded-full border border-green-100 animate-pulse">
+                    <div className="w-1 h-1 rounded-full bg-green-600" />
+                    <span className="text-[9px] font-bold uppercase tracking-widest">Active</span>
+                  </div>
+                </div>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            
+            <div className="flex items-center gap-3">
               <button onClick={() => setShowCodePanel(v => !v)}
-                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-mono border transition-all ${
-                  showCodePanel ? 'border-blue-300 bg-blue-50 text-blue-700' : 'border-slate-200 text-slate-500 hover:text-slate-700'
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-[10px] font-bold border transition-all ${
+                  showCodePanel ? 'bg-slate-900 text-white border-slate-900 shadow-md' : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300 shadow-sm'
                 }`}>
-                <Icons.Code size={12} /> {showCodePanel ? 'Hide' : 'Code'}
+                <Icons.Code size={13} /> {showCodePanel ? 'Hide Console' : 'Show Console'}
               </button>
-              <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
-              <span className="text-[10px] font-mono text-green-600">Online</span>
             </div>
           </div>
 
-          {/* Messages Area */}
-          <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4 min-h-0 bg-slate-50/30">
-            {messages.length === 0 && (
-              <div className="flex flex-col items-center justify-center h-full gap-5 max-w-md mx-auto">
-                <div className="w-12 h-12 rounded-xl bg-slate-900 flex items-center justify-center">
-                  <Icons.Terminal size={20} className="text-white" />
+          {/* Systematic Messages */}
+          <div className="flex-1 overflow-y-auto px-8 py-6 space-y-6">
+            {messages.length === 0 ? (
+              <div className="h-full flex flex-col items-center justify-center max-w-sm mx-auto text-center animate-in fade-in zoom-in duration-500">
+                <div className="w-16 h-16 rounded-3xl bg-slate-50 flex items-center justify-center mb-6 border border-slate-100 shadow-inner">
+                  <Icons.Terminal size={32} className="text-slate-300" />
                 </div>
-                <div className="text-center">
-                  <p className="font-semibold text-base text-slate-900 mb-1">How can I help you today?</p>
-                  <p className="text-xs text-slate-500">Code reviews, debugging, DSA problems, interview prep, system design</p>
-                </div>
-                <div className="flex flex-wrap gap-1.5 justify-center">
-                  {SUGGESTION_CHIPS.map(chip => (
+                <h4 className="font-bold text-slate-900 text-lg mb-2">How can we optimize your code today?</h4>
+                <p className="text-sm text-slate-400 mb-8 leading-relaxed">Ask about architecture, debugging, or complex algorithm optimizations.</p>
+                <div className="grid grid-cols-2 gap-2 w-full">
+                  {SUGGESTION_CHIPS.slice(0, 4).map(chip => (
                     <button key={chip} onClick={() => send(chip)}
-                      className="px-3 py-1.5 rounded-full border border-slate-200 bg-white text-slate-600 hover:border-blue-300 hover:text-blue-700 text-[11px] transition-all">
+                      className="px-4 py-2 bg-white border border-slate-200 hover:border-blue-400 hover:text-blue-600 rounded-xl text-[10px] font-bold text-slate-500 transition-all truncate">
                       {chip}
                     </button>
                   ))}
                 </div>
               </div>
+            ) : (
+              messages.map((msg, i) => <Message key={i} msg={msg} onRetry={() => handleRetry(i)} />)
             )}
-            {messages.map((msg, i) => <Message key={i} msg={msg} onRetry={() => handleRetry(i)} />)}
             {sending && (
-              <div className="flex gap-3">
-                <div className="w-6 h-6 rounded-md bg-slate-800 flex items-center justify-center text-[10px] font-mono font-bold text-white mt-0.5">AI</div>
-                <div className="px-4 py-3 rounded-2xl rounded-tl-md bg-white border border-slate-200 shadow-sm">
-                  <div className="flex items-center gap-1">{[0,1,2].map(i => (
-                    <div key={i} className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce" style={{ animationDelay: `${i * 0.15}s` }} />
-                  ))}</div>
+              <div className="flex gap-4 animate-in slide-in-from-bottom-2 duration-300">
+                <div className="w-8 h-8 rounded-xl bg-slate-900 flex items-center justify-center text-[10px] font-bold text-white shadow-lg">AI</div>
+                <div className="px-5 py-4 rounded-3xl rounded-tl-md bg-white border border-slate-200 shadow-sm">
+                  <div className="flex gap-1.5 h-4 items-center">
+                    {[0,1,2].map(i => <div key={i} className="w-1.5 h-1.5 rounded-full bg-blue-500/40 animate-bounce" style={{ animationDelay: `${i * 0.1}s` }} />)}
+                  </div>
                 </div>
               </div>
             )}
-            <div ref={bottomRef} />
+            <div ref={bottomRef} className="h-4" />
           </div>
 
-          {/* Input Area */}
-          <div className="flex-shrink-0 border-t border-slate-100 bg-white p-3">
-            <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 focus-within:border-blue-400 focus-within:ring-1 focus-within:ring-blue-100 transition-all">
-              <textarea className="flex-1 bg-transparent resize-none outline-none text-sm text-slate-700 placeholder:text-slate-400 py-1.5"
-                rows={1} style={{ minHeight: 32, maxHeight: 100 }}
+          {/* Premium Input Bar */}
+          <div className="px-6 py-4 border-t border-slate-100 bg-white">
+            <div className="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-2xl px-4 py-2 focus-within:border-blue-400 focus-within:bg-white focus-within:shadow-lg focus-within:shadow-blue-50 transition-all duration-300">
+              <textarea className="flex-1 bg-transparent resize-none outline-none text-sm text-slate-700 placeholder:text-slate-400 py-2 custom-scrollbar"
+                rows={1} style={{ minHeight: 40, maxHeight: 150 }}
                 value={input} onChange={e => setInput(e.target.value)}
-                placeholder="Ask about code, algorithms, debugging..."
+                placeholder="Ask about design patterns, performance, or debugging..."
                 onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
-                onInput={e => { e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 100) + 'px'; }}
+                onInput={e => { e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px'; }}
               />
               <button onClick={() => send()} disabled={!input.trim() || sending}
-                className="w-8 h-8 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:opacity-30 flex items-center justify-center text-white flex-shrink-0 transition-colors">
-                <Icons.ArrowRight size={14} />
+                className="w-10 h-10 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:bg-slate-200 text-white flex items-center justify-center transition-all shadow-md active:scale-95">
+                <Icons.ArrowRight size={18} />
               </button>
             </div>
+            <p className="mt-2 text-[9px] text-center font-bold text-slate-400 uppercase tracking-widest">Powered by Groq Llama-3.3 · Systematic Analysis Mode</p>
           </div>
         </div>
 
-        {/* ── RIGHT: Code Panel ── */}
-        <CodePanel visible={showCodePanel} />
+        {/* ── RIGHT: Interactive Console Panel ── */}
+        <CodePanel visible={showCodePanel} onClose={() => setShowCodePanel(false)} />
       </div>
-      
+
       <QuotaModal isOpen={showQuotaModal} onClose={() => setShowQuotaModal(false)} />
     </>
   );

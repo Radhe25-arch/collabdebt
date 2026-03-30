@@ -187,9 +187,9 @@ export default function CoursesPage() {
     load();
   }, []);
 
-  const langCategories = categories.filter((c) => !DOMAIN_SLUGS.includes(c.slug));
-  const domainCategories = categories.filter((c) => DOMAIN_SLUGS.includes(c.slug));
-  const getCoursesByCategory = (catId) => courses.filter((c) => c.categoryId === catId || c.category?.id === catId);
+  const langCategories = (categories || []).filter((c) => c && !DOMAIN_SLUGS.includes(c.slug));
+  const domainCategories = (categories || []).filter((c) => c && DOMAIN_SLUGS.includes(c.slug));
+  const getCoursesByCategory = (catId) => (courses || []).filter((c) => c && (c.categoryId === catId || c.category?.id === catId));
   const handleCourseClick = (slug) => navigate(`/courses/${slug}`);
 
   if (loading) {

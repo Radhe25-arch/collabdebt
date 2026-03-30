@@ -82,25 +82,28 @@ function Sidebar({ open }) {
           
           {user && (
             <div className="mt-auto border-t border-slate-100 pt-6 pb-4 px-3 bg-slate-50/50">
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 px-3">Account Hub</p>
-              <div className="space-y-1.5 pt-1">
-                <Link to="/profile" className="flex items-center gap-3 p-2.5 rounded-2xl hover:bg-white hover:shadow-sm border border-transparent hover:border-slate-200/50 transition-all group">
-                  <Avatar user={user} size={36} className="rounded-xl shadow-sm" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-bold text-slate-800 truncate">{user.username}</p>
-                    <p className="text-[10px] text-slate-500">Manage Profile</p>
-                  </div>
-                </Link>
-                <Link to="/settings" className="flex items-center gap-3 p-2.5 rounded-2xl hover:bg-white hover:shadow-sm border border-transparent hover:border-slate-200/50 transition-all group">
-                  <div className="w-9 h-9 rounded-xl bg-white shadow-sm flex items-center justify-center text-slate-400 group-hover:text-blue-600 transition-colors border border-slate-100">
-                    <Icons.Settings size={18} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <span className="text-xs font-bold text-slate-700 group-hover:text-slate-900 block">Preferences</span>
-                    <p className="text-[10px] text-slate-500">Settings & UI</p>
-                  </div>
-                </Link>
+              <div className="flex items-center justify-between mb-4 px-2">
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Account Hub</p>
+                {user.streak > 0 && (
+                  <span className="flex items-center gap-1 text-[10px] font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full border border-orange-100">
+                    <Icons.Zap size={10} className="fill-orange-500" /> {user.streak}d Streak
+                  </span>
+                )}
               </div>
+              
+              <Link to="/profile" className="flex items-center gap-3 p-3 rounded-2xl bg-white shadow-sm border border-slate-200/50 hover:border-blue-300 hover:shadow-md transition-all group overflow-hidden relative">
+                <Avatar user={user} size={38} className="rounded-xl shadow-sm z-10" />
+                <div className="flex-1 min-w-0 z-10">
+                  <p className="text-xs font-bold text-slate-900 truncate mb-0.5 tracking-tight group-hover:text-blue-700 transition-colors">{user.username}</p>
+                  <div className="flex items-center gap-1.5 font-mono text-[9px] font-bold uppercase tracking-tight">
+                    <span className="text-blue-600">Level {user.level || 1}</span>
+                    <span className="w-1 h-1 rounded-full bg-slate-300" />
+                    <span className="text-slate-400">View Profile</span>
+                  </div>
+                </div>
+                <Icons.ChevronRight size={14} className="text-slate-300 group-hover:text-blue-500 transition-colors" />
+                <div className="absolute top-0 right-0 w-16 h-full bg-gradient-to-l from-blue-50/20 to-transparent pointer-events-none" />
+              </Link>
             </div>
           )}
         </div>
