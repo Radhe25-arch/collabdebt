@@ -256,19 +256,20 @@ export default function LandingPage() {
           <div className="hidden md:flex items-center gap-1">
             {[
               { label: 'Curriculum',  to: '/courses' },
+              { label: 'Speed Test',  to: '/typing-test' },
               { label: '1v1 Arena',   to: '/battles' },
-              { label: 'AI Mentor',   to: '/mentor',       badge: 'Beta' },
+              { label: 'AI Mentor',   to: '/mentor',       badge: 'PRO' },
+              { label: 'Leaderboard', to: '/leaderboard' },
               { label: 'Community',   to: '/community' },
-              { label: 'Leaderboard',to: '/leaderboard' },
             ].map(({ label, to, badge }) => (
               <Link
                 key={to}
                 to={to}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all"
               >
                 {label}
                 {badge && (
-                  <span className="text-[10px] font-bold bg-blue-600 text-white px-1.5 py-0.5 rounded-full leading-none">
+                  <span className="text-[9px] font-bold bg-blue-600 text-white px-1.5 py-0.5 rounded-full leading-none">
                     {badge}
                   </span>
                 )}

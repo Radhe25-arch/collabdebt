@@ -79,12 +79,17 @@ function Sidebar({ open }) {
               <span className="text-sm font-medium">{item.label}</span>
             </Link>
           ))}
-          <button
-            onClick={() => navigate('/courses')}
-            className="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-medium text-sm transition-all shadow-sm"
-          >
-            Start Learning
-          </button>
+          
+          {user && (
+            <Link to="/profile" className="mt-4 p-3 rounded-2xl bg-slate-50 border border-slate-100 flex items-center gap-3 hover:bg-slate-100 transition-all group">
+              <Avatar user={user} size={36} className="ring-2 ring-white shadow-sm transition-transform group-hover:scale-105" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-slate-900 truncate">{user.username || user.name}</p>
+                <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">View Profile</p>
+              </div>
+              <Icons.ChevronRight size={14} className="text-slate-300 group-hover:text-slate-500" />
+            </Link>
+          )}
         </div>
       </nav>
     </aside>
@@ -125,18 +130,10 @@ function Topbar({ sidebarOpen, toggleSidebar }) {
       style={{ left: sidebarOpen ? 260 : 0 }}
       className="fixed top-0 right-0 z-30 h-20 flex items-center justify-between px-8 bg-white/90 backdrop-blur-md border-b border-slate-200 transition-all duration-300"
     >
-      <div className="flex items-center gap-4 flex-1">
+      <div className="flex items-center gap-4">
         <button onClick={toggleSidebar} className="text-slate-400 hover:text-slate-900 transition-colors p-1 md:hidden">
           <Icons.Menu size={20} />
         </button>
-        <div className="hidden md:flex items-center bg-slate-100 rounded-full px-4 py-2.5 w-full max-w-md border border-slate-200/50 focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
-          <Icons.Search size={16} className="text-slate-400 mr-2" />
-          <input
-            type="text"
-            placeholder="Search for courses, skills, or mentors..."
-            className="bg-transparent border-none outline-none text-sm w-full text-slate-700 placeholder:text-slate-400"
-          />
-        </div>
       </div>
 
       <div className="flex items-center gap-6">
@@ -194,10 +191,6 @@ function Topbar({ sidebarOpen, toggleSidebar }) {
                 </div>
               )}
             </div>
-
-            <Link to="/profile">
-              <Avatar user={user} size={36} className="ring-2 ring-slate-100 hover:ring-blue-200 transition-all cursor-pointer" />
-            </Link>
           </div>
         ) : (
           <div className="flex items-center gap-3">

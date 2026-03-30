@@ -80,9 +80,17 @@ async function sendMessage(req, res, next) {
       max_tokens: 1024,
       system: SYSTEM_PROMPT,
       messages: [
-        ...history,
+        ...history.filter((msg, i) => {
+          // Ensure alternating roles: user, assistant, user, assistant...
+          if (i === 0) return msg.role === 'user';
+          return msg.role !== history[i-1].role;
+        }),
         { role: "user", content: userContent }
-      ],
+      ].filter((msg, i, arr) => {
+        // Final safety check: no consecutive roles
+        if (i === 0) return true;
+        return msg.role !== arr[i-1].role;
+      }),
     });
 
     const aiResponse = response.content[0].text;
