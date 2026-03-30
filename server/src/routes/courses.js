@@ -58,7 +58,7 @@ courseRouter.get('/my-enrollments', authenticate, async (req, res, next) => {
   try {
     const enrollments = await prisma.enrollment.findMany({
       where: { userId: req.user.id },
-      select: { courseId: true, progress: true, completedAt: true, enrolledAt: true },
+      select: { courseId: true, progress: true, completedAt: true, createdAt: true },
     });
     res.json({ enrollments });
   } catch (err) { next(err); }

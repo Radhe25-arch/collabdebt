@@ -49,6 +49,7 @@ export const TargetIcon     = (p) => <Icon {...p} d={["M12 22a10 10 0 100-20 10 
 export const TrendingUpIcon = (p) => <Icon {...p} d="M23 6l-9.5 9.5-5-5L1 18 M17 6h6v6" />;
 
 // Content
+export const InfoIcon         = (p) => <Icon {...p} d={["M12 22a10 10 0 100-20 10 10 0 000 20z","M12 16v-4","M12 8h.01"]} />;
 export const CodeIcon       = (p) => <Icon {...p} d="M16 18l6-6-6-6 M8 6l-6 6 6 6" />;
 export const TerminalIcon   = (p) => <Icon {...p} d={["M4 17l6-6-6-6","M12 19h8"]} />;
 export const PlayIcon       = (p) => <Icon {...p} fill="currentColor" d="M5 3l14 9-14 9V3z" />;
@@ -78,6 +79,7 @@ export default {
   Zap: ZapIcon, Star: StarIcon, Fire: FireIcon,
   Shield: ShieldIcon, Award: AwardIcon, Target: TargetIcon,
   TrendingUp: TrendingUpIcon,
+  Info: InfoIcon, InfoIcon,
   Code: CodeIcon, Terminal: TerminalIcon, Play: PlayIcon,
   Book: BookIcon, Video: VideoIcon, Clock: ClockIcon,
   Calendar: CalendarIcon, Users: UsersIcon, Globe: GlobeIcon,

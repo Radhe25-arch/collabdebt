@@ -2,25 +2,25 @@ const axios = require('axios');
 const { authenticate } = require('../middleware/auth');
 const AppError = require('../utils/AppError');
 
-// Wandbox compiler mapping
+// Piston v2 execution mapping
 const LANGUAGE_MAP = {
-  javascript: { name: 'nodejs-head' },
-  python:     { name: 'cpython-head' },
-  java:       { name: 'openjdk-head' },
-  cpp:        { name: 'gcc-head' },
-  c:          { name: 'gcc-head' },
-  csharp:     { name: 'mcs-head' },
-  go:         { name: 'go-head' },
-  rust:       { name: 'rust-head' },
-  ruby:       { name: 'ruby-head' },
-  php:        { name: 'php-head' },
-  typescript: { name: 'typescript-head' },
-  bash:       { name: 'bash' },
-  sql:        { name: 'sqlite-head' },
-  swift:      { name: 'swift-head' },
+  javascript: { language: 'js', version: '*' },
+  python:     { language: 'python', version: '*' },
+  java:       { language: 'java', version: '*' },
+  cpp:        { language: 'cpp', version: '*' },
+  c:          { language: 'c', version: '*' },
+  csharp:     { language: 'csharp', version: '*' },
+  go:         { language: 'go', version: '*' },
+  rust:       { language: 'rust', version: '*' },
+  ruby:       { language: 'ruby', version: '*' },
+  php:        { language: 'php', version: '*' },
+  typescript: { language: 'typescript', version: '*' },
+  bash:       { language: 'bash', version: '*' },
+  sql:        { language: 'sqlite3', version: '*' },
+  swift:      { language: 'swift', version: '*' },
 };
 
-const WANDBOX_URL = 'https://wandbox.org/api/compile.json';
+const PISTON_URL = 'https://emkc.org/api/v2/piston/execute';
 
 async function executeCode(req, res, next) {
   try {
@@ -33,12 +33,13 @@ async function executeCode(req, res, next) {
     const langConfig = LANGUAGE_MAP[language.toLowerCase()];
     if (!langConfig) throw new AppError(`Unsupported language: ${language}`, 400);
 
-    // Free execution via Wandbox API (No API Key Required)
+    // Free execution via Piston API
     const submitRes = await axios.post(
-      WANDBOX_URL,
+      PISTON_URL,
       {
-        compiler: langConfig.name,
-        code: code,
+        language: langConfig.language,
+        version: langConfig.version,
+        files: [{ content: code }],
         stdin: stdin,
       },
       {
@@ -48,25 +49,24 @@ async function executeCode(req, res, next) {
     );
 
     const result = submitRes.data || {};
-    const stdout = result.program_message || '';
-    const stderr = result.program_error || result.compiler_error || '';
+    const stdout = result.run?.stdout || '';
+    const stderr = result.run?.stderr || '';
     
-    // Sometimes output is mixed into 'program_message' or 'compiler_message'
-    const output = result.program_message || result.compiler_message || '';
-    const statusStr = result.status === '0' ? 'Success' : 'Failed';
+    const output = stdout + stderr;
+    const statusStr = result.run?.code === 0 ? 'Success' : 'Failed';
 
     res.json({
-      output: output || stdout || stderr || '// No output returned',
+      output: output || '// No output returned',
       error: stderr || null,
       status: statusStr,
       time: 'Unknown',
       memory: 'Unknown',
-      engine: 'Wandbox (Free)'
+      engine: 'Piston (Free)'
     });
   } catch (err) {
     if (err instanceof AppError) return next(err);
     const msg = err.response?.data?.message || err.message;
-    console.error('Wandbox API Error Details:', msg);
+    console.error('Piston API Error Details:', msg);
     next(new AppError(`Code execution failed: ${msg}`, 500));
   }
 }
@@ -75,7 +75,7 @@ function getSupportedLanguages(req, res) {
   res.json({
     languages: Object.keys(LANGUAGE_MAP).map(name => ({
       name,
-      id: LANGUAGE_MAP[name].name,
+      id: LANGUAGE_MAP[name].language,
     })),
   });
 }
