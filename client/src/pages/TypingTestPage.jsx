@@ -125,7 +125,7 @@ export default function TypingTestPage() {
             <Icons.Terminal size={22} className="text-white" />
           </div>
           <div>
-            <h1 className="text-2xl font-black text-slate-910 tracking-tight uppercase">Speed Architect</h1>
+            <h1 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Speed Architect</h1>
             <p className="text-xs font-mono text-slate-400 font-bold uppercase tracking-widest">Type fast. Code faster.</p>
           </div>
         </div>
@@ -190,7 +190,7 @@ export default function TypingTestPage() {
            </div>
            
            <button onClick={reset} className="p-3 rounded-2xl bg-white border border-slate-100 shadow-sm text-slate-400 hover:text-blue-600 hover:border-blue-200 hover:rotate-180 transition-all duration-500">
-             <Icons.Refresh size={18} />
+             <Icons.RefreshCw size={18} />
            </button>
         </div>
       </div>
@@ -200,7 +200,7 @@ export default function TypingTestPage() {
         <StatCard label="WPM" value={stats.wpm} icon={Icons.Zap} color="text-yellow-500" />
         <StatCard label="Accuracy" value={`${stats.accuracy}%`} icon={Icons.Target} color="text-green-500" />
         <StatCard label="Raw Speed" value={stats.raw} icon={Icons.TrendingUp} color="text-blue-500" />
-        <StatCard label="Mistakes" value={stats.mistakes} icon={Icons.AlertCircle} color="text-red-400" />
+        <StatCard label="Mistakes" value={stats.mistakes} icon={Icons.HelpCircle} color="text-red-400" />
       </div>
 
       {isFinished && (

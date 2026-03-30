@@ -32,22 +32,19 @@ async function executeCode(req, res, next) {
       throw new AppError('Code is required', 400);
     }
 
-    const langId = LANGUAGE_MAP[language.toLowerCase()];
-    if (!langId) {
-      throw new AppError(`Unsupported language: ${language}`, 400);
-    }
-
-    if (!JUDGE0_KEY) {
-      // Fallback: client-side JS execution for JavaScript
+    if (!JUDGE0_KEY || !JUDGE0_URL) {
       if (language.toLowerCase() === 'javascript') {
         return res.json({
-          output: '// Judge0 API not configured. Use client-side execution for JS.',
-          status: 'error',
+          output: '// Judge0 API not configured. Using client-side execution hint.',
+          status: 'Fallback',
           fallback: true,
         });
       }
-      throw new AppError('Code execution service not configured', 503);
+      return next(new AppError('Code execution service not configured. Please add JUDGE0_KEY and JUDGE0_URL to your environment.', 503));
     }
+
+    const langId = LANGUAGE_MAP[language.toLowerCase()];
+    if (!langId) throw new AppError(`Unsupported language: ${language}`, 400);
 
     // Submit to Judge0
     const submitRes = await axios.post(
@@ -83,8 +80,9 @@ async function executeCode(req, res, next) {
     });
   } catch (err) {
     if (err instanceof AppError) return next(err);
-    console.error('Judge0 Error:', err.response?.data || err.message);
-    next(new AppError('Code execution failed. Try again.', 500));
+    const msg = err.response?.data?.message || err.response?.data?.error || err.message;
+    console.error('Judge0 Error Details:', msg);
+    next(new AppError(`Code execution failed: ${msg}`, 500));
   }
 }
 

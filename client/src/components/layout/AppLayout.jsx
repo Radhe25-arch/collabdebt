@@ -93,12 +93,12 @@ function Sidebar({ open }) {
               
               <Link to="/profile" className="flex items-center gap-3 p-3 rounded-2xl bg-white shadow-sm border border-slate-200/50 hover:border-blue-300 hover:shadow-md transition-all group overflow-hidden relative">
                 <Avatar user={user} size={38} className="rounded-xl shadow-sm z-10" />
-                <div className="flex-1 min-w-0 z-10">
-                  <p className="text-xs font-bold text-slate-900 truncate mb-0.5 tracking-tight group-hover:text-blue-700 transition-colors">{user.username}</p>
+                <div className="flex-1 min-w-0 z-10 text-left">
+                  <p className="text-xs font-bold text-slate-900 truncate mb-0.5 tracking-tight group-hover:text-blue-700 transition-colors uppercase">{user?.username}</p>
                   <div className="flex items-center gap-1.5 font-mono text-[9px] font-bold uppercase tracking-tight">
-                    <span className="text-blue-600">Level {user.level || 1}</span>
+                    <span className="text-blue-600">Level {user?.level || 1}</span>
                     <span className="w-1 h-1 rounded-full bg-slate-300" />
-                    <span className="text-slate-400">View Profile</span>
+                    <span className="text-slate-400">🔥 {user?.streak || 0}d Streak</span>
                   </div>
                 </div>
                 <Icons.ChevronRight size={14} className="text-slate-300 group-hover:text-blue-500 transition-colors" />
