@@ -32,7 +32,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Profile settings */}
-      <div className="arena-card p-6 space-y-5">
+      <div className="sf-card p-6 space-y-5">
         <span className="font-mono text-xs text-slate-500 uppercase tracking-widest block">Profile</span>
         <div className="flex items-center gap-4">
           <Avatar user={user} size={56} />
@@ -53,7 +53,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Account info */}
-      <div className="arena-card p-6 space-y-3">
+      <div className="sf-card p-6 space-y-3">
         <span className="font-mono text-xs text-slate-500 uppercase tracking-widest block">Account</span>
         <div className="flex justify-between py-2 border-b border-slate-200/40">
           <span className="font-mono text-xs text-slate-500">Email</span>
@@ -72,7 +72,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Danger zone */}
-      <div className="arena-card p-6 border-red-500/20">
+      <div className="sf-card p-6 border-red-500/20">
         <span className="font-mono text-xs text-red-400 uppercase tracking-widest block mb-4">Danger Zone</span>
         <Button onClick={() => { logout(); }} variant="danger">
           <Icons.LogOut size={14} /> Sign Out of All Devices

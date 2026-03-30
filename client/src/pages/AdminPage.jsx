@@ -32,11 +32,11 @@ function Overview({ stats }) {
         <StatCard label="Completed Battles"  value={stats.battles.completed}            icon={<Icons.Award size={14} className="text-slate-600" />} />
       </div>
 
-      <div className="arena-card overflow-hidden">
+      <div className="sf-card overflow-hidden">
         <div className="px-5 py-3 border-b border-slate-200">
           <span className="font-mono text-xs text-slate-500 uppercase tracking-widest">Top 10 Users by XP</span>
         </div>
-        <div className="divide-y divide-arena-border/40">
+        <div className="divide-y divide-sf-border/40">
           {(stats.topUsers || []).map((u, i) => (
             <div key={u.id} className="flex items-center gap-4 px-5 py-3">
               <span className={`font-mono text-xs font-bold w-5 text-center ${i < 3 ? ['text-yellow-400','text-slate-400','text-amber-600'][i] : 'text-slate-500'}`}>{i+1}</span>
@@ -98,7 +98,7 @@ function UsersTab() {
       {loading ? (
         <div className="flex justify-center py-8"><Spinner size={22} className="text-blue-700" /></div>
       ) : (
-        <div className="arena-card overflow-hidden">
+        <div className="sf-card overflow-hidden">
           <table className="w-full">
             <thead>
               <tr className="border-b border-slate-200">
@@ -107,7 +107,7 @@ function UsersTab() {
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-arena-border/40">
+            <tbody className="divide-y divide-sf-border/40">
               {users.map(u => (
                 <tr key={u.id} className="hover:bg-slate-100/40 transition-colors">
                   <td className="px-4 py-3">
@@ -127,7 +127,7 @@ function UsersTab() {
                   </td>
                   <td className="px-4 py-3">
                     <button onClick={() => toggle(u.id)}
-                      className={`font-mono text-xs transition-colors ${u.isActive ? 'text-red-400 hover:text-red-300' : 'text-indigo-600 hover:text-arena-teal2'}`}>
+                      className={`font-mono text-xs transition-colors ${u.isActive ? 'text-red-400 hover:text-red-300' : 'text-indigo-600 hover:text-sf-teal2'}`}>
                       {u.isActive ? 'Suspend' : 'Activate'}
                     </button>
                   </td>
@@ -161,7 +161,7 @@ function CoursesTab() {
   if (loading) return <div className="flex justify-center py-8"><Spinner size={22} className="text-blue-700" /></div>;
 
   return (
-    <div className="arena-card overflow-hidden">
+    <div className="sf-card overflow-hidden">
       <table className="w-full">
         <thead>
           <tr className="border-b border-slate-200">
@@ -170,7 +170,7 @@ function CoursesTab() {
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-arena-border/40">
+        <tbody className="divide-y divide-sf-border/40">
           {courses.map(c => (
             <tr key={c.id} className="hover:bg-slate-100/40 transition-colors">
               <td className="px-4 py-3 font-body text-sm text-slate-900 max-w-xs truncate">{c.title}</td>
@@ -215,7 +215,7 @@ function TournamentsTab() {
   };
 
   return (
-    <div className="arena-card p-6 max-w-xl space-y-4">
+    <div className="sf-card p-6 max-w-xl space-y-4">
       <span className="font-mono text-xs text-slate-500 uppercase tracking-widest block">Create Tournament</span>
       <Input label="Title" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="Week #50 Quiz Battle" />
       <div>
@@ -255,11 +255,11 @@ function HallOfFameTab() {
   if (loading) return <div className="flex justify-center py-8"><Spinner size={22} className="text-blue-700" /></div>;
 
   return (
-    <div className="arena-card overflow-hidden">
+    <div className="sf-card overflow-hidden">
       <div className="px-5 py-3 border-b border-slate-200">
         <span className="font-mono text-xs text-slate-500 uppercase tracking-widest">Hall of Fame — All Time Top Players</span>
       </div>
-      <div className="divide-y divide-arena-border/40">
+      <div className="divide-y divide-sf-border/40">
         {entries.map(e => (
           <div key={e.id} className="flex items-center gap-4 px-5 py-3.5">
             <Icons.Trophy size={14} className={rankColors[e.rank - 1] || 'text-slate-500'} />

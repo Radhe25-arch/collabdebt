@@ -106,7 +106,7 @@ export default function PortfolioPage() {
         {/* Left — settings */}
         <div className="space-y-4">
           {/* Status card */}
-          <div className="arena-card p-5">
+          <div className="sf-card p-5">
             <div className="flex items-center justify-between mb-4">
               <span className="font-mono text-xs text-slate-500 uppercase tracking-widest">Portfolio Status</span>
               <BadgeTag variant={portfolio?.repoUrl ? 'teal' : 'gray'}>
@@ -118,7 +118,7 @@ export default function PortfolioPage() {
                 <div className="flex items-center gap-2 p-2.5 bg-slate-100 rounded-lg border border-slate-200">
                   <Icons.ExternalLink size={12} className="text-indigo-600" />
                   <a href={portfolio.repoUrl} target="_blank" rel="noreferrer"
-                    className="font-mono text-xs text-indigo-600 hover:text-arena-teal2 transition-colors flex-1 truncate">
+                    className="font-mono text-xs text-indigo-600 hover:text-sf-teal2 transition-colors flex-1 truncate">
                     {portfolio.repoUrl}
                   </a>
                 </div>
@@ -134,7 +134,7 @@ export default function PortfolioPage() {
           </div>
 
           {/* Settings form */}
-          <div className="arena-card p-5 space-y-4">
+          <div className="sf-card p-5 space-y-4">
             <span className="font-mono text-xs text-slate-500 uppercase tracking-widest block">Profile Settings</span>
             <Input label="GitHub Username" value={form.githubUsername}
               onChange={(e) => setForm({ ...form, githubUsername: e.target.value })}
@@ -173,7 +173,7 @@ export default function PortfolioPage() {
           </div>
 
           {/* Projects */}
-          <div className="arena-card p-5">
+          <div className="sf-card p-5">
             <div className="flex items-center justify-between mb-4">
               <span className="font-mono text-xs text-slate-500 uppercase tracking-widest">Featured Projects</span>
               <button onClick={() => setAddProjectModal(true)} className="text-blue-700 hover:text-indigo-600 transition-colors">
@@ -200,7 +200,7 @@ export default function PortfolioPage() {
         </div>
 
         {/* Right — README preview */}
-        <div className="arena-card overflow-hidden flex flex-col">
+        <div className="sf-card overflow-hidden flex flex-col">
           <div className="flex items-center justify-between px-5 py-3 border-b border-slate-200 bg-slate-50">
             <div className="flex items-center gap-1.5">
               <div className="w-2.5 h-2.5 rounded-full bg-red-500/60" />

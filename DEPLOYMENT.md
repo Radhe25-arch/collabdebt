@@ -1,4 +1,4 @@
-# CodeArena — Deployment Guide
+# SkillForge — Deployment Guide
 
 ## What You Need (Inputs Checklist)
 
@@ -56,7 +56,7 @@ railway variables set SMTP_HOST="smtp.gmail.com"
 railway variables set SMTP_PORT="587"
 railway variables set SMTP_USER="your@gmail.com"
 railway variables set SMTP_PASS="your_app_password"
-railway variables set EMAIL_FROM="CodeArena <noreply@yourdomain.com>"
+railway variables set EMAIL_FROM="SkillForge <noreply@yourdomain.com>"
 
 # Run migrations
 railway run npx prisma migrate deploy
@@ -89,8 +89,8 @@ cp server/.env.example server/.env
 docker-compose up -d
 
 # 3. Run migrations and seed
-docker exec codearena_server npx prisma migrate deploy
-docker exec codearena_server node prisma/seed.js
+docker exec skillforge_server npx prisma migrate deploy
+docker exec skillforge_server node prisma/seed.js
 
 # 4. Access
 # Frontend: http://localhost:5173
@@ -117,7 +117,7 @@ console.log('JWT_REFRESH_SECRET=' + crypto.randomBytes(64).toString('hex'));
 
 1. Enable 2-Factor Authentication on your Gmail account
 2. Go to: **Google Account → Security → 2-Step Verification → App passwords**
-3. Select app: **Mail** / device: **Other (CodeArena)**
+3. Select app: **Mail** / device: **Other (SkillForge)**
 4. Copy the 16-character password → use as `SMTP_PASS`
 5. Use your full Gmail address as `SMTP_USER`
 
@@ -144,8 +144,8 @@ console.log('JWT_REFRESH_SECRET=' + crypto.randomBytes(64).toString('hex'));
 
 | Role | Email | Password |
 |------|-------|----------|
-| Admin | admin@codearena.dev | Admin@CodeArena1 |
-| Student | demo@codearena.dev | Demo@Arena1 |
+| Admin | admin@skillforge.dev | Admin@SkillForge1 |
+| Student | demo@skillforge.dev | Demo@Arena1 |
 
 ---
 

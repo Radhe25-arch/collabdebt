@@ -47,11 +47,11 @@ export default function OnboardingPage() {
 
       const { data } = await api.patch('/users/me', { role: form.role, ageGroup: form.ageGroup, interests: form.interests, onboarded: true });
 
-      const newStored = JSON.parse(localStorage.getItem('codearena-auth') || '{}');
+      const newStored = JSON.parse(localStorage.getItem('skillforge-auth') || '{}');
       if (newStored.state) {
         newStored.state.user = { ...(newStored.state.user || {}), ...data.user };
         newStored.state.isAuthenticated = true;
-        localStorage.setItem('codearena-auth', JSON.stringify(newStored));
+        localStorage.setItem('skillforge-auth', JSON.stringify(newStored));
       }
       updateUser(data.user);
       window.location.href = '/dashboard';

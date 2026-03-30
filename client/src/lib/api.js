@@ -65,9 +65,9 @@ api.interceptors.response.use(
         queue = [];
         clearAccessToken();
         try {
-          const stored = JSON.parse(localStorage.getItem('codearena-auth') || '{}');
+          const stored = JSON.parse(localStorage.getItem('skillforge-auth') || '{}');
           stored.state = { ...stored.state, user: null, isAuthenticated: false };
-          localStorage.setItem('codearena-auth', JSON.stringify(stored));
+          localStorage.setItem('skillforge-auth', JSON.stringify(stored));
         } catch (_) {}
         window.location.href = '/login';
         return Promise.reject(refreshErr);

@@ -45,22 +45,31 @@ const sendFriendRequest = async (req, res) => {
 
     if (existing) return res.status(400).json({ message: "Relationship already exists" });
 
+    // Look up the receiver to see if they are a bot
+    const receiver = await prisma.user.findUnique({ where: { id: receiverId } });
+    if (!receiver) return res.status(404).json({ message: "User not found" });
+
+    const isBot = receiver.email.endsWith('@bot.skillforge.com');
+    const initialStatus = isBot ? 'ACCEPTED' : 'PENDING';
+
     const friendship = await prisma.friendship.create({
-      data: { senderId, receiverId, status: 'PENDING' }
+      data: { senderId, receiverId, status: initialStatus }
     });
 
-    // Create notification
-    await prisma.notification.create({
-      data: {
-        userId: receiverId,
-        type: 'FRIEND_REQUEST',
-        title: 'New Friend Request',
-        body: `${req.user.username} sent you a friend request!`,
-        data: { senderId, friendshipId: friendship.id }
-      }
-    });
+    if (!isBot) {
+      // Only create notification if it's a real user
+      await prisma.notification.create({
+        data: {
+          userId: receiverId,
+          type: 'FRIEND_REQUEST',
+          title: 'New Friend Request',
+          body: `${req.user.username} sent you a friend request!`,
+          data: { senderId, friendshipId: friendship.id }
+        }
+      });
+    }
 
-    res.json({ message: "Request sent", friendship });
+    res.json({ message: isBot ? "Friend added instantly!" : "Request sent", friendship });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

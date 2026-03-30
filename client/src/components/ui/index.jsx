@@ -80,7 +80,7 @@ export function Select({ label, error, className = '', children, ...props }) {
 export function Card({ children, className = '', hover = false, ...props }) {
   return (
     <div
-      className={`arena-card p-5 ${hover ? 'cursor-pointer hover:-translate-y-1' : ''} ${className}`}
+      className={`sf-card p-5 ${hover ? 'cursor-pointer hover:-translate-y-1' : ''} ${className}`}
       {...props}
     >
       {children}
@@ -193,7 +193,7 @@ export function ProgressBar({ value = 0, max = 100, color = 'purple', height = 4
   const colors = {
     purple: 'bg-blue-600',
     teal:   'bg-indigo-600',
-    grad:   'bg-gradient-to-r from-arena-purple to-arena-teal',
+    grad:   'bg-gradient-to-r from-sf-purple to-sf-teal',
   };
   return (
     <div className={`bg-white/5 rounded-full overflow-hidden ${className}`} style={{ height }}>
@@ -226,7 +226,7 @@ export function DifficultyBadge({ level }) {
 // ─── STAT CARD ────────────────────────────────────────────
 export function StatCard({ label, value, icon, trend, className = '' }) {
   return (
-    <div className={`arena-card p-4 ${className}`}>
+    <div className={`sf-card p-4 ${className}`}>
       <div className="flex items-start justify-between mb-2">
         <span className="font-mono text-xs text-slate-500 uppercase tracking-widest">{label}</span>
         {icon && <span className="text-slate-500">{icon}</span>}
@@ -314,9 +314,9 @@ export function CodeBlock({ code, language = 'javascript' }) {
 export function Divider({ label, className = '' }) {
   return (
     <div className={`flex items-center gap-3 ${className}`}>
-      <div className="flex-1 h-px bg-arena-border" />
+      <div className="flex-1 h-px bg-sf-border" />
       {label && <span className="font-mono text-xs text-slate-500">{label}</span>}
-      <div className="flex-1 h-px bg-arena-border" />
+      <div className="flex-1 h-px bg-sf-border" />
     </div>
   );
 }

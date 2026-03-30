@@ -229,7 +229,7 @@ function QuizQuestion({ question, index, total, onAnswer, answered, selectedIdx,
   const isCorrect = answered && selectedIdx === question.answer;
 
   return (
-    <div className="arena-card p-6 space-y-5">
+    <div className="sf-card p-6 space-y-5">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <span className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center font-mono text-xs font-bold">
@@ -293,7 +293,7 @@ function QuizResults({ score, total, xpEarned, alreadyDone }) {
   const gradeColor = pct >= 80 ? 'text-green-600' : pct >= 60 ? 'text-blue-600' : pct >= 40 ? 'text-yellow-500' : 'text-red-500';
 
   return (
-    <div className="arena-card p-8 max-w-md mx-auto text-center space-y-6">
+    <div className="sf-card p-8 max-w-md mx-auto text-center space-y-6">
       <div className="w-16 h-16 rounded-2xl bg-blue-600/15 border border-blue-600/20 flex items-center justify-center mx-auto">
         <Icons.Target size={28} className="text-blue-600" />
       </div>
@@ -302,15 +302,15 @@ function QuizResults({ score, total, xpEarned, alreadyDone }) {
         <p className="font-mono text-xs text-slate-500 mt-1">Daily Quiz Complete</p>
       </div>
       <div className="grid grid-cols-3 gap-3">
-        <div className="arena-card p-3">
+        <div className="sf-card p-3">
           <div className="font-display font-bold text-xl text-slate-900">{score}/{total}</div>
           <div className="font-mono text-xs text-slate-500">Correct</div>
         </div>
-        <div className="arena-card p-3">
+        <div className="sf-card p-3">
           <div className="font-display font-bold text-xl text-blue-700">{pct}%</div>
           <div className="font-mono text-xs text-slate-500">Accuracy</div>
         </div>
-        <div className="arena-card p-3">
+        <div className="sf-card p-3">
           <div className="font-display font-bold text-xl text-green-600">+{xpEarned}</div>
           <div className="font-mono text-xs text-slate-500">XP Earned</div>
         </div>
@@ -457,15 +457,15 @@ export default function QuestPage() {
 
       {/* Stats header */}
       <div className="grid grid-cols-3 gap-4">
-        <div className="arena-card p-4 text-center">
+        <div className="sf-card p-4 text-center">
           <div className="font-display font-bold text-xl text-slate-900">{questions.length}</div>
           <div className="font-mono text-xs text-slate-500 mt-1">Questions</div>
         </div>
-        <div className="arena-card p-4 text-center">
+        <div className="sf-card p-4 text-center">
           <div className="font-display font-bold text-xl text-blue-700">20 XP</div>
           <div className="font-mono text-xs text-slate-500 mt-1">Per Correct</div>
         </div>
-        <div className="arena-card p-4 text-center">
+        <div className="sf-card p-4 text-center">
           <div className="flex items-center justify-center gap-1.5">
             <Icons.Fire size={16} className="text-orange-400" />
             <div className="font-display font-bold text-xl text-orange-400">{history?.questStreak || 0}</div>
@@ -506,7 +506,7 @@ export default function QuestPage() {
           timeLeft={timeLeft}
         />
       ) : (
-        <div className="arena-card p-12 text-center">
+        <div className="sf-card p-12 text-center">
           <Icons.Target size={28} className="text-slate-300 mx-auto mb-3" />
           <p className="font-mono text-sm text-slate-500">No quiz available today. Enroll in courses to unlock daily quizzes.</p>
         </div>
@@ -514,7 +514,7 @@ export default function QuestPage() {
 
       {/* History */}
       {(history?.completions?.length > 0) && (
-        <div className="arena-card overflow-hidden">
+        <div className="sf-card overflow-hidden">
           <div className="px-5 py-3 border-b border-slate-200 flex items-center justify-between">
             <span className="font-mono text-xs text-slate-500 uppercase tracking-widest">Recent Activity</span>
             <span className="font-mono text-xs text-blue-700">+{history.totalXP || 0} total XP</span>

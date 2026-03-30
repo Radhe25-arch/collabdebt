@@ -22,7 +22,7 @@ async function send({ to, subject, html }) {
   }
   try {
     await transporter.sendMail({
-      from: process.env.EMAIL_FROM || 'CodeArena <noreply@codearena.dev>',
+      from: process.env.EMAIL_FROM || 'SkillForge <noreply@skillforge.dev>',
       to, subject, html,
     });
     logger.info(`[EMAIL] Sent "${subject}" to ${to}`);
@@ -33,13 +33,13 @@ async function send({ to, subject, html }) {
  
 // ─── BASE TEMPLATE ─────────────────────────────────────────
 function base(content) {
-  const clientUrl = process.env.CLIENT_URL || 'https://codearena.dev';
+  const clientUrl = process.env.CLIENT_URL || 'https://skillforge.dev';
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>CodeArena</title>
+  <title>SkillForge</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap');
     *{margin:0;padding:0;box-sizing:border-box}
@@ -92,15 +92,15 @@ function base(content) {
         <div class="logo-box">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
         </div>
-        <span class="logo-text">CodeArena</span>
+        <span class="logo-text">SkillForge</span>
       </div>
     </div>
     <div class="body">
       ${content}
     </div>
     <div class="footer">
-      <p>© 2026 CodeArena — Master the Future of Technology.<br>
-      <a href="${clientUrl}">Visit CodeArena</a> &nbsp;·&nbsp; <a href="${clientUrl}/settings">Manage Notifications</a></p>
+      <p>© 2026 SkillForge — Master the Future of Technology.<br>
+      <a href="${clientUrl}">Visit SkillForge</a> &nbsp;·&nbsp; <a href="${clientUrl}/settings">Manage Notifications</a></p>
     </div>
   </div>
 </div>
@@ -110,9 +110,9 @@ function base(content) {
  
 // ─── WELCOME EMAIL ─────────────────────────────────────────
 async function sendWelcome(user) {
-  const clientUrl = process.env.CLIENT_URL || 'https://codearena.dev';
+  const clientUrl = process.env.CLIENT_URL || 'https://skillforge.dev';
   const html = base(`
-    <h1>Welcome to CodeArena, <span>${user.username}!</span> 🎉</h1>
+    <h1>Welcome to SkillForge, <span>${user.username}!</span> 🎉</h1>
     <p>Your account is live. You've joined thousands of developers levelling up their skills through real challenges, courses, and 1v1 battles — completely free, forever.</p>
  
     <div class="xp-banner">
@@ -175,12 +175,12 @@ async function sendWelcome(user) {
       <span class="badge amber">New Member</span>
     </div>
  
-    <p style="font-size:13px;color:#94A3B8;margin:0">You're receiving this because you created an account at CodeArena. Questions? Reply to this email.</p>
+    <p style="font-size:13px;color:#94A3B8;margin:0">You're receiving this because you created an account at SkillForge. Questions? Reply to this email.</p>
   `);
  
   await send({
     to:      user.email,
-    subject: `Welcome to CodeArena, ${user.username}! Your account is ready ⚡`,
+    subject: `Welcome to SkillForge, ${user.username}! Your account is ready ⚡`,
     html,
   });
 }
@@ -202,14 +202,14 @@ async function sendPasswordReset(user, otp) {
  
   await send({
     to:      user.email,
-    subject: '[CodeArena] Reset Your Password',
+    subject: '[SkillForge] Reset Your Password',
     html,
   });
 }
  
 // ─── STREAK REMINDER ───────────────────────────────────────
 async function sendStreakReminder(user) {
-  const clientUrl = process.env.CLIENT_URL || 'https://codearena.dev';
+  const clientUrl = process.env.CLIENT_URL || 'https://skillforge.dev';
   const html = base(`
     <h1>Your <span>${user.streak}-Day Streak</span> is at Risk 🔥</h1>
     <p>Hey <strong class="highlight">@${user.username}</strong>, your streak will expire in less than 24 hours. Complete one lesson to keep it alive!</p>
@@ -235,7 +235,7 @@ async function sendStreakReminder(user) {
  
 // ─── WEEKLY SUMMARY ────────────────────────────────────────
 async function sendWeeklySummary(user, stats) {
-  const clientUrl = process.env.CLIENT_URL || 'https://codearena.dev';
+  const clientUrl = process.env.CLIENT_URL || 'https://skillforge.dev';
   const html = base(`
     <h1>Your <span>Weekly Report</span> 📊</h1>
     <p>Great work this week, <strong class="highlight">@${user.username}</strong>! Here's a summary of your progress.</p>
@@ -269,14 +269,14 @@ async function sendWeeklySummary(user, stats) {
  
   await send({
     to:      user.email,
-    subject: `[CodeArena] Weekly Report: +${stats.xpEarned} XP this week!`,
+    subject: `[SkillForge] Weekly Report: +${stats.xpEarned} XP this week!`,
     html,
   });
 }
  
 // ─── LEVEL UP NOTIFICATION ─────────────────────────────────
 async function sendLevelUp(user, newLevel, levelName) {
-  const clientUrl = process.env.CLIENT_URL || 'https://codearena.dev';
+  const clientUrl = process.env.CLIENT_URL || 'https://skillforge.dev';
   const html = base(`
     <h1>You reached <span>Level ${newLevel}!</span> 🏆</h1>
     <p>Amazing work, <strong class="highlight">@${user.username}</strong>! You've officially reached <strong>Level ${newLevel}: ${levelName}</strong>.</p>
@@ -301,7 +301,7 @@ async function sendLevelUp(user, newLevel, levelName) {
  
   await send({
     to:      user.email,
-    subject: `🎉 Level Up! You're now Level ${newLevel} on CodeArena`,
+    subject: `🎉 Level Up! You're now Level ${newLevel} on SkillForge`,
     html,
   });
 }

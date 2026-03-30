@@ -57,7 +57,7 @@ export function RoomsPage() {
       {loading ? (
         <div className="flex justify-center py-12"><Spinner size={24} className="text-blue-700" /></div>
       ) : rooms.length === 0 ? (
-        <div className="arena-card p-16 text-center">
+        <div className="sf-card p-16 text-center">
           <Icons.Users size={32} className="text-slate-500 mx-auto mb-4" />
           <p className="font-display font-bold mb-2">No public rooms</p>
           <p className="font-mono text-xs text-slate-500 mb-6">Be the first to create a collaborative code room</p>
@@ -68,7 +68,7 @@ export function RoomsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {rooms.map(room => (
-            <div key={room.id} className="arena-card p-5 hover:-translate-y-0.5 transition-transform">
+            <div key={room.id} className="sf-card p-5 hover:-translate-y-0.5 transition-transform">
               <div className="flex items-start justify-between mb-3">
                 <div>
                   <h3 className="font-display font-bold text-sm mb-1">{room.name}</h3>
@@ -215,7 +215,7 @@ export function RoomPage() {
         <div className="flex items-center gap-2">
           <div className="flex -space-x-2">
             {participants.slice(0, 4).map(p => (
-              <Avatar key={p.userId} user={p.user} size={28} className="ring-2 ring-arena-bg" />
+              <Avatar key={p.userId} user={p.user} size={28} className="ring-2 ring-sf-bg" />
             ))}
           </div>
           <button
@@ -228,7 +228,7 @@ export function RoomPage() {
       </div>
 
       {/* Editor */}
-      <div className="flex-1 arena-card overflow-hidden flex flex-col">
+      <div className="flex-1 sf-card overflow-hidden flex flex-col">
         <div className="flex items-center justify-between px-4 py-2.5 bg-slate-50 border-b border-slate-200 flex-shrink-0">
           <div className="flex items-center gap-1.5">
             <div className="w-2.5 h-2.5 rounded-full bg-red-500/60" />

@@ -87,13 +87,13 @@ ${p.repoUrl ? `[View Code](${p.repoUrl})` : ''} ${p.liveUrl ? `[Live Demo](${p.l
 `).join('\n---\n');
 
     const readme = `# ${user.fullName || user.username}
-> **${levelName}** on CodeArena · Rank #${rank.toLocaleString()} · ${user.xp.toLocaleString()} XP
+> **${levelName}** on SkillForge · Rank #${rank.toLocaleString()} · ${user.xp.toLocaleString()} XP
 
-${portfolio?.bio || `I'm a developer currently leveling up through CodeArena. ${user.streak}-day learning streak and counting.`}
+${portfolio?.bio || `I'm a developer currently leveling up through SkillForge. ${user.streak}-day learning streak and counting.`}
 
 ---
 
-## CodeArena Stats
+## SkillForge Stats
 
 | Metric | Value |
 |--------|-------|
@@ -130,12 +130,12 @@ ${projects ? `## Projects\n\n${projects}\n\n---\n\n` : ''}
 
 ## Connect
 
-${portfolio?.socialLinks ? Object.entries(JSON.parse(JSON.stringify(portfolio.socialLinks))).filter(([,v]) => v).map(([k, v]) => `- **${k.charAt(0).toUpperCase() + k.slice(1)}**: [${v}](${v})`).join('\n') : `- **CodeArena Profile**: [codearena.dev/u/${user.username}](https://codearena.dev/u/${user.username})`}
+${portfolio?.socialLinks ? Object.entries(JSON.parse(JSON.stringify(portfolio.socialLinks))).filter(([,v]) => v).map(([k, v]) => `- **${k.charAt(0).toUpperCase() + k.slice(1)}**: [${v}](${v})`).join('\n') : `- **SkillForge Profile**: [skillforge.dev/u/${user.username}](https://skillforge.dev/u/${user.username})`}
 
 ---
 
 <p align="center">
-  <i>Built automatically by <a href="https://codearena.dev">CodeArena</a> · Updated ${new Date().toLocaleDateString()}</i>
+  <i>Built automatically by <a href="https://skillforge.dev">SkillForge</a> · Updated ${new Date().toLocaleDateString()}</i>
 </p>
 `;
 
@@ -147,7 +147,7 @@ ${portfolio?.socialLinks ? Object.entries(JSON.parse(JSON.stringify(portfolio.so
 
 async function pushToGithub(req, res, next) {
   try {
-    const { token, repoName = 'codearena-portfolio' } = req.body;
+    const { token, repoName = 'skillforge-portfolio' } = req.body;
 
     if (!token) throw new AppError('GitHub Personal Access Token required', 400);
 
@@ -162,14 +162,14 @@ async function pushToGithub(req, res, next) {
 
     // Get GitHub user info
     const ghUserRes = await fetch('https://api.github.com/user', {
-      headers: { Authorization: `Bearer ${token}`, 'User-Agent': 'CodeArena/1.0' },
+      headers: { Authorization: `Bearer ${token}`, 'User-Agent': 'SkillForge/1.0' },
     });
     if (!ghUserRes.ok) throw new AppError('Invalid GitHub token', 401);
     const ghUser = await ghUserRes.json();
 
     // Check if repo exists
     const repoCheckRes = await fetch(`https://api.github.com/repos/${ghUser.login}/${repoName}`, {
-      headers: { Authorization: `Bearer ${token}`, 'User-Agent': 'CodeArena/1.0' },
+      headers: { Authorization: `Bearer ${token}`, 'User-Agent': 'SkillForge/1.0' },
     });
 
     let repoUrl;
@@ -180,11 +180,11 @@ async function pushToGithub(req, res, next) {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
-          'User-Agent': 'CodeArena/1.0',
+          'User-Agent': 'SkillForge/1.0',
         },
         body: JSON.stringify({
           name: repoName,
-          description: 'My CodeArena developer portfolio — auto-generated',
+          description: 'My SkillForge developer portfolio — auto-generated',
           auto_init: true,
           private: false,
         }),
@@ -199,7 +199,7 @@ async function pushToGithub(req, res, next) {
     // Get current SHA of README if it exists
     let sha = undefined;
     const fileRes = await fetch(`https://api.github.com/repos/${ghUser.login}/${repoName}/contents/README.md`, {
-      headers: { Authorization: `Bearer ${token}`, 'User-Agent': 'CodeArena/1.0' },
+      headers: { Authorization: `Bearer ${token}`, 'User-Agent': 'SkillForge/1.0' },
     });
     if (fileRes.ok) {
       const fileData = await fileRes.json();
@@ -213,10 +213,10 @@ async function pushToGithub(req, res, next) {
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
-        'User-Agent': 'CodeArena/1.0',
+        'User-Agent': 'SkillForge/1.0',
       },
       body: JSON.stringify({
-        message: `Update CodeArena portfolio — ${new Date().toLocaleDateString()}`,
+        message: `Update SkillForge portfolio — ${new Date().toLocaleDateString()}`,
         content,
         ...(sha ? { sha } : {}),
       }),

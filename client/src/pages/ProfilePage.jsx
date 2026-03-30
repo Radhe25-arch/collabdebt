@@ -116,7 +116,7 @@ export default function ProfilePage() {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Profile header */}
-      <div className="arena-card p-6">
+      <div className="sf-card p-6">
         <div className="flex items-start justify-between flex-wrap gap-4">
           <div className="flex items-center gap-5">
             <Avatar user={profile} size={64} />
@@ -132,7 +132,7 @@ export default function ProfilePage() {
               </div>
               <div className="flex items-center gap-2 mb-2">
                 <span className="font-mono text-xs text-slate-500">@{profile.username}</span>
-                <span className="text-arena-border">·</span>
+                <span className="text-sf-border">·</span>
                 <BadgeTag variant="purple">{LEVEL_NAMES[lvl-1]}</BadgeTag>
                 <BadgeTag variant="gray">Rank #{(profile.rank||0).toLocaleString()}</BadgeTag>
               </div>
@@ -168,7 +168,7 @@ export default function ProfilePage() {
           { label: 'Quiz Accuracy',value: `${accuracy}%`,                 icon: Icons.Target,    color: 'text-slate-600' },
           { label: 'Streak',       value: `${profile.streak||0} days`,    icon: Icons.Fire,      color: 'text-orange-400' },
         ].map(({ label, value, icon: Ic, color }) => (
-          <div key={label} className="arena-card p-4 text-center">
+          <div key={label} className="sf-card p-4 text-center">
             <Ic size={14} className={`${color} mx-auto mb-1`} />
             <div className="font-display font-bold text-lg text-slate-900">{value}</div>
             <div className="font-mono text-xs text-slate-500">{label}</div>
@@ -192,11 +192,11 @@ export default function ProfilePage() {
       {/* OVERVIEW */}
       {tab === 'overview' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-          <div className="arena-card p-5">
+          <div className="sf-card p-5">
             <span className="font-mono text-xs text-slate-500 uppercase tracking-widest block mb-4">Skill Map</span>
             <SkillRadar skills={stats?.skills || {}} />
           </div>
-          <div className="arena-card p-5">
+          <div className="sf-card p-5">
             <span className="font-mono text-xs text-slate-500 uppercase tracking-widest block mb-4">Activity Heatmap</span>
             <Heatmap logs={stats?.activityLogs || []} />
             <div className="flex justify-between mt-3 font-mono text-xs text-slate-500">
@@ -209,7 +209,7 @@ export default function ProfilePage() {
 
       {/* BADGES */}
       {tab === 'badges' && (
-        <div className="arena-card p-5">
+        <div className="sf-card p-5">
           <span className="font-mono text-xs text-slate-500 uppercase tracking-widest block mb-5">Badge Collection ({profile.badges?.length || 0})</span>
           {(profile.badges?.length || 0) === 0 ? (
             <p className="font-mono text-xs text-slate-500 text-center py-8">No badges yet. Complete courses to earn them.</p>
@@ -231,11 +231,11 @@ export default function ProfilePage() {
 
       {/* COURSES */}
       {tab === 'courses' && (
-        <div className="arena-card overflow-hidden">
+        <div className="sf-card overflow-hidden">
           <div className="px-5 py-3 border-b border-slate-200">
             <span className="font-mono text-xs text-slate-500 uppercase tracking-widest">Enrolled Courses</span>
           </div>
-          <div className="divide-y divide-arena-border/40">
+          <div className="divide-y divide-sf-border/40">
             {(profile.enrollments || []).length === 0 ? (
               <p className="px-5 py-8 font-mono text-xs text-slate-500">No enrollments yet</p>
             ) : profile.enrollments.map((e) => (
@@ -258,7 +258,7 @@ export default function ProfilePage() {
 
       {/* ACTIVITY */}
       {tab === 'activity' && (
-        <div className="arena-card p-5">
+        <div className="sf-card p-5">
           <span className="font-mono text-xs text-slate-500 uppercase tracking-widest block mb-5">Full Activity Log</span>
           <Heatmap logs={stats?.activityLogs || []} />
           <div className="mt-4 space-y-2">

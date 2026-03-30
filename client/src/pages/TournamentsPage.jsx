@@ -1,4 +1,3 @@
-// TournamentsPage.jsx
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BadgeTag, Spinner } from '@/components/ui';
@@ -28,62 +27,61 @@ function TypeIcon({ type }) {
 
 function TournamentCard({ t, onJoin }) {
   const navigate = useNavigate();
-  const isActive  = t.status === 'ACTIVE';
+  const isActive  = t.status === 'Sf_ACTIVE' || t.status === 'ACTIVE'; // Handling different status mappings
   const isEnded   = t.status === 'ENDED';
 
   return (
     <div
-      className={`arena-card p-5 cursor-pointer hover:-translate-y-1 transition-transform ${isActive ? 'ring-1 ring-arena-teal/20' : ''}`}
+      className={`sf-card p-6 cursor-pointer hover:border-blue-300 transition-all group ${isActive ? 'bg-blue-50/10' : ''}`}
       onClick={() => navigate(`/tournaments/${t.id}`)}
     >
       <div className="flex items-start justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <TypeIcon type={t.type} />
-          <TournamentStatusBadge status={t.status} />
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center border border-slate-100 group-hover:bg-white transition-colors">
+            <TypeIcon type={t.type} />
+          </div>
+          <div>
+            <h3 className="font-bold text-slate-900 text-[15px]">{t.title}</h3>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t.type.replace(/_/g, ' ')}</p>
+          </div>
         </div>
-        {isActive && <span className="w-2 h-2 rounded-full bg-indigo-600 animate-pulse" />}
-      </div>
-
-      <h3 className="font-display font-bold text-base mb-1">{t.title}</h3>
-      <p className="font-mono text-xs text-slate-500 mb-4">
-        {t.type.replace(/_/g, ' ')}
-      </p>
-
-      <div className="flex items-center justify-between text-xs font-mono text-slate-500 mb-4">
-        <div className="flex items-center gap-1">
-          <Icons.Users size={11} />
-          <span>{t._count?.entries || 0} participants</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <Icons.Zap size={11} className="text-blue-700" />
-          <span className="text-blue-700">+{t.xpBonus} XP</span>
+        <div className="flex flex-col items-end gap-2">
+            <TournamentStatusBadge status={t.status} />
+            {isActive && <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-green-50 border border-green-100">
+               <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+               <span className="text-[9px] font-bold text-green-600 uppercase tracking-tight">Active</span>
+            </div>}
         </div>
       </div>
 
-      <div className="flex items-center gap-1 text-xs font-mono text-slate-500 mb-4">
-        <Icons.Clock size={11} />
-        {isActive ? (
-          <span>Ends {formatDistanceToNow(new Date(t.endsAt), { addSuffix: true })}</span>
-        ) : isEnded ? (
-          <span>Ended {format(new Date(t.endsAt), 'MMM d, yyyy')}</span>
-        ) : (
-          <span>Starts {formatDistanceToNow(new Date(t.startsAt), { addSuffix: true })}</span>
-        )}
+      <div className="grid grid-cols-2 gap-4 mb-6 pt-2">
+        <div className="space-y-1">
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Prize Pool</p>
+          <div className="flex items-center gap-1.5">
+             <Icons.Zap size={11} className="text-orange-500" />
+             <span className="text-sm font-bold text-slate-700">+{t.xpBonus} XP</span>
+          </div>
+        </div>
+        <div className="space-y-1">
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Stability</p>
+          <div className="flex items-center gap-1.5">
+             <Icons.Users size={11} className="text-slate-400" />
+             <span className="text-sm font-bold text-slate-700">{t._count?.entries || 0} Joined</span>
+          </div>
+        </div>
       </div>
 
-      {isActive && (
+      <div className="flex items-center justify-between mt-auto">
+        <span className="text-[11px] font-medium text-slate-400">
+          {isActive ? `Expires ${formatDistanceToNow(new Date(t.endsAt), { addSuffix: true })}` : 'Archived Results'}
+        </span>
         <button
           onClick={(e) => { e.stopPropagation(); onJoin(t.id); }}
-          className="btn-teal w-full py-2 text-xs"
+          className="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center hover:bg-blue-600 transition-colors shadow-sm"
         >
-          <Icons.Tournament size={13} /> Join Tournament
+          <Icons.ArrowRight size={14} />
         </button>
-      )}
-      {isEnded && (
-        <button className="btn-secondary w-full py-2 text-xs">
-          <Icons.Trophy size={13} /> View Results
-        </button>
-      )}
+      </div>
     </div>
   );
 }
@@ -92,7 +90,6 @@ export default function TournamentsPage() {
   const navigate = useNavigate();
   const [tournaments, setTournaments] = useState([]);
   const [loading, setLoading]          = useState(true);
-  const [filter, setFilter]            = useState('all');
 
   useEffect(() => {
     api.get('/tournaments').then((r) => setTournaments(r.data.tournaments || [])).finally(() => setLoading(false));
@@ -107,42 +104,53 @@ export default function TournamentsPage() {
     }
   };
 
-  const filtered = filter === 'all' ? tournaments : tournaments.filter((t) => t.status === filter.toUpperCase());
-
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
-      <div>
-        <h1 className="font-display font-black text-2xl mb-1">Tournaments</h1>
-        <p className="font-mono text-xs text-slate-500">// new tournament every monday · free entry · earn bonus XP</p>
-      </div>
+    <div className="max-w-6xl mx-auto pb-24 pt-10 px-6 space-y-10">
+      
+      {/* ── HEADER ── */}
+      <div className="flex justify-between items-end border-b border-slate-200 pb-10">
+        <div className="space-y-3">
+          <div className="flex items-center gap-3">
+             <div className="p-2.5 rounded-2xl bg-blue-600 text-white shadow-lg shadow-blue-200">
+                <Icons.Trophy size={18} />
+             </div>
+             <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.25em]">Automated Arena</span>
+          </div>
+          <h1 className="text-3xl font-black text-slate-900 tracking-tighter">System Tournaments</h1>
+          <p className="text-sm text-slate-500 font-medium leading-relaxed max-w-sm">100 Daily Protocols generated by SkillForge Prime. Win global ranking slots for massive XP rewards.</p>
+        </div>
 
-      {/* Filter tabs */}
-      <div className="flex items-center gap-2">
-        {['all', 'active', 'upcoming', 'ended'].map((f) => (
-          <button
-            key={f}
-            onClick={() => setFilter(f)}
-            className={`badge-tag font-mono text-xs capitalize transition-all ${
-              filter === f ? 'badge-purple' : 'badge-gray hover:text-slate-900'
-            }`}
-          >
-            {f}
-          </button>
-        ))}
+        <div className="hidden lg:flex items-center gap-12">
+            <div className="text-right">
+                <div className="text-2xl font-black text-slate-900">100</div>
+                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Daily Capacity</div>
+            </div>
+            <div className="text-right">
+                <div className="text-2xl font-black text-blue-600">Active</div>
+                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">System Load</div>
+            </div>
+        </div>
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-16"><Spinner size={24} className="text-blue-700" /></div>
-      ) : filtered.length === 0 ? (
-        <div className="arena-card p-16 text-center">
-          <Icons.Trophy size={32} className="text-slate-500 mx-auto mb-3" />
-          <p className="font-mono text-sm text-slate-500">No tournaments found</p>
+        <div className="flex justify-center py-32"><Spinner size={24} className="text-slate-300" /></div>
+      ) : tournaments.length === 0 ? (
+        <div className="sf-card p-24 text-center border-dashed">
+          <Icons.Trophy size={48} className="text-slate-100 mx-auto mb-6" />
+          <h3 className="text-lg font-bold text-slate-900">Protocols Offline</h3>
+          <p className="text-sm text-slate-500 max-w-xs mx-auto mt-2">The tournament lattice is currently being recalibrated. Check back in T-minus 10 minutes.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {filtered.map((t) => <TournamentCard key={t.id} t={t} onJoin={handleJoin} />)}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {tournaments.map((t) => <TournamentCard key={t.id} t={t} onJoin={handleJoin} />)}
         </div>
       )}
+
+      {/* Footer Info */}
+      <div className="pt-12 text-center">
+         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em]">Refresh every 24 hours at 00:00 UTC</p>
+      </div>
+
     </div>
   );
 }

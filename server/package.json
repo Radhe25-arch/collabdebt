@@ -1,7 +1,7 @@
 {
-  "name": "codearena-server",
+  "name": "skillforge-server",
   "version": "1.0.0",
-  "description": "CodeArena backend API",
+  "description": "SkillForge backend API",
   "main": "src/index.js",
   "scripts": {
     "postinstall": "prisma generate",

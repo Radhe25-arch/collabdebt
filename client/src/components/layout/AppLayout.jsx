@@ -83,26 +83,26 @@ function Sidebar({ open }) {
           {user && (
             <div className="mt-auto border-t border-slate-100 pt-6 pb-4 px-3 bg-slate-50/50">
               <div className="flex items-center justify-between mb-4 px-2">
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Account Hub</p>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">Security Identity</p>
                 {user.streak > 0 && (
-                  <span className="flex items-center gap-1 text-[10px] font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full border border-orange-100">
-                    <Icons.Zap size={10} className="fill-orange-500" /> {user.streak}d Streak
+                  <span className="flex items-center gap-1 text-[9px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100">
+                    <Icons.Zap size={8} /> {user.streak}D
                   </span>
                 )}
               </div>
               
-              <Link to="/profile" className="flex items-center gap-3 p-3 rounded-2xl bg-white shadow-sm border border-slate-200/50 hover:border-blue-300 hover:shadow-md transition-all group overflow-hidden relative">
-                <Avatar user={user} size={38} className="rounded-xl shadow-sm z-10" />
+              <Link to="/profile" className="flex items-center gap-3 p-3 rounded-2xl bg-white shadow-sm border border-slate-200/50 hover:border-blue-400 hover:shadow-md hover:-translate-y-0.5 transition-all group overflow-hidden relative">
+                <Avatar user={user} size={36} className="rounded-xl shadow-sm z-10 bg-slate-100" />
                 <div className="flex-1 min-w-0 z-10 text-left">
-                  <p className="text-xs font-bold text-slate-900 truncate mb-0.5 tracking-tight group-hover:text-blue-700 transition-colors uppercase">{user?.username}</p>
+                  <p className="text-xs font-black text-slate-900 truncate mb-1 tracking-tight group-hover:text-blue-700 transition-colors uppercase">{user?.username}</p>
                   <div className="flex items-center gap-1.5 font-mono text-[9px] font-bold uppercase tracking-tight">
-                    <span className="text-blue-600">Level {user?.level || 1}</span>
-                    <span className="w-1 h-1 rounded-full bg-slate-300" />
-                    <span className="text-slate-400">🔥 {user?.streak || 0}d Streak</span>
+                    <span className="text-blue-600">LVL {user?.level || 1}</span>
+                    <span className="w-1 h-1 rounded-full bg-slate-200" />
+                    <span className="text-slate-400">XP {(user?.xp || 0).toLocaleString()}</span>
                   </div>
                 </div>
-                <Icons.ChevronRight size={14} className="text-slate-300 group-hover:text-blue-500 transition-colors" />
-                <div className="absolute top-0 right-0 w-16 h-full bg-gradient-to-l from-blue-50/20 to-transparent pointer-events-none" />
+                <Icons.ChevronRight size={12} className="text-slate-200 group-hover:text-blue-500 transition-colors" />
+                <div className="absolute top-0 right-0 w-24 h-full bg-gradient-to-l from-blue-50/10 to-transparent pointer-events-none" />
               </Link>
             </div>
           )}

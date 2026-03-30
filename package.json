@@ -1,8 +1,8 @@
 {
-  "name": "codearena",
+  "name": "skillforge",
   "version": "1.0.0",
   "private": true,
-  "description": "CodeArena — Free gamified coding platform",
+  "description": "SkillForge — Free gamified coding platform",
   "scripts": {
     "dev":          "concurrently \"npm run dev:server\" \"npm run dev:client\"",
     "dev:server":   "cd server && npm run dev",

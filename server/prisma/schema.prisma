@@ -1,4 +1,4 @@
-// CodeArena — Full PostgreSQL Schema via Prisma ORM
+// SkillForge — Full PostgreSQL Schema via Prisma ORM
 // Run: npx prisma migrate dev --name init
 
 generator client {
@@ -401,6 +401,7 @@ model TournamentEntry {
   score        Int        @default(0)
   rank         Int?
   joinedAt     DateTime   @default(now())
+  rewarded     Boolean    @default(false)
 
   user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)

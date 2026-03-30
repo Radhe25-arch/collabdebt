@@ -43,9 +43,9 @@ function AuthCallback() {
     api.get('/auth/me', { headers: { Authorization: `Bearer ${token}` } })
       .then(({ data }) => {
         setUser(data.user);
-        const stored = JSON.parse(localStorage.getItem('codearena-auth') || '{}');
+        const stored = JSON.parse(localStorage.getItem('skillforge-auth') || '{}');
         stored.state = { user: data.user, isAuthenticated: true, isLoading: false };
-        localStorage.setItem('codearena-auth', JSON.stringify(stored));
+        localStorage.setItem('skillforge-auth', JSON.stringify(stored));
         window.location.href = data.user?.onboarded === false ? '/onboarding' : '/dashboard';
       })
       .catch(() => { window.location.href = '/login'; });

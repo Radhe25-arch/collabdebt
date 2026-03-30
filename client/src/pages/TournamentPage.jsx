@@ -1,199 +1,194 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useAuthStore } from '@/store';
-import { Avatar, BadgeTag, Spinner, Button } from '@/components/ui';
+import { Avatar, BadgeTag, Spinner } from '@/components/ui';
 import Icons from '@/assets/icons';
 import api from '@/lib/api';
-import { format, formatDistanceToNow } from 'date-fns';
-import toast from 'react-hot-toast';
-
-const LEVEL_NAMES = ['Beginner','Apprentice','Coder','Developer','Senior Dev','Architect','Pro','Expert','Master','Legend'];
+import { toast } from 'react-hot-toast';
+import { formatDistanceToNow } from 'date-fns';
 
 export default function TournamentPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuthStore();
-  const [tournament, setTournament]   = useState(null);
-  const [scoreboard, setScoreboard]   = useState([]);
-  const [joined, setJoined]           = useState(false);
-  const [loading, setLoading]         = useState(true);
-  const pollRef = useRef(null);
+  const [tournament, setTournament] = useState(null);
+  const [scoreboard, setScoreboard] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [joining, setJoining] = useState(false);
+  const [userEntry, setUserEntry] = useState(null);
 
   const fetchData = async () => {
-    const [t, s] = await Promise.all([
-      api.get(`/tournaments/${id}`),
-      api.get(`/tournaments/${id}/scoreboard`),
-    ]);
-    setTournament(t.data.tournament);
-    setScoreboard(s.data.scoreboard || []);
-  };
-
-  useEffect(() => {
-    api.get(`/tournaments/current`)
-      .then((r) => { if (r.data.userEntry?.tournamentId === id) setJoined(true); })
-      .catch(() => {});
-
-    fetchData().finally(() => setLoading(false));
-
-    // Poll scoreboard every 30s if active
-    pollRef.current = setInterval(() => {
-      api.get(`/tournaments/${id}/scoreboard`)
-        .then((r) => setScoreboard(r.data.scoreboard || []))
-        .catch(() => {});
-    }, 30000);
-
-    return () => clearInterval(pollRef.current);
-  }, [id]);
-
-  const handleJoin = async () => {
     try {
-      await api.post(`/tournaments/${id}/join`);
-      setJoined(true);
-      toast.success('Joined tournament. Good luck.');
-    } catch (err) {
-      if (err.response?.status === 409) setJoined(true);
-      else toast.error('Failed to join');
+      const [tRes, sRes] = await Promise.all([
+        api.get(`/tournaments/${id}`),
+        api.get(`/tournaments/${id}/scoreboard`),
+      ]);
+      setTournament(tRes.data.tournament);
+      setScoreboard(sRes.data.scoreboard || []);
+      
+      // Check if user is in scoreboard
+      // (Backend normally returns userEntry in getCurrent, but for detail we check list)
+    } catch {
+      toast.error('Failed to load tournament segment');
+    } finally {
+      setLoading(false);
     }
   };
 
-  if (loading) return (
-    <div className="flex justify-center py-24"><Spinner size={28} className="text-blue-700" /></div>
-  );
+  useEffect(() => { fetchData(); }, [id]);
 
-  if (!tournament) return (
-    <div className="text-center py-24">
-      <p className="font-mono text-sm text-slate-500">Tournament not found</p>
-    </div>
-  );
+  const handleJoin = async () => {
+    setJoining(true);
+    try {
+      await api.post(`/tournaments/${id}/join`);
+      toast.success('Joined Protocol Successful');
+      fetchData();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Join failed');
+    } finally {
+      setJoining(false);
+    }
+  };
+
+  if (loading) return <div className="flex justify-center p-32"><Spinner size={24} className="text-slate-400" /></div>;
+  if (!tournament) return <div className="text-center p-20">Protocol not found</div>;
 
   const isActive = tournament.status === 'ACTIVE';
-  const myEntry  = scoreboard.find((e) => e.user?.id === user?.id);
-
-  const typeMap = {
-    CODING_CHALLENGE: { icon: Icons.Terminal, label: 'Coding Challenge' },
-    QUIZ_BATTLE:      { icon: Icons.Target,   label: 'Quiz Battle' },
-    SPEED_COURSE:     { icon: Icons.Zap,       label: 'Speed Course' },
-  };
-  const { icon: TypeIc, label: typeLabel } = typeMap[tournament.type] || { icon: Icons.Trophy, label: tournament.type };
 
   return (
-    <div className="space-y-6 max-w-3xl mx-auto">
-      {/* Back */}
-      <button onClick={() => navigate('/tournaments')} className="flex items-center gap-2 text-slate-500 hover:text-slate-900 font-mono text-xs transition-colors">
-        <Icons.ArrowLeft size={13} /> back to tournaments
+    <div className="max-w-5xl mx-auto pb-24 pt-10 px-6 space-y-12">
+      
+      {/* ── BREADCRUMB ── */}
+      <button onClick={() => navigate('/tournaments')} className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] hover:text-slate-900 transition-colors">
+        <Icons.ArrowRight size={12} className="rotate-180" /> Back to Collective
       </button>
 
-      {/* Header card */}
-      <div className="arena-card p-6 relative overflow-hidden">
-        {isActive && <div className="absolute inset-0 bg-indigo-600/2 pointer-events-none" />}
-        <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-4">
-            <TypeIc size={16} className="text-slate-600" />
-            <BadgeTag variant={isActive ? 'teal' : 'gray'}>
-              {isActive ? 'Live' : tournament.status}
-            </BadgeTag>
-            {isActive && <span className="w-2 h-2 rounded-full bg-indigo-600 animate-pulse" />}
+      {/* ── HERO ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 items-start">
+        <div className="lg:col-span-2 space-y-6">
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+               <BadgeTag variant="teal">{tournament.type.replace(/_/g, ' ')}</BadgeTag>
+               <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Protocol {tournament.id.slice(-6).toUpperCase()}</span>
+            </div>
+            <h1 className="text-4xl font-black text-slate-900 tracking-tighter leading-none">{tournament.title}</h1>
+            <p className="text-sm text-slate-500 font-medium leading-relaxed max-w-xl">
+              {tournament.description || "Deploy your full logic potential to secure ranking nodes. Each submission contributes to your global SkillForge authority."}
+            </p>
           </div>
 
-          <h1 className="font-display font-black text-2xl mb-1">{tournament.title}</h1>
-          <p className="font-mono text-xs text-slate-500 mb-6">{typeLabel}</p>
-
-          <div className="grid grid-cols-3 gap-4 mb-6">
-            <div className="bg-slate-100 rounded-lg p-3 text-center border border-slate-200">
-              <div className="font-display font-bold text-lg text-slate-900">{tournament._count?.entries || 0}</div>
-              <div className="font-mono text-xs text-slate-500">Participants</div>
-            </div>
-            <div className="bg-slate-100 rounded-lg p-3 text-center border border-slate-200">
-              <div className="font-display font-bold text-lg text-blue-700">+{tournament.xpBonus}</div>
-              <div className="font-mono text-xs text-slate-500">Winner XP</div>
-            </div>
-            <div className="bg-slate-100 rounded-lg p-3 text-center border border-slate-200">
-              <div className="font-display font-bold text-sm text-slate-900">
-                {isActive ? formatDistanceToNow(new Date(tournament.endsAt)) : format(new Date(tournament.endsAt), 'MMM d')}
-              </div>
-              <div className="font-mono text-xs text-slate-500">{isActive ? 'Remaining' : 'Ended'}</div>
-            </div>
-          </div>
-
-          {isActive && !joined && (
-            <Button onClick={handleJoin} variant="teal" className="w-full py-3">
-              <Icons.Tournament size={15} />
-              Join This Tournament — Free
-            </Button>
-          )}
-          {joined && (
-            <div className="flex items-center gap-2 justify-center py-3 rounded-lg border border-indigo-600/30 bg-indigo-600/5">
-              <Icons.Check size={14} className="text-indigo-600" />
-              <span className="font-mono text-sm text-indigo-600">You are competing</span>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* My rank if participating */}
-      {myEntry && (
-        <div className="arena-card p-4 flex items-center gap-4 bg-blue-600/5 border-blue-600/30">
-          <Icons.Target size={14} className="text-blue-700" />
-          <div>
-            <span className="font-mono text-xs text-slate-500">Your rank</span>
-            <div className="font-display font-bold text-lg text-blue-700">#{myEntry.rank}</div>
-          </div>
-          <div className="flex-1" />
-          <div className="text-right">
-            <span className="font-mono text-xs text-slate-500">Score</span>
-            <div className="font-display font-bold text-lg text-slate-900">{myEntry.score}</div>
-          </div>
-        </div>
-      )}
-
-      {/* Live Scoreboard */}
-      <div className="arena-card overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-3 border-b border-slate-200">
-          <span className="font-mono text-xs text-slate-500 uppercase tracking-widest">Live Scoreboard</span>
-          {isActive && (
-            <div className="flex items-center gap-1.5 text-indigo-600">
-              <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 animate-pulse" />
-              <span className="font-mono text-xs">Updates every 30s</span>
-            </div>
-          )}
-        </div>
-
-        {scoreboard.length === 0 ? (
-          <div className="py-12 text-center">
-            <p className="font-mono text-xs text-slate-500">No submissions yet. Be the first.</p>
-          </div>
-        ) : (
-          <div className="divide-y divide-arena-border/40">
-            {scoreboard.map((entry) => {
-              const isMe = entry.user?.id === user?.id;
-              const lvl  = Math.min(entry.user?.level || 1, 10);
-              return (
-                <div key={`${entry.rank}-${entry.user?.id}`}
-                  className={`flex items-center gap-4 px-5 py-3.5 ${isMe ? 'bg-indigo-600/5' : ''}`}
-                >
-                  <div className={`w-7 font-mono text-xs font-bold text-center ${
-                    entry.rank === 1 ? 'text-yellow-400' :
-                    entry.rank === 2 ? 'text-slate-400' :
-                    entry.rank === 3 ? 'text-amber-600' : 'text-slate-500'
-                  }`}>
-                    {entry.rank <= 3 ? (
-                      <Icons.Trophy size={13} className="mx-auto" />
-                    ) : `#${entry.rank}`}
-                  </div>
-                  <Avatar user={entry.user} size={30} />
-                  <div className="flex-1 min-w-0">
-                    <span className={`font-mono text-xs font-bold ${isMe ? 'text-indigo-600' : 'text-slate-900'}`}>
-                      {entry.user?.username}
-                    </span>
-                    <div className="font-mono text-xs text-slate-500">{LEVEL_NAMES[(lvl - 1)]} · Lv{lvl}</div>
-                  </div>
-                  <div className="font-display font-bold text-base text-slate-900">{entry.score}</div>
+          <div className="grid grid-cols-3 gap-6 pt-4">
+             <div className="p-5 sf-card-premium border-slate-100">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Max Yield</p>
+                <div className="flex items-center gap-2">
+                   <Icons.Zap size={14} className="text-blue-600" />
+                   <span className="text-xl font-black text-slate-900">+{tournament.xpBonus} XP</span>
                 </div>
-              );
-            })}
+             </div>
+             <div className="p-5 sf-card-premium border-slate-100">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Stability</p>
+                <div className="flex items-center gap-2">
+                   <Icons.Users size={14} className="text-slate-400" />
+                   <span className="text-xl font-black text-slate-900">{tournament._count?.entries || 0}</span>
+                </div>
+             </div>
+             <div className="p-5 sf-card-premium border-slate-100">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Time Left</p>
+                <div className="flex items-center gap-2 text-blue-600">
+                   <Icons.Clock size={14} />
+                   <span className="text-sm font-black uppercase tracking-tight">{isActive ? formatDistanceToNow(new Date(tournament.endsAt)) : 'Closed'}</span>
+                </div>
+             </div>
           </div>
-        )}
+        </div>
+
+        <div className="lg:col-span-1 space-y-6">
+           <div className="p-8 sf-card bg-slate-900 text-white relative overflow-hidden group">
+              <div className="relative z-10 space-y-6">
+                 <div>
+                   <h3 className="font-bold text-lg mb-1">Join Segment</h3>
+                   <p className="text-xs text-slate-400 leading-relaxed font-medium">Verify your intent to join this daily ranking protocol.</p>
+                 </div>
+                 
+                 {isActive ? (
+                   <button 
+                    onClick={handleJoin}
+                    disabled={joining}
+                    className="w-full py-4 bg-white text-slate-900 font-black text-xs uppercase tracking-[0.2em] rounded-xl hover:bg-blue-50 transition-all shadow-xl shadow-blue-900/40"
+                   >
+                     {joining ? 'Initializing...' : 'Authorize Participation'}
+                   </button>
+                 ) : (
+                   <div className="w-full py-4 bg-slate-800 text-slate-500 font-bold text-center rounded-xl text-xs uppercase tracking-widest">Protocol Terminated</div>
+                 )}
+                 <p className="text-[9px] font-bold text-slate-500 uppercase text-center tracking-widest italic font-mono">Consuming bandwidth: 0.2 kbps</p>
+              </div>
+              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/10 rounded-full -mr-16 -mt-16 blur-3xl" />
+           </div>
+           
+           <div className="p-6 sf-card border-slate-200 space-y-4">
+              <h4 className="text-[10px] font-black text-slate-900 uppercase tracking-[0.2em]">Rank Rewards</h4>
+              <div className="space-y-3">
+                 {[
+                   { rank: 'Top 1%', reward: '2.5x Multiplier', icon: '1st' },
+                   { rank: 'Top 10%', reward: '1.5x Multiplier', icon: '2nd' },
+                   { rank: 'Participation', reward: '+50 XP Fixed', icon: '3rd' }
+                 ].map((r, i) => (
+                   <div key={i} className="flex items-center justify-between text-[11px] font-bold">
+                      <span className="text-slate-500">{r.rank}</span>
+                      <span className="text-blue-600">{r.reward}</span>
+                   </div>
+                 ))}
+              </div>
+           </div>
+        </div>
       </div>
+
+      {/* ── SCOREBOARD ── */}
+      <div className="space-y-8">
+        <h2 className="text-xs font-black text-slate-900 uppercase tracking-[0.3em] border-l-4 border-blue-600 pl-6 py-1">Real-time Ranking Standings</h2>
+        <div className="sf-card overflow-hidden">
+           <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-slate-50 border-b border-slate-100">
+                  <th className="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest w-24">Rank</th>
+                  <th className="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Architect</th>
+                  <th className="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Yield Score</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-50">
+                {scoreboard.map((e) => (
+                  <tr key={e.user.id} className="group hover:bg-slate-50 transition-colors">
+                    <td className="px-8 py-4">
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-mono font-bold text-xs ${
+                        e.rank === 1 ? 'bg-slate-900 text-yellow-400' : 
+                        e.rank === 2 ? 'bg-slate-100 text-slate-600' :
+                        e.rank === 3 ? 'bg-slate-50 text-amber-700' : 'text-slate-400'
+                      }`}>
+                        #{e.rank}
+                      </div>
+                    </td>
+                    <td className="px-8 py-4">
+                       <div className="flex items-center gap-3">
+                          <Avatar user={e.user} size={32} className="rounded-full bg-slate-100" />
+                          <div>
+                             <p className="text-sm font-bold text-slate-900 leading-none mb-1 uppercase tracking-tight">{e.user.username}</p>
+                             <p className="text-[10px] font-bold text-slate-400 uppercase">LVL {e.user.level}</p>
+                          </div>
+                       </div>
+                    </td>
+                    <td className="px-8 py-4 text-right">
+                       <div className="flex items-center justify-end gap-2">
+                          <Icons.Zap size={12} className="text-blue-600" />
+                          <span className="font-mono text-sm font-black text-slate-900 tracking-tighter">{e.score.toLocaleString()}</span>
+                       </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+           </table>
+           {scoreboard.length === 0 && <div className="py-20 text-center text-slate-400 text-xs italic font-medium">No live submissions in this segment yet.</div>}
+        </div>
+      </div>
+
     </div>
   );
 }

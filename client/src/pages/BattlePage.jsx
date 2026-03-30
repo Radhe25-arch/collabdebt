@@ -54,7 +54,7 @@ function PlayerCard({ user, submission, isMe, isWinner, isLoser, isFetching }) {
   const pct     = hasSub ? Math.round((submission.passed / submission.total) * 100) : 0;
 
   return (
-    <div className={`arena-card p-5 relative overflow-hidden flex-1 transition-all ${
+    <div className={`sf-card p-5 relative overflow-hidden flex-1 transition-all ${
       isWinner ? 'ring-2 ring-yellow-400/50 bg-yellow-500/5' :
       isLoser  ? 'opacity-60' : ''
     }`}>
@@ -81,7 +81,7 @@ function PlayerCard({ user, submission, isMe, isWinner, isLoser, isFetching }) {
             : (user?.username || '?').slice(0,2).toUpperCase()
           }
           {isMe && (
-            <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-indigo-600 flex items-center justify-center border border-arena-bg text-arena-bg text-xs">
+            <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-indigo-600 flex items-center justify-center border border-sf-bg text-sf-bg text-xs">
               ✓
             </span>
           )}
@@ -210,7 +210,7 @@ function BattleReportCard({ battle, myId, onClose, onRematch }) {
           {/* Head-to-head stat comparison */}
           <div>
             <p className="font-mono text-xs text-slate-500 uppercase tracking-widest mb-3">Head-to-Head</p>
-            <div className="arena-card overflow-hidden">
+            <div className="sf-card overflow-hidden">
               {/* Players header */}
               <div className="grid grid-cols-3 gap-2 px-4 py-3 border-b border-slate-200 bg-slate-100/40">
                 <div className="flex items-center gap-2">
@@ -445,7 +445,7 @@ export default function BattlePage() {
             <Icons.ArrowLeft size={16} />
           </button>
           <div className="flex items-center gap-2">
-            <div className={`w-2 h-2 rounded-full ${isActive ? 'bg-red-400 animate-pulse' : 'bg-arena-dim'}`} />
+            <div className={`w-2 h-2 rounded-full ${isActive ? 'bg-red-400 animate-pulse' : 'bg-sf-dim'}`} />
             <span className="font-mono text-xs text-slate-500 uppercase tracking-widest">
               {isActive ? 'LIVE BATTLE' : battle.status}
             </span>
@@ -483,7 +483,7 @@ export default function BattlePage() {
       {/* ─── PLAYER STATUS BAR ─── */}
       <div className="flex gap-0 border-b border-slate-200 flex-shrink-0">
         {/* Me */}
-        <div className={`flex-1 flex items-center gap-3 px-5 py-3 ${isChallenger ? 'bg-indigo-600/5 border-r-2 border-r-arena-teal' : 'border-r border-slate-200'}`}>
+        <div className={`flex-1 flex items-center gap-3 px-5 py-3 ${isChallenger ? 'bg-indigo-600/5 border-r-2 border-r-sf-teal' : 'border-r border-slate-200'}`}>
           <div className="w-8 h-8 rounded-full bg-indigo-600/15 border border-indigo-600/30 flex items-center justify-center font-mono text-xs font-bold text-indigo-600 flex-shrink-0">
             {(me?.username||'?').slice(0,2).toUpperCase()}
           </div>
@@ -522,7 +522,7 @@ export default function BattlePage() {
         </div>
 
         {/* Opponent */}
-        <div className={`flex-1 flex items-center gap-3 px-5 py-3 ${!isChallenger ? 'bg-indigo-600/5 border-l-2 border-l-arena-teal' : 'border-l border-slate-200'} flex-row-reverse`}>
+        <div className={`flex-1 flex items-center gap-3 px-5 py-3 ${!isChallenger ? 'bg-indigo-600/5 border-l-2 border-l-sf-teal' : 'border-l border-slate-200'} flex-row-reverse`}>
           <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center font-mono text-xs font-bold text-slate-600 flex-shrink-0">
             {(opponent?.username||'?').slice(0,2).toUpperCase()}
           </div>

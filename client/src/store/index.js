@@ -57,7 +57,7 @@ export const useAuthStore = create(
       updateUser: (patch) => set((s) => ({ user: { ...s.user, ...patch } })),
     }),
     {
-      name: 'codearena-auth',
+      name: 'skillforge-auth',
       partialize: (s) => ({ user: s.user, isAuthenticated: s.isAuthenticated }),
     }
   )

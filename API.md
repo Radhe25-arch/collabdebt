@@ -1,4 +1,4 @@
-# CodeArena — Complete API Documentation
+# SkillForge — Complete API Documentation
 
 Base URL: `http://localhost:4000/api`  
 Auth: `Authorization: Bearer <accessToken>` header  
@@ -108,7 +108,7 @@ Refresh: HTTP-only cookie `refreshToken`
 |--------|----------|------|-------------|
 | GET | `/portfolio/me` | Yes | My portfolio with projects |
 | PUT | `/portfolio/me` | Yes | Update settings: `{ githubUsername, bio, skills, socialLinks, themeColor }` |
-| GET | `/portfolio/me/readme` | Yes | Generate README markdown from CodeArena stats |
+| GET | `/portfolio/me/readme` | Yes | Generate README markdown from SkillForge stats |
 | POST | `/portfolio/me/push-github` | Yes | Push README to GitHub. Body: `{ token: 'ghp_...', repoName? }` |
 | POST | `/portfolio/me/projects` | Yes | Add project: `{ title, description, language, code, tags, repoUrl, liveUrl, featured }` |
 | GET | `/portfolio/user/:userId` | No | Public portfolio |

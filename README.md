@@ -77,7 +77,7 @@ User, Course, Lesson, Quiz, Tournament, Battle, BattleReport, DailyQuest, Portfo
 ### Option A — Docker (Recommended, one command)
 
 ```bash
-unzip codearena-fullstack.zip && cd codearena
+unzip skillforge-fullstack.zip && cd skillforge
 
 # Copy and edit environment variables
 cp server/.env.example server/.env
@@ -87,7 +87,7 @@ cp server/.env.example server/.env
 docker-compose up -d
 
 # Seed the database
-docker exec codearena_server node prisma/seed.js
+docker exec skillforge_server node prisma/seed.js
 ```
 
 Access: http://localhost:5173
@@ -95,7 +95,7 @@ Access: http://localhost:5173
 ### Option B — Local Development
 
 ```bash
-unzip codearena-fullstack.zip && cd codearena
+unzip skillforge-fullstack.zip && cd skillforge
 
 # Install all dependencies
 npm run install:all
@@ -122,8 +122,8 @@ npm run dev
 
 | Role | Email | Password |
 |------|-------|----------|
-| Admin | admin@codearena.dev | Admin@SkillForge1 |
-| Student | demo@codearena.dev | Demo@Arena1 |
+| Admin | admin@skillforge.dev | Admin@SkillForge1 |
+| Student | demo@skillforge.dev | Demo@Arena1 |
 
 ---
 
@@ -132,7 +132,7 @@ npm run dev
 See `server/.env.example` for the full list. Required to run:
 
 ```env
-DATABASE_URL=postgresql://user:pass@localhost:5432/codearena
+DATABASE_URL=postgresql://user:pass@localhost:5432/skillforge
 JWT_ACCESS_SECRET=<32+ char random string>
 JWT_REFRESH_SECRET=<32+ char random string>
 ```
@@ -177,7 +177,7 @@ railway up
 ## Project Structure
 
 ```
-codearena/
+skillforge/
 ├── client/                          # React + Vite frontend
 │   ├── src/
 │   │   ├── App.jsx                  # Router with all 19 routes
