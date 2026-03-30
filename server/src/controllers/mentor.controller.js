@@ -79,6 +79,11 @@ async function sendMessage(req, res, next) {
     const { sessionId, message, code } = req.body;
     if (!message?.trim()) throw new AppError('Message required', 400);
 
+    // 0. Check if AI is configured
+    if (GROQ_KEYS.length === 0) {
+      throw new AppError('AI Mentor is not configured. Please add GROQ_API_KEY environment variables.', 503);
+    }
+
     const user = await prisma.user.findUnique({ where: { id: req.user.id } });
     if (!user) throw new AppError('User not found', 404);
 
@@ -127,7 +132,8 @@ async function sendMessage(req, res, next) {
           headers: {
             'Authorization': `Bearer ${GROQ_KEYS[i]}`,
             'Content-Type': 'application/json'
-          }
+          },
+          timeout: 30000,
         });
 
         aiResponse = response.data.choices[0].message.content;
@@ -138,13 +144,16 @@ async function sendMessage(req, res, next) {
           console.warn(`Groq Key ${i + 1} rate limited, rotating...`);
           continue; // Try next key
         }
-        throw err; // Re-throw other errors
+        // Don't throw immediately for network errors, try next key
+        console.warn(`Groq Key ${i + 1} failed:`, err.message);
+        continue;
       }
     }
 
     if (!aiResponse) {
-      console.error('All Groq keys failed:', lastError);
-      throw new AppError('AI Mentor pathways are currently busy. Please try again in a few moments.', 503);
+      const errMsg = lastError?.response?.data?.error?.message || lastError?.message || 'All AI keys exhausted';
+      console.error('All Groq keys failed:', errMsg);
+      throw new AppError('AI Mentor is temporarily unavailable. Please try again shortly.', 503);
     }
 
     // 5. Update session & User Quota
@@ -174,7 +183,9 @@ async function sendMessage(req, res, next) {
     res.json({ response: aiResponse, sessionId });
   } catch (err) { 
     console.error('AI Mentor Error:', err.response?.data || err.message);
-    next(new AppError(err.message || 'AI Mentor is temporarily unavailable', 500)); 
+    // Preserve AppError status codes instead of always returning 500
+    if (err instanceof AppError) return next(err);
+    next(new AppError(err.message || 'AI Mentor is temporarily unavailable', 503)); 
   }
 }
 

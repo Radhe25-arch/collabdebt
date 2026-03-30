@@ -14,8 +14,6 @@ const MAIN_LINKS = [
   { to: '/battles',     label: '1v1 Arena',   Icon: Icons.Zap },
   { to: '/tournaments', label: 'Tournaments', Icon: Icons.Trophy },
   { to: '/leaderboard', label: 'Rankings',    Icon: Icons.Leaderboard },
-  { to: '/community',   label: 'Community',   Icon: Icons.Users },
-  { to: '/friends',     label: 'Friends',     Icon: Icons.MessageSquare },
 ];
 
 const BOTTOM_LINKS = [

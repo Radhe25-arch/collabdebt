@@ -159,33 +159,43 @@ export default function CoursesPage() {
   const [categories, setCategories] = useState([]);
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [activeCategory, setActiveCategory] = useState(null);
 
-  useEffect(() => {
-    const load = async () => {
+  const loadData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const [catRes, courseRes] = await Promise.allSettled([
+        api.get('/courses/categories'),
+        api.get('/courses?limit=300'),
+      ]);
+      
+      const cats = catRes.status === 'fulfilled' ? (catRes.value.data.categories || []) : [];
+      const coursesRaw = courseRes.status === 'fulfilled' ? (courseRes.value.data.courses || []) : [];
+      
+      setCategories(cats);
+
+      let enrollMap = {};
       try {
-        const [catRes, courseRes] = await Promise.all([
-          api.get('/courses/categories'),
-          api.get('/courses?limit=300'),
-        ]);
-        setCategories(catRes.data.categories || []);
-        const coursesRaw = courseRes.data.courses || [];
+        const enrollRes = await api.get('/courses/my-enrollments');
+        (enrollRes.data.enrollments || []).forEach(e => { enrollMap[e.courseId] = e; });
+      } catch { /* not logged in or error */ }
 
-        let enrollMap = {};
-        try {
-          const enrollRes = await api.get('/courses/my-enrollments');
-          (enrollRes.data.enrollments || []).forEach(e => { enrollMap[e.courseId] = e; });
-        } catch { /* not logged in */ }
-
-        setCourses(coursesRaw.map(c => ({ ...c, enrollment: enrollMap[c.id] || null })));
-      } catch (err) {
-        console.error('Failed to load courses', err);
-      } finally {
-        setLoading(false);
+      setCourses(coursesRaw.map(c => ({ ...c, enrollment: enrollMap[c.id] || null })));
+      
+      if (cats.length === 0 && coursesRaw.length === 0) {
+        setError('no-data');
       }
-    };
-    load();
-  }, []);
+    } catch (err) {
+      console.error('Failed to load courses', err);
+      setError('fetch-error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { loadData(); }, []);
 
   const langCategories = (categories || []).filter((c) => c && !DOMAIN_SLUGS.includes(c.slug));
   const domainCategories = (categories || []).filter((c) => c && DOMAIN_SLUGS.includes(c.slug));
@@ -196,6 +206,34 @@ export default function CoursesPage() {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
         <Spinner size={24} className="text-blue-600" />
+      </div>
+    );
+  }
+
+  // Error / Empty state
+  if (error) {
+    return (
+      <div className="max-w-md mx-auto text-center py-32 space-y-6">
+        <div className="w-16 h-16 rounded-2xl bg-slate-100 border border-slate-200 flex items-center justify-center mx-auto">
+          <Icons.Book size={28} className="text-slate-400" />
+        </div>
+        <div>
+          <h2 className="text-xl font-bold text-slate-900 mb-2">
+            {error === 'no-data' ? 'No Courses Available' : 'Failed to Load Courses'}
+          </h2>
+          <p className="text-sm text-slate-500">
+            {error === 'no-data' 
+              ? 'The curriculum is being prepared. Check back soon.'
+              : 'There was an issue connecting to the server. Please try again.'
+            }
+          </p>
+        </div>
+        <button 
+          onClick={loadData}
+          className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-700 transition-colors"
+        >
+          <Icons.RefreshCw size={14} /> Try Again
+        </button>
       </div>
     );
   }

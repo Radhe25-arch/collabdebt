@@ -35,9 +35,12 @@ let refreshing = false;
 let queue = [];
 const SKIP_REFRESH_URLS = ['/auth/login', '/auth/register', '/auth/refresh', '/auth/logout'];
 
-// Debounce 500 error toasts — max 1 per 5 seconds to prevent toast spam
+// Debounce 500 error toasts — max 1 per 10 seconds to prevent toast spam
 let lastErrorToast = 0;
-const ERROR_TOAST_COOLDOWN = 5000;
+const ERROR_TOAST_COOLDOWN = 10000;
+
+// Routes where 500 errors should NOT trigger a toast (background / polling)
+const SILENT_500_ROUTES = ['/notifications', '/leaderboard', '/social', '/community', '/friends'];
 
 api.interceptors.response.use(
   (res) => res,
@@ -77,10 +80,13 @@ api.interceptors.response.use(
     }
     const message = err.response?.data?.error || err.message;
     if (err.response?.status >= 500) {
-      const now = Date.now();
-      if (now - lastErrorToast > ERROR_TOAST_COOLDOWN) {
-        lastErrorToast = now;
-        toast.error('Server error. Try again.');
+      const isSilentRoute = SILENT_500_ROUTES.some(r => url.includes(r));
+      if (!isSilentRoute) {
+        const now = Date.now();
+        if (now - lastErrorToast > ERROR_TOAST_COOLDOWN) {
+          lastErrorToast = now;
+          toast.error('Server error. Try again.');
+        }
       }
     }
     return Promise.reject({ ...err, message });

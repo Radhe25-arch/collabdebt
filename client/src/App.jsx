@@ -23,8 +23,7 @@ import QuestPage       from '@/pages/QuestPage';
 import PortfolioPage   from '@/pages/PortfolioPage';
 import MentorPage      from '@/pages/MentorPage';
 import TypingTestPage  from '@/pages/TypingTestPage';
-import CommunityPage   from '@/pages/CommunityPage';
-import FriendsPage     from '@/pages/FriendsPage';
+
 import RoomsPage, { RoomPage } from '@/pages/RoomsPage';
 import SupportPage     from '@/pages/SupportPage';
 import PrivacyPage     from '@/pages/PrivacyPage';
@@ -101,8 +100,7 @@ export default function App() {
           <Route path="/portfolio"             element={<PortfolioPage />} />
           <Route path="/mentor"                element={<MentorPage />} />
           <Route path="/typing-test"           element={<TypingTestPage />} />
-          <Route path="/community"             element={<CommunityPage />} />
-          <Route path="/friends"               element={<FriendsPage />} />
+
           <Route path="/rooms"                 element={<RoomsPage />} />
           <Route path="/rooms/:id"             element={<RoomPage />} />
           
