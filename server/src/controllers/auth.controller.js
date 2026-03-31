@@ -139,11 +139,11 @@ async function updateStreak(user) {
   const lastActive = user.lastActiveAt;
   if (!lastActive) return 1;
   const diffDays = Math.floor((now - lastActive) / (1000 * 60 * 60 * 24));
-  let newStreak = user.streak;
-  if (diffDays === 0) return newStreak;
+  let newStreak = user.streak || 0;
+  if (diffDays === 0) return newStreak || 1;
   if (diffDays === 1) newStreak += 1;
   else newStreak = 1;
-  const longestStreak = Math.max(newStreak, user.longestStreak);
+  const longestStreak = Math.max(newStreak, user.longestStreak || 0);
   await prisma.user.update({ where: { id: user.id }, data: { streak: newStreak, longestStreak, lastActiveAt: now } });
   if (newStreak % 7 === 0)  await awardXP(user.id, 200, 'streak_7_day_bonus');
   if (newStreak % 30 === 0) await awardXP(user.id, 1000, 'streak_30_day_bonus');

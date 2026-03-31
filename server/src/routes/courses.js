@@ -2,10 +2,8 @@ const express = require('express');
 const { prisma } = require('../config/db');
 const { authenticate, optionalAuth } = require('../middleware/auth');
 const AppError = require('../utils/AppError');
-const { awardXP, triggerQuestProgress, checkMilestoneBadges } = require('../controllers/gamification.controller');
+const { awardXP, triggerQuestProgress, checkMilestoneBadges } = require('../utils/xp');
 const { generateLessonContent } = require('../services/courseGenerator');
-const AppError = require('../utils/AppError');
-
 const courseRouter = express.Router();
 const lessonRouter = express.Router();
 

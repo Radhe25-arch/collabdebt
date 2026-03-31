@@ -13,7 +13,7 @@ const STEPS = [
 const LANGUAGES = [
   { id: 'javascript', label: 'JavaScript', icon: Icons.Terminal },
   { id: 'python', label: 'Python', icon: Icons.Code },
-  { id: 'java', label: 'Java', icon: Icons.Box },
+  { id: 'java', label: 'Java', icon: Icons.Code },
   { id: 'cpp', label: 'C++', icon: Icons.Settings },
   { id: 'go', label: 'Go', icon: Icons.Zap },
   { id: 'rust', label: 'Rust', icon: Icons.Shield },

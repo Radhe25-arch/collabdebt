@@ -333,7 +333,7 @@ export default function LandingPage() {
                 style={{ fontSize: 'clamp(2.4rem, 5.5vw, 3.8rem)' }}
               >
                 Level up your coding<br />
-                <span className="text-blue-600">through competition.</span>
+                <span className="text-blue-600 animate-shimmer-text">through competition.</span>
               </motion.h1>
 
               <motion.p

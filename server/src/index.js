@@ -1,4 +1,5 @@
 require('dotenv').config();
+console.log('[DEBUG] environment loaded. NODE_ENV:', process.env.NODE_ENV);
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -101,10 +102,23 @@ if (process.env.NODE_ENV !== 'production') {
   const PORT = process.env.PORT || 4000;
   const { connectRedis } = require('./config/redis');
   const cronJobs = require('./utils/cronJobs');
-  prisma.$connect()
-    .then(() => connectRedis())
-    .then(() => { cronJobs.init(); app.listen(PORT, () => logger.info('Server running on port ' + PORT)); })
-    .catch((err) => { logger.error(err); process.exit(1); });
+    prisma.$connect()
+    .then(async () => {
+      try {
+        await connectRedis();
+        logger.info('Connected to Redis');
+      } catch (err) {
+        logger.warn('Failed to connect to Redis. Some features may be slow or unavailable. ' + err.message);
+      }
+    })
+    .then(() => {
+      cronJobs.init();
+      app.listen(PORT, () => logger.info('Server running on port ' + PORT));
+    })
+    .catch((err) => {
+      logger.error('Critical failure: ' + err.message);
+      process.exit(1);
+    });
 }
 
 module.exports = app;
