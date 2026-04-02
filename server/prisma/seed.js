@@ -22,9 +22,18 @@ async function main() {
   console.log('✨ Data wiped. Seeding high-quality expert courses...');
 
   const necessaryCategories = [
-    { name: 'JavaScript', slug: 'javascript', description: 'The language of the web', iconName: 'javascript', order: 1 },
-    { name: 'Python', slug: 'python', description: 'Data Science & Backend', iconName: 'python', order: 2 },
-    { name: 'System Design', slug: 'system-design', description: 'Architect massively scalable systems', iconName: 'system', order: 3 }
+    { name: 'JavaScript', slug: 'javascript', description: 'The language of the web', iconName: 'Code', order: 1 },
+    { name: 'Python', slug: 'python', description: 'Data Science & Backend', iconName: 'Code', order: 2 },
+    { name: 'Frontend', slug: 'web-dev', description: 'Master modern library and framework architecture', iconName: 'Globe', order: 3 },
+    { name: 'Cloud & DevOps', slug: 'devops', description: 'Docker, AWS, and Infrastructure as Code', iconName: 'Settings', order: 4 },
+    { name: 'Systems Programming', slug: 'systems', description: 'High-performance Go and Memory-safe Rust', iconName: 'Terminal', order: 5 },
+    { name: 'System Design', slug: 'system-design', description: 'Architect massively scalable systems', iconName: 'Code', order: 6 },
+    { name: 'AI & Machine Learning', slug: 'ai-ml', description: 'LLMs, Neural Networks, and MLOps', iconName: 'Target', order: 7 },
+    { name: 'Cybersecurity', slug: 'cybersecurity', description: 'Pentesting, AppSec, and Cryptography', iconName: 'Shield', order: 8 },
+    { name: 'Blockchain', slug: 'blockchain', description: 'Ethereum, Solidity, and ZK-Proofs', iconName: 'Code', order: 9 },
+    { name: 'Mobile Development', slug: 'mobile-dev', description: 'Native & Cross-platform engineering', iconName: 'Play', order: 10 },
+    { name: 'Data Science', slug: 'data-science', description: 'Big Data, Analytics, and Visualization', iconName: 'TrendingUp', order: 11 },
+    { name: 'Backend Development', slug: 'backend-dev', description: 'Node, Java, C++, and API Design', iconName: 'Terminal', order: 12 }
   ];
 
   for (const cat of necessaryCategories) {

@@ -8,32 +8,19 @@ const LANG_META = {
   javascript:     { icon: Icons.Code,       color: '#F7DF1E', bg: 'bg-yellow-50' },
   typescript:     { icon: Icons.Code,       color: '#3178C6', bg: 'bg-blue-50' },
   python:         { icon: Icons.Code,       color: '#4B8BBE', bg: 'bg-sky-50' },
-  html:           { icon: Icons.Code,       color: '#E34F26', bg: 'bg-orange-50' },
-  css:            { icon: Icons.Code,       color: '#1572B6', bg: 'bg-blue-50' },
-  java:           { icon: Icons.Code,       color: '#ED8B00', bg: 'bg-amber-50' },
-  cpp:            { icon: Icons.Target,     color: '#6db3f2', bg: 'bg-sky-50' },
-  c:              { icon: Icons.Terminal,   color: '#9e9e9e', bg: 'bg-slate-50' },
-  csharp:         { icon: Icons.Code,       color: '#9B4F96', bg: 'bg-purple-50' },
-  go:             { icon: Icons.Zap,        color: '#00ACD7', bg: 'bg-cyan-50' },
-  rust:           { icon: Icons.Target,     color: '#CE422B', bg: 'bg-red-50' },
-  kotlin:         { icon: Icons.Code,       color: '#7F52FF', bg: 'bg-violet-50' },
-  swift:          { icon: Icons.Code,       color: '#FA7343', bg: 'bg-orange-50' },
-  php:            { icon: Icons.Terminal,   color: '#8892BF', bg: 'bg-indigo-50' },
-  ruby:           { icon: Icons.Award,      color: '#CC342D', bg: 'bg-red-50' },
-  dart:           { icon: Icons.Code,       color: '#0175C2', bg: 'bg-blue-50' },
-  bash:           { icon: Icons.Terminal,   color: '#4EAA25', bg: 'bg-green-50' },
-  sql:            { icon: Icons.Code,       color: '#E48E00', bg: 'bg-amber-50' },
-  'web-dev':      { icon: Icons.Globe,      color: '#9D65F5', bg: 'bg-purple-50' },
-  'data-science': { icon: Icons.TrendingUp, color: '#00D9B5', bg: 'bg-emerald-50' },
-  devops:         { icon: Icons.Settings,   color: '#FF6B35', bg: 'bg-orange-50' },
-  cybersecurity:  { icon: Icons.Shield,     color: '#00FF88', bg: 'bg-green-50' },
-  'game-dev':     { icon: Icons.Play,       color: '#FF3366', bg: 'bg-pink-50' },
-  'system-design':{ icon: Icons.Code,       color: '#F59E0B', bg: 'bg-amber-50' },
-  blockchain:     { icon: Icons.Code,       color: '#F7931A', bg: 'bg-orange-50' },
-  'ai-ml':        { icon: Icons.Target,     color: '#A855F7', bg: 'bg-violet-50' },
+  'web-dev':      { icon: Icons.Globe,      color: '#6366F1', bg: 'bg-indigo-50' },
+  devops:         { icon: Icons.Settings,   color: '#F97316', bg: 'bg-orange-50' },
+  systems:        { icon: Icons.Terminal,   color: '#64748B', bg: 'bg-slate-100' },
+  'system-design':{ icon: Icons.Layers,     color: '#8B5CF6', bg: 'bg-violet-50' },
+  'ai-ml':        { icon: Icons.Zap,        color: '#A855F7', bg: 'bg-purple-50' },
+  cybersecurity:  { icon: Icons.Shield,     color: '#EF4444', bg: 'bg-red-50' },
+  blockchain:     { icon: Icons.Box,        color: '#F59E0B', bg: 'bg-amber-50' },
+  'mobile-dev':   { icon: Icons.Play,       color: '#10B981', bg: 'bg-emerald-50' },
+  'data-science': { icon: Icons.TrendingUp, color: '#06B6D4', bg: 'bg-cyan-50' },
+  'backend-dev':  { icon: Icons.Terminal,   color: '#334155', bg: 'bg-slate-50' },
 };
 
-const DOMAIN_SLUGS = ['web-dev', 'data-science', 'devops', 'cybersecurity', 'game-dev', 'system-design', 'blockchain', 'ai-ml'];
+const DOMAIN_SLUGS = ['web-dev', 'devops', 'systems', 'system-design', 'ai-ml', 'cybersecurity', 'blockchain', 'mobile-dev', 'data-science', 'backend-dev'];
 
 function CategoryCard({ category, courseCount, onClick }) {
   const meta = LANG_META[category.slug] || { icon: Icons.Book, color: '#64748b', bg: 'bg-slate-50' };
