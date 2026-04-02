@@ -9,144 +9,6 @@ import toast from 'react-hot-toast';
 const LEVEL_NAMES  = ['Beginner','Apprentice','Coder','Developer','Senior Dev','Architect','Pro','Expert','Master','Legend'];
 const BATTLE_DURATION = 30 * 60; // 30 minutes in seconds
 
-// ─── TIMER ───────────────────────────────────────────────
-function BattleTimer({ endsAt, onExpire }) {
-  const [remaining, setRemaining] = useState(0);
-
-  useEffect(() => {
-    const tick = () => {
-      const secs = Math.max(0, Math.floor((new Date(endsAt) - Date.now()) / 1000));
-      setRemaining(secs);
-      if (secs === 0) onExpire?.();
-    };
-    tick();
-    const id = setInterval(tick, 1000);
-    return () => clearInterval(id);
-  }, [endsAt, onExpire]);
-
-  const mins  = Math.floor(remaining / 60);
-  const secs  = remaining % 60;
-  const pct   = (remaining / BATTLE_DURATION) * 100;
-  const color = remaining < 300 ? '#f87171' : remaining < 600 ? '#facc15' : '#00D9B5';
-  const urgent = remaining < 300;
-
-  return (
-    <div className="flex flex-col items-center gap-2">
-      <div className={`font-mono font-black tabular-nums ${urgent ? 'animate-pulse' : ''}`}
-           style={{ fontSize: 44, letterSpacing: '-2px', color }}>
-        {String(mins).padStart(2,'0')}:{String(secs).padStart(2,'0')}
-      </div>
-      <div className="w-40 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-        <div className="h-full rounded-full transition-all duration-1000"
-             style={{ width: `${pct}%`, background: color }} />
-      </div>
-      {urgent && <span className="font-mono text-xs text-red-400 animate-pulse tracking-widest">TIME RUNNING OUT</span>}
-    </div>
-  );
-}
-
-// ─── PLAYER CARD ─────────────────────────────────────────
-function PlayerCard({ user, submission, isMe, isWinner, isLoser, isFetching }) {
-  const lvl     = Math.min(user?.level || 1, 10);
-  const accuracy = user?.totalQuizAttempts > 0
-    ? Math.round((user.correctQuizAnswers / user.totalQuizAttempts) * 100) : 0;
-  const hasSub  = !!submission;
-  const pct     = hasSub ? Math.round((submission.passed / submission.total) * 100) : 0;
-
-  return (
-    <div className={`sf-card p-5 relative overflow-hidden flex-1 transition-all ${
-      isWinner ? 'ring-2 ring-yellow-400/50 bg-yellow-500/5' :
-      isLoser  ? 'opacity-60' : ''
-    }`}>
-      {/* Winner crown */}
-      {isWinner && (
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-yellow-500 via-yellow-300 to-yellow-500" />
-      )}
-      {isWinner && (
-        <div className="absolute top-3 right-3 flex items-center gap-1">
-          <Icons.Trophy size={14} className="text-yellow-400" />
-          <span className="font-mono text-xs text-yellow-400 font-bold">WINNER</span>
-        </div>
-      )}
-
-      {/* Player info */}
-      <div className="flex items-center gap-3 mb-4">
-        <div className={`relative w-11 h-11 rounded-full flex items-center justify-center font-mono font-bold text-sm border-2 ${
-          isWinner ? 'border-yellow-400/60 bg-yellow-500/10 text-yellow-400' :
-          isMe     ? 'border-indigo-600/60  bg-indigo-600/10  text-indigo-600' :
-                     'border-slate-200   bg-slate-100      text-slate-600'
-        }`}>
-          {user?.avatarUrl
-            ? <img src={user.avatarUrl} alt="" className="w-full h-full rounded-full object-cover" />
-            : (user?.username || '?').slice(0,2).toUpperCase()
-          }
-          {isMe && (
-            <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-indigo-600 flex items-center justify-center border border-sf-bg text-sf-bg text-xs">
-              ✓
-            </span>
-          )}
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <span className={`font-mono font-bold text-sm truncate ${isMe ? 'text-indigo-600' : 'text-slate-900'}`}>
-              {user?.username || 'Unknown'}
-            </span>
-            {isMe && <BadgeTag variant="teal" className="text-xs">You</BadgeTag>}
-          </div>
-          <span className="font-mono text-xs text-slate-500">{LEVEL_NAMES[lvl-1]} · Lv{lvl}</span>
-        </div>
-      </div>
-
-      {/* Stats row */}
-      <div className="grid grid-cols-3 gap-2 mb-4">
-        {[
-          { label: 'XP',       value: (user?.xp||0).toLocaleString(), icon: Icons.Zap,      color: 'text-blue-700' },
-          { label: 'Accuracy', value: `${accuracy}%`,                  icon: Icons.Target,   color: 'text-indigo-600'   },
-          { label: 'Streak',   value: `${user?.streak||0}d`,           icon: Icons.Fire,     color: 'text-orange-400'   },
-        ].map(({ label, value, icon: Ic, color }) => (
-          <div key={label} className="bg-slate-100/60 border border-slate-200/50 rounded-lg p-2 text-center">
-            <Ic size={11} className={`${color} mx-auto mb-1`} />
-            <p className="font-mono text-sm font-bold text-slate-900">{isFetching ? '…' : value}</p>
-            <p className="font-mono text-xs text-slate-500">{label}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* Submission result */}
-      {hasSub ? (
-        <div>
-          <div className="flex items-center justify-between mb-1.5">
-            <span className="font-mono text-xs text-slate-500">Problems solved</span>
-            <span className={`font-mono text-sm font-bold ${pct >= 80 ? 'text-indigo-600' : pct >= 50 ? 'text-yellow-400' : 'text-red-400'}`}>
-              {submission.passed}/{submission.total}
-            </span>
-          </div>
-          <ProgressBar value={pct} max={100} color={pct >= 80 ? 'teal' : pct >= 50 ? 'yellow' : 'red'} height={5} />
-          <div className="flex gap-2 mt-3 flex-wrap">
-            {submission.timeMs && (
-              <span className="badge-tag badge-gray font-mono text-xs">
-                <Icons.Clock size={9} /> {(submission.timeMs/1000).toFixed(1)}s avg
-              </span>
-            )}
-            {submission.accuracy != null && (
-              <span className="badge-tag badge-teal font-mono text-xs">
-                <Icons.Target size={9} /> {submission.accuracy}% acc
-              </span>
-            )}
-          </div>
-        </div>
-      ) : (
-        <div className="flex items-center gap-2 text-slate-500">
-          {isFetching
-            ? <><Spinner size={13} /> <span className="font-mono text-xs">Evaluating...</span></>
-            : <span className="font-mono text-xs">Waiting for submission...</span>
-          }
-        </div>
-      )}
-    </div>
-  );
-}
-
 // ─── REPORT CARD ─────────────────────────────────────────
 function BattleReportCard({ battle, myId, onClose, onRematch }) {
   const me    = battle.challengerId === myId ? battle.challenger : battle.challenged;
@@ -358,6 +220,8 @@ function BattleTimer({ endsAt, onExpire }) {
 // ─── PLAYER CARD (RECONSTRUCTED) ──────────────────────────
 function PlayerCard({ user, submission, isMe, isWinner, isLoser, isFetching }) {
   const lvl     = Math.min(user?.level || 1, 10);
+  const accuracy = user?.totalQuizAttempts > 0
+    ? Math.round((user.correctQuizAnswers / user.totalQuizAttempts) * 100) : 0;
   const hasSub  = !!submission;
   const pct     = hasSub ? Math.round((submission.passed / submission.total) * 100) : 0;
 
@@ -391,6 +255,23 @@ function PlayerCard({ user, submission, isMe, isWinner, isLoser, isFetching }) {
         <div className="h-1.5 w-full bg-slate-50 rounded-full overflow-hidden">
           <div className="h-full bg-indigo-600 rounded-full transition-all duration-1000" style={{ width: `${pct}%` }} />
         </div>
+        
+        {/* Stats Row */}
+        <div className="grid grid-cols-3 gap-2 py-1">
+           <div className="text-center">
+              <p className="text-[9px] font-bold text-slate-400 uppercase font-mono tracking-tight">XP</p>
+              <p className="text-xs font-black text-slate-700">{(user?.xp||0).toLocaleString()}</p>
+           </div>
+           <div className="text-center">
+              <p className="text-[9px] font-bold text-slate-400 uppercase font-mono tracking-tight">Acc</p>
+              <p className="text-xs font-black text-slate-700">{accuracy}%</p>
+           </div>
+           <div className="text-center">
+              <p className="text-[9px] font-bold text-slate-400 uppercase font-mono tracking-tight">Streak</p>
+              <p className="text-xs font-black text-slate-700">{user?.streak||0}d</p>
+           </div>
+        </div>
+
         <div className="flex items-center gap-2">
           {isFetching ? (
              <div className="flex items-center gap-1.5 text-indigo-600 font-mono text-[9px] font-bold animate-pulse">
@@ -490,6 +371,16 @@ export default function BattlePage() {
     }
   };
 
+  const surrender = async () => {
+     if (!window.confirm('Surrender mission?')) return;
+     try {
+       await api.post(`/battles/${id}/surrender`);
+       fetchBattle();
+     } catch {
+       toast.error('Surrender sequence failed');
+     }
+  };
+
   if (loading) return (
     <div className="min-h-screen bg-white flex items-center justify-center">
       <div className="flex flex-col items-center gap-5">
@@ -545,7 +436,7 @@ export default function BattlePage() {
             </Button>
           )}
           {isActive && (
-            <button onClick={() => !window.confirm('Surrender?') || api.post(`/battles/${id}/surrender`).then(fetchBattle)}
+            <button onClick={surrender}
               className="px-6 py-2.5 rounded-2xl border border-red-100 text-red-500 font-bold text-xs hover:bg-red-50 transition-all uppercase tracking-widest">
               Surrender
             </button>
