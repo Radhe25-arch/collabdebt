@@ -4,16 +4,15 @@ import { useAuthStore, useUIStore } from '@/store';
 import { Avatar } from '@/components/ui';
 import Icons from '@/assets/icons';
 import api from '@/lib/api';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 const MAIN_LINKS = [
   { to: '/dashboard',   label: 'Home',        Icon: Icons.Home },
   { to: '/courses',     label: 'Catalog',     Icon: Icons.Book },
+  { to: '/jobs',        label: 'Job Board',    Icon: Icons.Briefcase },
+  { to: '/forum',       label: 'Community',    Icon: Icons.MessageSquare },
   { to: '/mentor',      label: 'AI Mentor',   Icon: Icons.Terminal },
   { to: '/typing-test', label: 'Speed Test',  Icon: Icons.Keyboard },
-  { to: '/quests',      label: 'Quests',      Icon: Icons.Target },
-  { to: '/battles',     label: '1v1 Arena',   Icon: Icons.Zap },
-  { to: '/tournaments', label: 'Tournaments', Icon: Icons.Trophy },
-  { to: '/leaderboard', label: 'Rankings',    Icon: Icons.Leaderboard },
 ];
 
 const BOTTOM_LINKS = [
@@ -48,8 +47,8 @@ function Sidebar({ open }) {
 
   return (
     <aside
-      style={{ width: open ? 260 : 0 }}
-      className="fixed left-0 top-0 h-screen z-40 flex flex-col bg-white border-r border-slate-200 overflow-hidden transition-all duration-300 shadow-[2px_0_8px_-4px_rgba(0,0,0,0.05)]"
+      style={{ width: open ? 260 : 1 }}
+      className="fixed left-0 top-0 h-screen z-40 flex flex-col bg-card border-r border-border overflow-hidden transition-all duration-300 shadow-[2px_0_8px_-4px_rgba(0,0,0,0.05)]"
     >
       <div
         className="flex items-center gap-3 px-6 h-20 border-b border-slate-100 flex-shrink-0 cursor-pointer"
@@ -142,7 +141,7 @@ function Topbar({ sidebarOpen, toggleSidebar }) {
   return (
     <header
       style={{ left: sidebarOpen ? 260 : 0 }}
-      className="fixed top-0 right-0 z-30 h-20 flex items-center justify-between px-8 bg-white/90 backdrop-blur-md border-b border-slate-200 transition-all duration-300"
+      className="fixed top-0 right-0 z-30 h-20 flex items-center justify-between px-8 bg-background/80 backdrop-blur-md border-b border-border transition-all duration-300"
     >
       <div className="flex items-center gap-4">
         <button onClick={toggleSidebar} className="text-slate-400 hover:text-slate-900 transition-colors p-1 md:hidden">
@@ -206,8 +205,10 @@ function Topbar({ sidebarOpen, toggleSidebar }) {
               )}
             </div>
 
+            <ThemeToggle />
+
             <Link to="/profile" className="flex items-center gap-2 group">
-              <Avatar user={user} size={36} className="ring-2 ring-slate-100 hover:ring-blue-200 transition-all cursor-pointer" />
+              <Avatar user={user} size={36} className="ring-2 ring-border hover:ring-ring transition-all cursor-pointer" />
             </Link>
           </div>
         ) : (
@@ -225,7 +226,7 @@ export default function AppLayout() {
   const { sidebarOpen, toggleSidebar } = useUIStore();
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
+    <div className="min-h-screen bg-background font-sans text-foreground">
       <Sidebar open={sidebarOpen} />
       <Topbar sidebarOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
       <main

@@ -22,6 +22,7 @@ export const ProfileIcon    = (p) => <Icon {...p} d={["M20 21v-2a4 4 0 00-4-4H8a
 export const SettingsIcon   = (p) => <Icon {...p} d={["M12 15a3 3 0 100-6 3 3 0 000 6z","M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"]} />;
 export const AdminIcon      = (p) => <Icon {...p} d={["M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"]} />;
 export const BellIcon       = (p) => <Icon {...p} d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9 M13.73 21a2 2 0 01-3.46 0" />;
+export const BriefcaseIcon  = (p) => <Icon {...p} d={["M16 7V5a2 2 0 00-2-2H10a2 2 0 00-2 2v2","M3 7h18a2 2 0 012 2v11a2 2 0 01-2 2H3a2 2 0 01-2-2V9a2 2 0 012-2z","M12 12v.01"]} />;
 
 // Actions
 export const PlusIcon       = (p) => <Icon {...p} d="M12 5v14 M5 12h14" />;
@@ -73,7 +74,7 @@ export default {
   Home: HomeIcon, Courses: CoursesIcon, Trophy: TrophyIcon,
   Leaderboard: LeaderboardIcon, Tournament: TournamentIcon,
   Profile: ProfileIcon, Settings: SettingsIcon, Admin: AdminIcon,
-  Bell: BellIcon, Plus: PlusIcon, Search: SearchIcon,
+  Bell: BellIcon, Briefcase: BriefcaseIcon, Plus: PlusIcon, Search: SearchIcon,
   ChevronRight, ChevronDown, ChevronLeft,
   ArrowRight, ArrowLeft, X: XIcon, XIcon, Check: CheckIcon,
   Copy: CopyIcon, ExternalLink, LogOut: LogOutIcon,

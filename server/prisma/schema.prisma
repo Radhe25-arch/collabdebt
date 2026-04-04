@@ -20,6 +20,7 @@ enum Role {
   PROFESSIONAL
   BEGINNER
   ADMIN
+  EMPLOYER
 }
 
 enum AgeGroup {
@@ -136,6 +137,14 @@ model User {
 
   sentMessages        Message[]         @relation("SentMessages")
   receivedMessages    Message[]         @relation("ReceivedMessages")
+
+  // Recruitment
+  jobsPosted          Job[]             @relation("EmployerJobs")
+  applications        JobApplication[]  @relation("CandidateApplications")
+
+  // Community
+  threads             ForumThread[]     @relation("AuthorThreads")
+  comments            ForumComment[]    @relation("AuthorComments")
 
   @@index([xp])
   @@index([username])
@@ -708,4 +717,106 @@ model Message {
 
   @@index([senderId, receiverId])
   @@index([createdAt])
+}
+
+// ─── RECRUITMENT ──────────────────────────────────────────
+
+model Job {
+  id            String    @id @default(cuid())
+  title         String
+  description   String
+  companyName   String
+  location      String
+  salaryRange   String?
+  jobType       String    @default("Full-time") // Full-time, Part-time, Contract, Freelance
+  experienceLevel String  @default("Entry")     // Entry, Mid, Senior, Lead
+  requirements  Json?     // string[]
+  tags          Json?     // string[] — tech stack
+  isActive      Boolean   @default(true)
+  
+  employerId    String
+  employer      User      @relation("EmployerJobs", fields: [employerId], references: [id], onDelete: Cascade)
+  
+  applications  JobApplication[]
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([employerId])
+  @@index([isActive])
+}
+
+model JobApplication {
+  id                String    @id @default(cuid())
+  jobId             String
+  candidateId       String
+  status            String    @default("PENDING") // PENDING, REVIEWED, INTERVIEWED, REJECTED, HIRED
+  compatibilityScore Int       @default(0)         // Computed % based on course completion
+  resumeUrl         String?
+  coverLetter       String?
+  
+  job               Job       @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  candidate         User      @relation("CandidateApplications", fields: [candidateId], references: [id], onDelete: Cascade)
+  
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@unique([jobId, candidateId])
+  @@index([jobId])
+  @@index([candidateId])
+}
+
+// ─── COMMUNITY ─────────────────────────────────────────────
+
+model ForumCategory {
+  id          String        @id @default(cuid())
+  name        String        @unique // e.g., JavaScript, System Design
+  slug        String        @unique
+  description String?
+  iconName    String?
+  order       Int           @default(0)
+  
+  threads     ForumThread[]
+}
+
+model ForumThread {
+  id          String        @id @default(cuid())
+  title       String
+  content     String        // Markdown support
+  isSolved    Boolean       @default(false)
+  isLocked    Boolean       @default(false)
+  isPinned    Boolean       @default(false)
+  views       Int           @default(0)
+  
+  categoryId  String
+  category    ForumCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  
+  authorId    String
+  author      User          @relation("AuthorThreads", fields: [authorId], references: [id], onDelete: Cascade)
+  
+  comments    ForumComment[]
+  
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([categoryId])
+  @@index([authorId])
+}
+
+model ForumComment {
+  id          String      @id @default(cuid())
+  content     String      // Markdown support
+  isAccepted  Boolean     @default(false) // Solved marker
+  
+  threadId    String
+  thread      ForumThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  
+  authorId    String
+  author      User        @relation("AuthorComments", fields: [authorId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([threadId])
+  @@index([authorId])
 }
