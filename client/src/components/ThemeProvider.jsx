@@ -1,16 +1,6 @@
 import React from 'react';
-import { ThemeProvider as NextThemesProvider } from 'next-themes';
 
-export function ThemeProvider({ children, ...props }) {
-  return (
-    <NextThemesProvider 
-      attribute="class" 
-      defaultTheme="system" 
-      enableSystem
-      disableTransitionOnChange
-      {...props}
-    >
-      {children}
-    </NextThemesProvider>
-  );
+// Permanent black theme — no toggle needed
+export function ThemeProvider({ children }) {
+  return <>{children}</>;
 }

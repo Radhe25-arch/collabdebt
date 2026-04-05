@@ -1,40 +1,59 @@
 import { useState } from 'react';
 import { useAuthStore } from '@/store';
 import api, { setAccessToken } from '@/lib/api';
-import Icons from '@/assets/icons';
+import { Check, ArrowRight, ArrowLeft, Zap, Code } from 'lucide-react';
 
 const INTERESTS_BY_ROLE = {
-  STUDENT:      ['JavaScript','Python','Java','C++','C','Data Structures','Web Dev','SQL','Machine Learning','Mobile Dev','TypeScript','Kotlin','Swift','Bash','Cybersecurity'],
-  BEGINNER:     ['Python','JavaScript','Web Dev','SQL','Bash','C','Java','Data Structures','Game Dev','Mobile Dev','TypeScript','PHP','Ruby','Cloud','DevOps'],
-  PROFESSIONAL: ['TypeScript','Rust','Go','Kotlin','Swift','DevOps','Cloud','Cybersecurity','Machine Learning','Data Structures','SQL','Bash','Java','Python','C++'],
+  STUDENT:      ['JAVASCRIPT','PYTHON','JAVA','C++','C','DATA STRUCTURES','WEB DEV','SQL','MACHINE LEARNING','MOBILE DEV','TYPESCRIPT','KOTLIN','SWIFT','BASH','CYBERSECURITY'],
+  BEGINNER:     ['PYTHON','JAVASCRIPT','WEB DEV','SQL','BASH','C','JAVA','DATA STRUCTURES','GAME DEV','MOBILE DEV','TYPESCRIPT','PHP','RUBY','CLOUD','DEVOPS'],
+  PROFESSIONAL: ['TYPESCRIPT','RUST','GO','KOTLIN','SWIFT','DEVOPS','CLOUD','CYBERSECURITY','MACHINE LEARNING','DATA STRUCTURES','SQL','BASH','JAVA','PYTHON','C++'],
 };
 
 const ROLE_OPTIONS = [
-  { value: 'STUDENT',      label: 'Student',               desc: 'Currently studying in school or college', icon: '🎓' },
-  { value: 'BEGINNER',     label: 'Self-taught / Beginner', desc: 'Learning on my own, just getting started', icon: '🌱' },
-  { value: 'PROFESSIONAL', label: 'Working Professional',   desc: 'Already in the industry, leveling up',     icon: '💼' },
+  { value: 'STUDENT',      label: 'STUDENT',      desc: 'Currently studying in school or college' },
+  { value: 'BEGINNER',     label: 'SELF-TAUGHT',  desc: 'Learning on my own, just getting started' },
+  { value: 'PROFESSIONAL', label: 'PROFESSIONAL', desc: 'Already in the industry, leveling up' },
 ];
 
 const AGE_BY_ROLE = {
-  STUDENT:      [{ value: 'SCHOOL', label: 'School (up to 12th)', icon: '📚' }, { value: 'COLLEGE', label: 'College / University', icon: '🏫' }],
-  BEGINNER:     [{ value: 'SCHOOL', label: 'Still in school', icon: '📚' }, { value: 'COLLEGE', label: 'College going', icon: '🏫' }, { value: 'WORKING', label: 'Working / Graduate', icon: '💻' }],
-  PROFESSIONAL: [{ value: 'COLLEGE', label: 'Fresh Graduate', icon: '🎓' }, { value: 'WORKING', label: 'Experienced Dev', icon: '🚀' }],
+  STUDENT:      [{ value: 'SCHOOL', label: 'SCHOOL (UP TO 12TH)' }, { value: 'COLLEGE', label: 'COLLEGE / UNIVERSITY' }],
+  BEGINNER:     [{ value: 'SCHOOL', label: 'STILL IN SCHOOL' }, { value: 'COLLEGE', label: 'COLLEGE GOING' }, { value: 'WORKING', label: 'WORKING / GRADUATE' }],
+  PROFESSIONAL: [{ value: 'COLLEGE', label: 'FRESH GRADUATE' }, { value: 'WORKING', label: 'EXPERIENCED DEV' }],
 };
 
 const GOAL_BY_ROLE = {
-  STUDENT:      ['Crack placements', 'Learn for exams', 'Build projects', 'Competitive coding', 'Just exploring'],
-  BEGINNER:     ['Get first job', 'Build a website', 'Learn for fun', 'Switch to tech', 'Build mobile apps'],
-  PROFESSIONAL: ['Upskill for promotion', 'Learn new language', 'System design', 'Switch domain', 'Stay updated'],
+  STUDENT:      ['CRACK PLACEMENTS','LEARN FOR EXAMS','BUILD PROJECTS','COMPETITIVE CODING','JUST EXPLORING'],
+  BEGINNER:     ['GET FIRST JOB','BUILD A WEBSITE','LEARN FOR FUN','SWITCH TO TECH','BUILD MOBILE APPS'],
+  PROFESSIONAL: ['UPSKILL FOR PROMOTION','LEARN NEW LANGUAGE','SYSTEM DESIGN','SWITCH DOMAIN','STAY UPDATED'],
 };
+
+function OptionButton({ selected, onClick, label, desc }) {
+  return (
+    <button
+      onClick={onClick}
+      className="w-full p-4 rounded-[4px] text-left transition-all duration-150 flex items-center gap-4"
+      style={{
+        border: `1px solid ${selected ? 'rgba(59,130,246,0.35)' : 'rgba(255,255,255,0.06)'}`,
+        background: selected ? 'rgba(59,130,246,0.08)' : 'rgba(255,255,255,0.02)',
+      }}
+    >
+      <div className="flex-1">
+        <p className={`font-mono text-[12px] font-black uppercase tracking-wider ${selected ? 'text-cyber' : 'text-white'}`}>{label}</p>
+        {desc && <p className="font-mono text-[10px] text-[#555] mt-0.5">{desc}</p>}
+      </div>
+      {selected && <Check size={13} strokeWidth={2} className="text-cyber flex-shrink-0" />}
+    </button>
+  );
+}
 
 export default function OnboardingPage() {
   const { updateUser } = useAuthStore();
-  const [step, setStep] = useState(1);
+  const [step, setStep]     = useState(1);
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({ role: '', ageGroup: '', goal: '', interests: [] });
+  const [form, setForm]     = useState({ role: '', ageGroup: '', goal: '', interests: [] });
 
-  const toggleInterest = (i) => setForm((f) => ({
-    ...f, interests: f.interests.includes(i) ? f.interests.filter((x) => x !== i) : [...f.interests, i],
+  const toggleInterest = i => setForm(f => ({
+    ...f, interests: f.interests.includes(i) ? f.interests.filter(x => x !== i) : [...f.interests, i],
   }));
 
   const handleFinish = async () => {
@@ -43,115 +62,133 @@ export default function OnboardingPage() {
       try {
         const { data: r } = await api.post('/auth/refresh', {}, { withCredentials: true });
         setAccessToken(r.accessToken);
-      } catch (_) {}
-
+      } catch {}
       const { data } = await api.patch('/users/me', { role: form.role, ageGroup: form.ageGroup, interests: form.interests, onboarded: true });
-
-      const newStored = JSON.parse(localStorage.getItem('skillforge-auth') || '{}');
-      if (newStored.state) {
-        newStored.state.user = { ...(newStored.state.user || {}), ...data.user };
-        newStored.state.isAuthenticated = true;
-        localStorage.setItem('skillforge-auth', JSON.stringify(newStored));
-      }
+      const stored = JSON.parse(localStorage.getItem('skillforge-auth') || '{}');
+      if (stored.state) { stored.state.user = { ...stored.state.user, ...data.user }; stored.state.isAuthenticated = true; localStorage.setItem('skillforge-auth', JSON.stringify(stored)); }
       updateUser(data.user);
       window.location.href = '/dashboard';
-    } catch (e) {
-      console.error(e);
-      setLoading(false);
-    }
+    } catch (e) { console.error(e); setLoading(false); }
   };
 
+  const TOTAL_STEPS = 4;
+
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-black bg-grid flex items-center justify-center px-4">
       <div className="w-full max-w-lg">
-        <div className="flex items-center gap-2.5 justify-center mb-8">
-          <div className="w-9 h-9 rounded-xl bg-purple-teal flex items-center justify-center">
-            <Icons.Code size={17} className="text-white" />
+
+        {/* Logo */}
+        <div className="flex items-center gap-3 justify-center mb-10">
+          <div className="w-8 h-8 rounded-[4px] border border-cyber/30 flex items-center justify-center">
+            <Code size={14} strokeWidth={1.5} className="text-cyber" />
           </div>
-          <span className="font-display font-black text-xl text-slate-900">SkillForge</span>
+          <span className="font-mono font-black text-sm text-white tracking-[0.15em] uppercase">SkillForge</span>
         </div>
-        <div className="flex gap-2 mb-8">
-          {[1,2,3,4].map((s) => (
-            <div key={s} className={`h-1 flex-1 rounded-full transition-all duration-300 ${step >= s ? 'bg-blue-600' : 'bg-slate-100'}`} />
+
+        {/* Progress bar — mechanical */}
+        <div className="flex gap-1 mb-8">
+          {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
+            <div
+              key={i}
+              className="flex-1 h-[2px] transition-all duration-300"
+              style={{ background: step > i ? '#3B82F6' : 'rgba(255,255,255,0.06)' }}
+            />
           ))}
         </div>
+        <p className="font-mono text-[9px] font-black text-[#444] uppercase tracking-[0.25em] text-right mb-6">
+          STEP {step} OF {TOTAL_STEPS}
+        </p>
 
+        {/* STEP 1 — Role */}
         {step === 1 && (
-          <div>
-            <h1 className="font-display font-black text-2xl text-slate-900 mb-1">Who are you? 👋</h1>
-            <p className="font-mono text-xs text-slate-500 mb-6">Help us personalize your journey.</p>
-            <div className="space-y-3">
-              {ROLE_OPTIONS.map((r) => (
-                <button key={r.value} onClick={() => setForm((f) => ({ ...f, role: r.value, ageGroup: '', goal: '', interests: [] }))}
-                  className={`w-full p-4 rounded-xl border text-left transition-all flex items-center gap-4 ${form.role === r.value ? 'border-blue-600 bg-blue-600/10' : 'border-slate-200 bg-white hover:border-blue-600/40'}`}>
-                  <span className="text-2xl">{r.icon}</span>
-                  <div><p className="font-mono text-sm font-bold text-slate-900">{r.label}</p><p className="font-mono text-xs text-slate-500">{r.desc}</p></div>
-                  {form.role === r.value && <Icons.Check size={16} className="ml-auto text-blue-700 flex-shrink-0" />}
-                </button>
-              ))}
+          <div className="animate-fade-in space-y-4">
+            <div className="mb-6">
+              <h1 className="font-black text-2xl text-white tracking-tight uppercase mb-1">IDENTIFY YOURSELF</h1>
+              <p className="font-mono text-[11px] text-[#555]">// WE'LL PERSONALIZE YOUR LEARNING PATH</p>
             </div>
-            <button disabled={!form.role} onClick={() => setStep(2)} className="btn-primary w-full mt-6 py-3.5 disabled:opacity-40">Continue →</button>
+            {ROLE_OPTIONS.map(r => (
+              <OptionButton key={r.value} selected={form.role === r.value} onClick={() => setForm(f => ({ ...f, role: r.value, ageGroup: '', goal: '', interests: [] }))} label={r.label} desc={r.desc} />
+            ))}
+            <button disabled={!form.role} onClick={() => setStep(2)} className="btn-primary w-full py-3.5 text-xs justify-center mt-4 disabled:opacity-40">
+              CONTINUE <ArrowRight size={12} strokeWidth={1.5} />
+            </button>
           </div>
         )}
 
+        {/* STEP 2 — Age */}
         {step === 2 && form.role && (
-          <div>
-            <h1 className="font-display font-black text-2xl text-slate-900 mb-1">Where are you at? 📍</h1>
-            <p className="font-mono text-xs text-slate-500 mb-6">We'll match content to your level.</p>
-            <div className="space-y-3">
-              {AGE_BY_ROLE[form.role].map((a) => (
-                <button key={a.value} onClick={() => setForm((f) => ({ ...f, ageGroup: a.value }))}
-                  className={`w-full p-4 rounded-xl border text-left transition-all flex items-center gap-4 ${form.ageGroup === a.value ? 'border-blue-600 bg-blue-600/10' : 'border-slate-200 bg-white hover:border-blue-600/40'}`}>
-                  <span className="text-2xl">{a.icon}</span>
-                  <p className="font-mono text-sm font-bold text-slate-900">{a.label}</p>
-                  {form.ageGroup === a.value && <Icons.Check size={16} className="ml-auto text-blue-700 flex-shrink-0" />}
-                </button>
-              ))}
+          <div className="animate-fade-in space-y-4">
+            <div className="mb-6">
+              <h1 className="font-black text-2xl text-white tracking-tight uppercase mb-1">CURRENT STATUS</h1>
+              <p className="font-mono text-[11px] text-[#555]">// MATCH CONTENT TO YOUR LEVEL</p>
             </div>
-            <div className="flex gap-3 mt-6">
-              <button onClick={() => setStep(1)} className="flex-1 py-3.5 rounded-xl border border-slate-200 text-slate-600 font-mono text-sm hover:border-blue-600/40 transition-all">← Back</button>
-              <button disabled={!form.ageGroup} onClick={() => setStep(3)} className="btn-primary flex-1 py-3.5 disabled:opacity-40">Continue →</button>
+            {AGE_BY_ROLE[form.role].map(a => (
+              <OptionButton key={a.value} selected={form.ageGroup === a.value} onClick={() => setForm(f => ({ ...f, ageGroup: a.value }))} label={a.label} />
+            ))}
+            <div className="flex gap-3 mt-4">
+              <button onClick={() => setStep(1)} className="btn-secondary flex-1 text-[11px] py-3">
+                <ArrowLeft size={12} strokeWidth={1.5} /> BACK
+              </button>
+              <button disabled={!form.ageGroup} onClick={() => setStep(3)} className="btn-primary flex-1 text-[11px] py-3 disabled:opacity-40">
+                CONTINUE <ArrowRight size={12} strokeWidth={1.5} />
+              </button>
             </div>
           </div>
         )}
 
+        {/* STEP 3 — Goal */}
         {step === 3 && form.role && (
-          <div>
-            <h1 className="font-display font-black text-2xl text-slate-900 mb-1">What's your main goal? 🎯</h1>
-            <p className="font-mono text-xs text-slate-500 mb-6">We'll focus your learning path.</p>
-            <div className="space-y-3">
-              {GOAL_BY_ROLE[form.role].map((g) => (
-                <button key={g} onClick={() => setForm((f) => ({ ...f, goal: g }))}
-                  className={`w-full p-3.5 rounded-xl border text-left transition-all flex items-center gap-3 ${form.goal === g ? 'border-blue-600 bg-blue-600/10' : 'border-slate-200 bg-white hover:border-blue-600/40'}`}>
-                  <span className="font-mono text-sm text-slate-900">{g}</span>
-                  {form.goal === g && <Icons.Check size={16} className="ml-auto text-blue-700 flex-shrink-0" />}
-                </button>
-              ))}
+          <div className="animate-fade-in space-y-3">
+            <div className="mb-6">
+              <h1 className="font-black text-2xl text-white tracking-tight uppercase mb-1">PRIMARY OBJECTIVE</h1>
+              <p className="font-mono text-[11px] text-[#555]">// FOCUS YOUR TRAINING PATH</p>
             </div>
-            <div className="flex gap-3 mt-6">
-              <button onClick={() => setStep(2)} className="flex-1 py-3.5 rounded-xl border border-slate-200 text-slate-600 font-mono text-sm hover:border-blue-600/40 transition-all">← Back</button>
-              <button disabled={!form.goal} onClick={() => setStep(4)} className="btn-primary flex-1 py-3.5 disabled:opacity-40">Continue →</button>
+            {GOAL_BY_ROLE[form.role].map(g => (
+              <OptionButton key={g} selected={form.goal === g} onClick={() => setForm(f => ({ ...f, goal: g }))} label={g} />
+            ))}
+            <div className="flex gap-3 mt-4">
+              <button onClick={() => setStep(2)} className="btn-secondary flex-1 text-[11px] py-3">
+                <ArrowLeft size={12} strokeWidth={1.5} /> BACK
+              </button>
+              <button disabled={!form.goal} onClick={() => setStep(4)} className="btn-primary flex-1 text-[11px] py-3 disabled:opacity-40">
+                CONTINUE <ArrowRight size={12} strokeWidth={1.5} />
+              </button>
             </div>
           </div>
         )}
 
+        {/* STEP 4 — Interests */}
         {step === 4 && form.role && (
-          <div>
-            <h1 className="font-display font-black text-2xl text-slate-900 mb-1">Pick your topics 🚀</h1>
-            <p className="font-mono text-xs text-slate-500 mb-6">Select at least 3 you want to master.</p>
-            <div className="flex flex-wrap gap-2 max-h-60 overflow-y-auto pb-1">
-              {INTERESTS_BY_ROLE[form.role].map((i) => (
-                <button key={i} onClick={() => toggleInterest(i)}
-                  className={`px-3 py-1.5 rounded-lg border font-mono text-xs transition-all ${form.interests.includes(i) ? 'border-blue-600 bg-blue-600/15 text-blue-700' : 'border-slate-200 bg-white text-slate-600 hover:border-blue-600/40'}`}>
+          <div className="animate-fade-in">
+            <div className="mb-6">
+              <h1 className="font-black text-2xl text-white tracking-tight uppercase mb-1">SELECT TECH STACK</h1>
+              <p className="font-mono text-[11px] text-[#555]">// PICK AT LEAST 3 DOMAINS TO MASTER</p>
+            </div>
+            <div className="flex flex-wrap gap-1.5 max-h-64 overflow-y-auto custom-scrollbar pb-2 mb-4">
+              {INTERESTS_BY_ROLE[form.role].map(i => (
+                <button
+                  key={i}
+                  onClick={() => toggleInterest(i)}
+                  className="px-3 py-1.5 rounded-[4px] font-mono text-[10px] font-black uppercase tracking-wider transition-all duration-150"
+                  style={{
+                    border: `1px solid ${form.interests.includes(i) ? 'rgba(59,130,246,0.35)' : 'rgba(255,255,255,0.06)'}`,
+                    background: form.interests.includes(i) ? 'rgba(59,130,246,0.1)' : 'rgba(255,255,255,0.02)',
+                    color: form.interests.includes(i) ? '#3B82F6' : '#666',
+                  }}
+                >
                   {i}
                 </button>
               ))}
             </div>
-            <p className="font-mono text-xs text-slate-500 mt-2">{form.interests.length} selected</p>
-            <div className="flex gap-3 mt-4">
-              <button onClick={() => setStep(3)} className="flex-1 py-3.5 rounded-xl border border-slate-200 text-slate-600 font-mono text-sm hover:border-blue-600/40 transition-all">← Back</button>
-              <button disabled={form.interests.length < 3 || loading} onClick={handleFinish} className="btn-primary flex-1 py-3.5 disabled:opacity-40">
-                {loading ? 'Setting up...' : "Let's Go! 🎉"}
+            <p className="font-mono text-[10px] font-bold text-[#444] uppercase tracking-wider mb-4">
+              {form.interests.length} SELECTED
+            </p>
+            <div className="flex gap-3">
+              <button onClick={() => setStep(3)} className="btn-secondary flex-1 text-[11px] py-3">
+                <ArrowLeft size={12} strokeWidth={1.5} /> BACK
+              </button>
+              <button disabled={form.interests.length < 3 || loading} onClick={handleFinish} className="btn-primary flex-1 text-[11px] py-3 disabled:opacity-40">
+                {loading ? 'INITIALIZING...' : <><Zap size={12} strokeWidth={1.5} /> LAUNCH FORGE</>}
               </button>
             </div>
           </div>

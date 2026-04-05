@@ -2,41 +2,46 @@ import { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore, useUIStore } from '@/store';
 import { Avatar } from '@/components/ui';
-import Icons from '@/assets/icons';
 import api from '@/lib/api';
-import { ThemeToggle } from '@/components/ThemeToggle';
+import {
+  LayoutDashboard, BookOpen, Briefcase, MessageSquare, Terminal,
+  Keyboard, HelpCircle, Shield, Menu, Bell, ChevronRight,
+  Zap, Code, Trophy, Settings, User, X
+} from 'lucide-react';
 
 const MAIN_LINKS = [
-  { to: '/dashboard',   label: 'Home',        Icon: Icons.Home },
-  { to: '/courses',     label: 'Catalog',     Icon: Icons.Book },
-  { to: '/jobs',        label: 'Job Board',    Icon: Icons.Briefcase },
-  { to: '/forum',       label: 'Community',    Icon: Icons.MessageSquare },
-  { to: '/mentor',      label: 'AI Mentor',   Icon: Icons.Terminal },
-  { to: '/typing-test', label: 'Speed Test',  Icon: Icons.Keyboard },
+  { to: '/dashboard',   label: 'HOME',       Icon: LayoutDashboard },
+  { to: '/courses',     label: 'CATALOG',    Icon: BookOpen },
+  { to: '/jobs',        label: 'JOB BOARD',  Icon: Briefcase },
+  { to: '/forum',       label: 'COMMUNITY',  Icon: MessageSquare },
+  { to: '/mentor',      label: 'AI MENTOR',  Icon: Terminal },
+  { to: '/typing-test', label: 'SPEED TEST', Icon: Keyboard },
 ];
 
 const BOTTOM_LINKS = [
-  { to: '/support', label: 'Support', Icon: Icons.HelpCircle },
-  { to: '/privacy', label: 'Privacy', Icon: Icons.Shield },
+  { to: '/support', label: 'SUPPORT', Icon: HelpCircle },
+  { to: '/privacy', label: 'PRIVACY', Icon: Shield },
 ];
 
 function NavItem({ to, label, Icon }) {
   const location = useLocation();
-  const isActive = location.pathname.startsWith(to) &&
-    (to !== '/courses' || location.pathname === '/courses' || location.pathname.startsWith('/courses/'));
-  const exactMatch = to === '/dashboard' ? location.pathname === to : isActive;
+  const isActive = location.pathname === to || 
+    (to !== '/dashboard' && location.pathname.startsWith(to));
 
   return (
     <Link
       to={to}
-      className={`flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium transition-all ${
-        exactMatch
-          ? 'bg-blue-600 text-white shadow-md'
-          : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
+      className={`flex items-center gap-3 px-3 py-2.5 rounded-[4px] transition-all duration-150 group ${
+        isActive
+          ? 'bg-cyber/[0.08] text-cyber border border-cyber/20'
+          : 'text-[#666] hover:text-white hover:bg-white/[0.03] border border-transparent'
       }`}
     >
-      <Icon size={18} className={exactMatch ? 'text-white' : 'text-slate-400'} />
-      <span className="text-sm">{label}</span>
+      <Icon size={15} strokeWidth={1.5} className="flex-shrink-0" />
+      <span className="font-mono text-[11px] font-bold tracking-[0.1em]">{label}</span>
+      {isActive && (
+        <div className="ml-auto w-1 h-4 bg-cyber rounded-none" />
+      )}
     </Link>
   );
 }
@@ -47,64 +52,74 @@ function Sidebar({ open }) {
 
   return (
     <aside
-      style={{ width: open ? 260 : 1 }}
-      className="fixed left-0 top-0 h-screen z-40 flex flex-col bg-card border-r border-border overflow-hidden transition-all duration-300 shadow-[2px_0_8px_-4px_rgba(0,0,0,0.05)]"
+      style={{ width: open ? 240 : 0 }}
+      className="fixed left-0 top-0 h-screen z-40 flex flex-col overflow-hidden transition-all duration-300"
+      style={{ 
+        width: open ? 240 : 0,
+        background: '#000',
+        borderRight: '1px solid rgba(255,255,255,0.06)',
+      }}
     >
+      {/* Logo */}
       <div
-        className="flex items-center gap-3 px-6 h-20 border-b border-slate-100 flex-shrink-0 cursor-pointer"
+        className="flex items-center gap-3 px-5 h-16 flex-shrink-0 cursor-pointer"
+        style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
         onClick={() => navigate('/')}
       >
-        <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center shadow-sm">
-          <Icons.Code size={16} className="text-white" />
+        <div className="w-7 h-7 rounded-[4px] border border-cyber/30 flex items-center justify-center flex-shrink-0">
+          <Code size={14} strokeWidth={1.5} className="text-cyber" />
         </div>
-        <span className="font-display font-bold text-xl text-slate-900 tracking-tight">SkillForge</span>
+        <span className="font-mono font-black text-sm text-white tracking-[0.15em] uppercase whitespace-nowrap">
+          SkillForge
+        </span>
       </div>
 
-      <nav className="flex-1 px-4 py-6 overflow-y-auto space-y-1.5 flex flex-col">
+      {/* Nav */}
+      <nav className="flex-1 px-3 py-5 overflow-y-auto space-y-1 custom-scrollbar">
         {MAIN_LINKS.map(item => <NavItem key={item.to} {...item} />)}
 
-        <div className="flex-1" />
+        <div className="divider-h my-4" />
 
-        <div className="pt-4 border-t border-slate-100 flex flex-col gap-1.5">
-          {BOTTOM_LINKS.map(item => (
-            <Link
-              key={item.to}
-              to={item.to}
-              className="flex items-center gap-3 px-4 py-2 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-colors"
-            >
-              <item.Icon size={16} className="text-slate-400" />
-              <span className="text-sm font-medium">{item.label}</span>
-            </Link>
-          ))}
-          
-          {user && (
-            <div className="mt-auto border-t border-slate-100 pt-6 pb-4 px-3 bg-slate-50/50">
-              <div className="flex items-center justify-between mb-4 px-2">
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">Security Identity</p>
-                {user.streak > 0 && (
-                  <span className="flex items-center gap-1 text-[9px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100">
-                    <Icons.Zap size={8} /> {user.streak}D
-                  </span>
-                )}
-              </div>
-              
-              <Link to="/profile" className="flex items-center gap-3 p-3 rounded-2xl bg-white shadow-sm border border-slate-200/50 hover:border-blue-400 hover:shadow-md hover:-translate-y-0.5 transition-all group overflow-hidden relative">
-                <Avatar user={user} size={36} className="rounded-xl shadow-sm z-10 bg-slate-100" />
-                <div className="flex-1 min-w-0 z-10 text-left">
-                  <p className="text-xs font-black text-slate-900 truncate mb-1 tracking-tight group-hover:text-blue-700 transition-colors uppercase">{user?.username}</p>
-                  <div className="flex items-center gap-1.5 font-mono text-[9px] font-bold uppercase tracking-tight">
-                    <span className="text-blue-600">LVL {user?.level || 1}</span>
-                    <span className="w-1 h-1 rounded-full bg-slate-200" />
-                    <span className="text-slate-400">XP {(user?.xp || 0).toLocaleString()}</span>
-                  </div>
-                </div>
-                <Icons.ChevronRight size={12} className="text-slate-200 group-hover:text-blue-500 transition-colors" />
-                <div className="absolute top-0 right-0 w-24 h-full bg-gradient-to-l from-blue-50/10 to-transparent pointer-events-none" />
-              </Link>
-            </div>
-          )}
-        </div>
+        {BOTTOM_LINKS.map(item => (
+          <Link
+            key={item.to}
+            to={item.to}
+            className="flex items-center gap-3 px-3 py-2.5 rounded-[4px] text-[#444] hover:text-white hover:bg-white/[0.03] transition-all duration-150"
+          >
+            <item.Icon size={14} strokeWidth={1.5} />
+            <span className="font-mono text-[10px] font-bold tracking-[0.1em]">{item.label}</span>
+          </Link>
+        ))}
       </nav>
+
+      {/* User Identity */}
+      {user && (
+        <div
+          className="px-3 py-4 flex-shrink-0"
+          style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
+        >
+          <p className="font-mono text-[9px] font-bold text-[#333] uppercase tracking-[0.2em] mb-3 px-1">
+            SECURITY IDENTITY
+          </p>
+          <Link
+            to="/profile"
+            className="flex items-center gap-3 p-3 rounded-[4px] border border-white/[0.06] hover:border-white/[0.12] hover:bg-white/[0.02] transition-all duration-150 group"
+          >
+            <Avatar user={user} size={32} />
+            <div className="flex-1 min-w-0">
+              <p className="font-mono text-[11px] font-black text-white truncate tracking-wide uppercase">
+                {user?.username}
+              </p>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span className="font-mono text-[9px] font-bold text-cyber">LV {user?.level || 1}</span>
+                <span className="text-[#333]">·</span>
+                <span className="font-mono text-[9px] font-bold text-[#555]">{(user?.xp || 0).toLocaleString()} XP</span>
+              </div>
+            </div>
+            <ChevronRight size={12} strokeWidth={1.5} className="text-[#333] group-hover:text-[#666] transition-colors" />
+          </Link>
+        </div>
+      )}
     </aside>
   );
 }
@@ -124,7 +139,7 @@ function Topbar({ sidebarOpen, toggleSidebar }) {
   useEffect(() => {
     if (!user) return;
     fetchNotifs();
-    const id = setInterval(fetchNotifs, 10000);
+    const id = setInterval(fetchNotifs, 15000);
     return () => clearInterval(id);
   }, [user]);
 
@@ -140,62 +155,97 @@ function Topbar({ sidebarOpen, toggleSidebar }) {
 
   return (
     <header
-      style={{ left: sidebarOpen ? 260 : 0 }}
-      className="fixed top-0 right-0 z-30 h-20 flex items-center justify-between px-8 bg-background/80 backdrop-blur-md border-b border-border transition-all duration-300"
+      style={{
+        left: sidebarOpen ? 240 : 0,
+        background: 'rgba(0,0,0,0.92)',
+        backdropFilter: 'blur(16px)',
+        borderBottom: '1px solid rgba(255,255,255,0.06)',
+      }}
+      className="fixed top-0 right-0 z-30 h-16 flex items-center justify-between px-6 transition-all duration-300"
     >
+      {/* Left — hamburger */}
       <div className="flex items-center gap-4">
-        <button onClick={toggleSidebar} className="text-slate-400 hover:text-slate-900 transition-colors p-1 md:hidden">
-          <Icons.Menu size={20} />
+        <button
+          onClick={toggleSidebar}
+          className="text-[#666] hover:text-white transition-colors duration-150 p-1"
+        >
+          <Menu size={18} strokeWidth={1.5} />
         </button>
+        {!sidebarOpen && (
+          <div className="flex items-center gap-2">
+            <Code size={14} strokeWidth={1.5} className="text-cyber" />
+            <span className="font-mono font-black text-xs text-white tracking-[0.15em] uppercase">
+              SKILLFORGE
+            </span>
+          </div>
+        )}
       </div>
 
-      <div className="flex items-center gap-6">
-        <nav className="hidden lg:flex items-center gap-6">
-          <Link to="/courses" className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">Catalog</Link>
-          {user && <Link to="/dashboard" className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">My Learning</Link>}
-          {user && <Link to="/settings" className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">Settings</Link>}
-        </nav>
-
-        {user ? (
-          <div className="flex items-center gap-4 pl-4 border-l border-slate-200">
+      {/* Right */}
+      <div className="flex items-center gap-5">
+        {user && (
+          <>
             {/* Notification Bell */}
             <div className="relative">
               <button
                 onClick={() => { setNotifOpen(v => !v); if (!notifOpen) fetchNotifs(); }}
-                className="relative text-slate-400 hover:text-slate-700 transition-colors"
+                className="relative text-[#666] hover:text-white transition-colors duration-150"
               >
-                <Icons.Bell size={20} />
+                <Bell size={17} strokeWidth={1.5} />
                 {unread > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-white flex items-center justify-center text-[10px] font-bold border-2 border-white">
+                  <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-crimson rounded-[2px] text-white flex items-center justify-center text-[8px] font-mono font-black">
                     {unread}
                   </span>
                 )}
               </button>
 
+              {/* Notification Dropdown — Glassmorphism */}
               {notifOpen && (
-                <div className="absolute right-0 top-10 w-80 bg-white border border-slate-200 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] z-50">
-                  <div className="px-4 py-3 border-b border-slate-100 flex justify-between items-center">
-                    <span className="font-semibold text-slate-900 text-sm">Notifications</span>
+                <div
+                  className="absolute right-0 top-10 w-80 z-50"
+                  style={{
+                    background: 'rgba(0,0,0,0.90)',
+                    backdropFilter: 'blur(40px)',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    borderRadius: '4px',
+                  }}
+                >
+                  <div
+                    className="px-4 py-3 flex justify-between items-center"
+                    style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
+                  >
+                    <span className="font-mono text-[11px] font-black text-white uppercase tracking-[0.1em]">
+                      NOTIFICATIONS
+                    </span>
                     {unread > 0 && (
-                      <button onClick={markAllRead} className="text-xs text-blue-600 hover:text-blue-700 font-medium">
-                        Mark all read
+                      <button onClick={markAllRead} className="font-mono text-[10px] text-cyber hover:text-white transition-colors uppercase tracking-wider">
+                        MARK ALL READ
                       </button>
                     )}
                   </div>
-                  <div className="max-h-72 overflow-y-auto">
+                  <div className="max-h-72 overflow-y-auto custom-scrollbar">
                     {notifs.length === 0 ? (
-                      <p className="px-4 py-8 text-center text-sm text-slate-400">No notifications yet</p>
+                      <p className="px-4 py-8 text-center text-[11px] text-[#444] font-mono uppercase tracking-wider">
+                        NO NOTIFICATIONS
+                      </p>
                     ) : notifs.map(n => (
                       <div
                         key={n.id}
                         onClick={() => markRead(n.id)}
-                        className={`px-4 py-3 border-b border-slate-50 last:border-0 cursor-pointer transition-colors ${n.read ? 'hover:bg-slate-50' : 'bg-blue-50/50 hover:bg-blue-50'}`}
+                        className={`px-4 py-3 cursor-pointer transition-colors duration-150 ${
+                          n.read
+                            ? 'hover:bg-white/[0.02]'
+                            : 'bg-cyber/[0.04] hover:bg-cyber/[0.07]'
+                        }`}
+                        style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}
                       >
                         <div className="flex items-start gap-2">
-                          {!n.read && <div className="w-2 h-2 rounded-full bg-blue-600 mt-1.5 flex-shrink-0" />}
-                          <div className={!n.read ? '' : 'pl-4'}>
-                            <p className="text-sm font-semibold text-slate-900">{n.title || 'Notification'}</p>
-                            <p className="text-xs text-slate-500 mt-0.5">{n.body || n.message || ''}</p>
+                          {!n.read && (
+                            <div className="w-1.5 h-1.5 rounded-[1px] bg-cyber mt-1.5 flex-shrink-0" />
+                          )}
+                          <div className={!n.read ? '' : 'pl-3.5'}>
+                            <p className="text-xs font-bold text-white">{n.title || 'NOTIFICATION'}</p>
+                            <p className="text-[11px] text-[#666] mt-0.5">{n.body || n.message || ''}</p>
                           </div>
                         </div>
                       </div>
@@ -205,16 +255,35 @@ function Topbar({ sidebarOpen, toggleSidebar }) {
               )}
             </div>
 
-            <ThemeToggle />
+            {/* Quick nav */}
+            <button
+              onClick={() => navigate('/settings')}
+              className="text-[#666] hover:text-white transition-colors duration-150"
+            >
+              <Settings size={16} strokeWidth={1.5} />
+            </button>
 
-            <Link to="/profile" className="flex items-center gap-2 group">
-              <Avatar user={user} size={36} className="ring-2 ring-border hover:ring-ring transition-all cursor-pointer" />
+            {/* Avatar */}
+            <Link to="/profile">
+              <Avatar user={user} size={30} className="hover:border-white/20 transition-colors duration-150" />
             </Link>
-          </div>
-        ) : (
+          </>
+        )}
+
+        {!user && (
           <div className="flex items-center gap-3">
-            <button onClick={() => navigate('/login')} className="text-sm font-medium text-slate-600 hover:text-slate-900 px-3">Log In</button>
-            <button onClick={() => navigate('/register')} className="bg-slate-900 text-white px-5 py-2 rounded-full text-sm font-medium hover:bg-slate-800 transition-colors">Sign Up</button>
+            <button
+              onClick={() => navigate('/login')}
+              className="font-mono text-[11px] font-bold text-[#666] hover:text-white transition-colors uppercase tracking-wider"
+            >
+              LOG IN
+            </button>
+            <button
+              onClick={() => navigate('/register')}
+              className="font-mono text-[11px] font-black px-4 py-2 bg-cyber text-white rounded-[4px] hover:bg-[#2563EB] transition-colors duration-150 uppercase tracking-wider"
+            >
+              SIGN UP
+            </button>
           </div>
         )}
       </div>
@@ -226,14 +295,14 @@ export default function AppLayout() {
   const { sidebarOpen, toggleSidebar } = useUIStore();
 
   return (
-    <div className="min-h-screen bg-background font-sans text-foreground">
+    <div className="min-h-screen bg-black font-sans text-white">
       <Sidebar open={sidebarOpen} />
       <Topbar sidebarOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
       <main
-        style={{ marginLeft: sidebarOpen ? 260 : 0 }}
-        className="transition-all duration-300 pt-20 min-h-screen"
+        style={{ marginLeft: sidebarOpen ? 240 : 0 }}
+        className="transition-all duration-300 pt-16 min-h-screen"
       >
-        <div className="p-8 max-w-7xl mx-auto w-full">
+        <div className="p-6 lg:p-8 max-w-7xl mx-auto w-full">
           <Outlet />
         </div>
       </main>

@@ -5,8 +5,6 @@ import './styles/globals.css';
 import { useAuthStore } from './store';
 import api, { setAccessToken, getAccessToken } from './lib/api';
 
-import { ThemeProvider } from './components/ThemeProvider';
-
 function Root() {
   const { setUser, logout, isAuthenticated } = useAuthStore();
 
@@ -30,11 +28,7 @@ function Root() {
     }
   }, []);
 
-  return (
-    <ThemeProvider>
-      <App />
-    </ThemeProvider>
-  );
+  return <App />;
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(

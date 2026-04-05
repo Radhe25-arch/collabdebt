@@ -1,15 +1,15 @@
 import { useState } from 'react';
 import { useAuthStore } from '@/store';
 import { Button, Input, Avatar, BadgeTag } from '@/components/ui';
-import Icons from '@/assets/icons';
+import { Check, LogOut } from 'lucide-react';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
 
 export default function SettingsPage() {
   const { user, updateUser, logout } = useAuthStore();
   const [form, setForm] = useState({
-    fullName: user?.fullName || '',
-    bio: user?.bio || '',
+    fullName:  user?.fullName  || '',
+    bio:       user?.bio       || '',
     avatarUrl: user?.avatarUrl || '',
   });
   const [saving, setSaving] = useState(false);
@@ -19,63 +19,69 @@ export default function SettingsPage() {
     try {
       const r = await api.put('/users/me', form);
       updateUser(r.data.user);
-      toast.success('Profile updated');
-    } catch (_) { toast.error('Update failed'); }
+      toast.success('PROFILE UPDATED');
+    } catch { toast.error('UPDATE FAILED'); }
     setSaving(false);
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <div>
-        <h1 className="font-display font-black text-2xl mb-1">Settings</h1>
-        <p className="font-mono text-xs text-slate-500">// manage your account</p>
+    <div className="max-w-2xl mx-auto space-y-5 animate-fade-in pb-16">
+      <div style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '1.5rem' }}>
+        <h1 className="font-black text-2xl text-white tracking-tight uppercase mb-1">SETTINGS</h1>
+        <p className="font-mono text-[11px] text-[#555]">// MANAGE YOUR OPERATOR ACCOUNT</p>
       </div>
 
-      {/* Profile settings */}
-      <div className="sf-card p-6 space-y-5">
-        <span className="font-mono text-xs text-slate-500 uppercase tracking-widest block">Profile</span>
+      {/* Profile */}
+      <div className="blade p-6 space-y-5">
+        <h2 className="font-mono text-[10px] font-black text-[#555] uppercase tracking-[0.2em]">IDENTITY</h2>
         <div className="flex items-center gap-4">
-          <Avatar user={user} size={56} />
+          <Avatar user={user} size={52} />
           <div>
-            <p className="font-mono text-sm text-slate-900 font-bold">@{user?.username}</p>
+            <p className="font-mono text-sm font-black text-white uppercase">@{user?.username}</p>
             <BadgeTag variant="purple" className="mt-1">{user?.role}</BadgeTag>
           </div>
         </div>
-        <Input label="Full Name" value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} />
-        <Input label="Avatar URL" value={form.avatarUrl} onChange={(e) => setForm({ ...form, avatarUrl: e.target.value })} placeholder="https://..." />
+        <Input label="FULL NAME" value={form.fullName} onChange={e => setForm({ ...form, fullName: e.target.value })} />
+        <Input label="AVATAR URL" value={form.avatarUrl} onChange={e => setForm({ ...form, avatarUrl: e.target.value })} placeholder="https://..." />
         <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-1.5">Bio</label>
-          <textarea className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 placeholder-slate-400 text-slate-900 focus:outline-none focus:border-blue-500 transition-all text-sm resize-none" rows={3} value={form.bio} onChange={(e) => setForm({ ...form, bio: e.target.value })} placeholder="Tell the arena who you are..." />
+          <label className="font-mono text-[10px] font-black text-[#666] uppercase tracking-[0.15em] block mb-1.5">BIO</label>
+          <textarea
+            className="w-full bg-white/[0.03] border border-white/[0.08] rounded-[4px] px-4 py-3 text-white placeholder:text-[#333] focus:outline-none focus:border-cyber transition-all duration-150 text-sm resize-none font-sans"
+            rows={3}
+            value={form.bio}
+            onChange={e => setForm({ ...form, bio: e.target.value })}
+            placeholder="Tell the arena who you are..."
+          />
         </div>
         <Button onClick={handleSave} variant="primary" loading={saving}>
-          <Icons.Check size={14} /> Save Changes
+          <Check size={13} strokeWidth={1.5} /> SAVE CHANGES
         </Button>
       </div>
 
       {/* Account info */}
-      <div className="sf-card p-6 space-y-3">
-        <span className="font-mono text-xs text-slate-500 uppercase tracking-widest block">Account</span>
-        <div className="flex justify-between py-2 border-b border-slate-200/40">
-          <span className="font-mono text-xs text-slate-500">Email</span>
-          <span className="font-mono text-xs text-slate-900">{user?.email}</span>
+      <div className="blade overflow-hidden">
+        <div className="px-6 py-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+          <h2 className="font-mono text-[10px] font-black text-[#555] uppercase tracking-[0.2em]">ACCOUNT METADATA</h2>
         </div>
-        <div className="flex justify-between py-2 border-b border-slate-200/40">
-          <span className="font-mono text-xs text-slate-500">Role</span>
-          <span className="font-mono text-xs text-slate-900">{user?.role}</span>
-        </div>
-        <div className="flex justify-between py-2">
-          <span className="font-mono text-xs text-slate-500">Member since</span>
-          <span className="font-mono text-xs text-slate-900">
-            {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : '—'}
-          </span>
+        <div className="divide-y divide-white/[0.04]">
+          {[
+            { label: 'EMAIL',        value: user?.email },
+            { label: 'ROLE',         value: user?.role },
+            { label: 'MEMBER SINCE', value: user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : '—' },
+          ].map(({ label, value }) => (
+            <div key={label} className="flex justify-between items-center px-6 py-3">
+              <span className="font-mono text-[10px] font-bold text-[#555] uppercase tracking-wider">{label}</span>
+              <span className="font-mono text-[11px] font-bold text-white uppercase">{value}</span>
+            </div>
+          ))}
         </div>
       </div>
 
       {/* Danger zone */}
-      <div className="sf-card p-6 border-red-500/20">
-        <span className="font-mono text-xs text-red-400 uppercase tracking-widest block mb-4">Danger Zone</span>
-        <Button onClick={() => { logout(); }} variant="danger">
-          <Icons.LogOut size={14} /> Sign Out of All Devices
+      <div className="blade p-6" style={{ borderLeftWidth: '2px', borderLeftColor: 'rgba(220,38,38,0.4)' }}>
+        <h2 className="font-mono text-[10px] font-black text-crimson uppercase tracking-[0.2em] mb-4">DANGER ZONE</h2>
+        <Button onClick={() => logout()} variant="danger">
+          <LogOut size={13} strokeWidth={1.5} /> SIGN OUT OF ALL DEVICES
         </Button>
       </div>
     </div>

@@ -23,7 +23,6 @@ import QuestPage       from '@/pages/QuestPage';
 import PortfolioPage   from '@/pages/PortfolioPage';
 import MentorPage      from '@/pages/MentorPage';
 import TypingTestPage  from '@/pages/TypingTestPage';
-
 import RoomsPage, { RoomPage } from '@/pages/RoomsPage';
 import SupportPage     from '@/pages/SupportPage';
 import PrivacyPage     from '@/pages/PrivacyPage';
@@ -54,10 +53,20 @@ function AuthCallback() {
   }, []);
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f8fafc', color: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'DM Sans', sans-serif" }}>
+    <div style={{
+      minHeight: '100vh', background: '#000000', color: '#FFFFFF',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      fontFamily: "'JetBrains Mono', monospace"
+    }}>
       <div style={{ textAlign: 'center' }}>
-        <div style={{ width: 32, height: 32, border: '3px solid #e2e8f0', borderTopColor: '#2563eb', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 12px' }} />
-        <span style={{ fontSize: 14, color: '#64748b' }}>Signing you in...</span>
+        <div style={{
+          width: 24, height: 24, border: '1.5px solid rgba(255,255,255,0.1)',
+          borderTopColor: '#3B82F6', borderRadius: '50%',
+          animation: 'spin 0.8s linear infinite', margin: '0 auto 12px'
+        }} />
+        <span style={{ fontSize: 11, color: '#666', textTransform: 'uppercase', letterSpacing: '0.15em' }}>
+          AUTHENTICATING...
+        </span>
       </div>
     </div>
   );
@@ -76,11 +85,24 @@ function PublicRoute({ children }) {
 export default function App() {
   return (
     <BrowserRouter>
-      <Toaster position="bottom-right" toastOptions={{
-        style: { background: '#ffffff', color: '#0f172a', border: '1px solid #e2e8f0', fontFamily: "'DM Sans', sans-serif", fontSize: '13px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' },
-        success: { iconTheme: { primary: '#2563eb', secondary: '#ffffff' } },
-        error:   { iconTheme: { primary: '#dc2626', secondary: '#ffffff' } },
-      }} />
+      <Toaster
+        position="bottom-right"
+        toastOptions={{
+          style: {
+            background: 'rgba(0,0,0,0.92)',
+            backdropFilter: 'blur(40px)',
+            color: '#FFFFFF',
+            border: '1px solid rgba(255,255,255,0.08)',
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: '11px',
+            borderRadius: '4px',
+            letterSpacing: '0.05em',
+            boxShadow: 'none',
+          },
+          success: { iconTheme: { primary: '#10B981', secondary: '#000000' } },
+          error:   { iconTheme: { primary: '#DC2626', secondary: '#000000' } },
+        }}
+      />
       <Routes>
         <Route path="/"              element={<LandingPage />} />
         <Route path="/login"         element={<PublicRoute><LoginPage /></PublicRoute>} />
@@ -106,16 +128,14 @@ export default function App() {
           <Route path="/jobs"                  element={<JobsPage />} />
           <Route path="/employer"              element={<EmployerPage />} />
           <Route path="/forum"                 element={<ForumPage />} />
-
           <Route path="/rooms"                 element={<RoomsPage />} />
           <Route path="/rooms/:id"             element={<RoomPage />} />
-          
           <Route path="/support"               element={<SupportPage />} />
           <Route path="/privacy"               element={<PrivacyPage />} />
-          <Route path="/profile"              element={<ProfilePage />} />
-          <Route path="/settings"             element={<SettingsPage />} />
-          <Route path="/admin"                element={<AdminPage />} />
-          <Route path="*"                     element={<Navigate to="/dashboard" replace />} />
+          <Route path="/profile"               element={<ProfilePage />} />
+          <Route path="/settings"              element={<SettingsPage />} />
+          <Route path="/admin"                 element={<AdminPage />} />
+          <Route path="*"                      element={<Navigate to="/dashboard" replace />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />
