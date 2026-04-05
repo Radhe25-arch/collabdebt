@@ -45,10 +45,10 @@ const Navbar = () => {
           </div>
           
           <div className="hidden md:flex items-center gap-6">
-            {['CURRICULUM', 'BATTLES', 'MENTOR', 'FORUM'].map(item => (
+            {['CURRICULUM', 'BATTLES', 'MENTOR', 'SPEED TEST', 'FORUM'].map(item => (
               <a 
                 key={item} 
-                href={`/${item.toLowerCase()}`}
+                href={item === 'SPEED TEST' ? '/typing-test' : `/${item.toLowerCase().replace(' ', '-')}`}
                 className="text-[11px] font-bold text-[#666] hover:text-white transition-colors tracking-widest"
               >
                 {item}
@@ -217,11 +217,41 @@ export default function LandingPage() {
             </Button>
           </motion.div>
 
+          {/* New: Technical Universe Teaser */}
+          <motion.div 
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="mt-32 relative py-20 px-6 border border-white/5 rounded-[4px] bg-white/[0.01] overflow-hidden"
+          >
+            <div className="absolute inset-0 bg-grid opacity-10" />
+            <div className="relative z-10">
+              <h4 className="font-mono text-[10px] text-[#444] tracking-[0.4em] uppercase mb-12">DATABASE ACCESS // 265+ REPOSITORIES</h4>
+              <div className="flex flex-wrap justify-center gap-x-8 gap-y-6 max-w-4xl mx-auto">
+                {['RUST', 'ZIG', 'MOJO', 'CARBON', 'HASKELL', 'ELIXIR', 'GO', 'SWIFT', 'KOTLIN', 'JULIA', 'NIM', 'SOLIDITY', 'CLOJURE', 'ERLANG', 'SCALA', 'BUN', 'DENO', 'GRAIN', 'GLEAM', 'VAL'].map((lang, i) => (
+                  <motion.span 
+                    key={lang}
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: [0, 0.4, 0.2] }}
+                    transition={{ delay: i * 0.05, duration: 2, repeat: Infinity, repeatType: 'reverse' }}
+                    className="font-mono text-[10px] font-bold text-white tracking-widest cursor-default hover:text-cyber transition-colors"
+                  >
+                    {lang}
+                  </motion.span>
+                ))}
+              </div>
+            </div>
+            
+            {/* Animated Glows */}
+            <div className="absolute -top-24 -left-24 w-48 h-48 bg-cyber/10 blur-[100px] rounded-full" />
+            <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-violet/10 blur-[100px] rounded-full" />
+          </motion.div>
+
           <motion.div 
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.5, type: 'spring' }}
-            className="mt-20 flex justify-center"
+            className="mt-24 flex justify-center"
           >
             <CodeTerminal />
           </motion.div>
@@ -262,7 +292,7 @@ export default function LandingPage() {
             <BentoCard 
               className="md:col-span-4 h-[300px]"
               icon={Layers}
-              title="250+ ARCHIVES"
+              title="265+ ARCHIVES"
               desc="From Kernel development in Zig to High-frequency trading systems in Rust. The most comprehensive curriculum in existence."
               delay={0.3}
             />
