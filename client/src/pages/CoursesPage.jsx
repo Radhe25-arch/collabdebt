@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '@/lib/api';
 import { Spinner } from '@/components/ui';
-import { BookOpen, Globe, Settings, Terminal, Layers, Zap, Shield, Box, Play, TrendingUp, ArrowRight, ArrowLeft, RefreshCw, Check } from 'lucide-react';
+import { BookOpen, Globe, Settings, Terminal, Layers, Zap, Shield, Box, Play, TrendingUp, ArrowRight, ArrowLeft, RefreshCw, Check, LayoutGrid, Binary } from 'lucide-react';
+import LanguageLibrary from '@/components/LanguageLibrary';
 
 const LANG_META = {
   javascript:     { Icon: Zap,         color: '#F59E0B' },
@@ -155,6 +156,7 @@ export default function CoursesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeCategory, setActiveCategory] = useState(null);
+  const [activeTab, setActiveTab] = useState('CURRICULUM'); // CURRICULUM | LIBRARY
 
   const loadData = async () => {
     setLoading(true);
@@ -256,44 +258,70 @@ export default function CoursesPage() {
   // Main library view
   return (
     <div className="max-w-6xl mx-auto pb-16 animate-fade-in">
-      <div className="mb-8" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '1.5rem' }}>
-        <h1 className="font-black text-2xl text-white tracking-tight uppercase mb-1">CURRICULUM LIBRARY</h1>
-        <p className="text-sm text-[#555]">
-          Select a technology stack or domain to explore available courses.
-        </p>
+      {/* Header & Main Tab Switcher */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 pb-6 border-b border-white/[0.06]">
+        <div>
+          <h1 className="font-black text-3xl text-white tracking-tight uppercase mb-1">COURSES</h1>
+          <p className="text-sm text-[#555] max-w-md">
+            Master the world's programming languages and domain architectures through industrial training.
+          </p>
+        </div>
+        
+        <div className="flex items-center gap-0 border border-white/[0.08] rounded-[4px] p-0.5 bg-white/[0.02]">
+          <button
+            onClick={() => setActiveTab('CURRICULUM')}
+            className={`flex items-center gap-2 px-4 py-2.5 font-mono text-[10px] font-black tracking-widest transition-all ${
+              activeTab === 'CURRICULUM' ? 'bg-cyber text-white' : 'text-[#444] hover:text-white'
+            }`}
+          >
+            <BookOpen size={13} /> CURRICULUM CATALOG
+          </button>
+          <button
+            onClick={() => setActiveTab('LIBRARY')}
+            className={`flex items-center gap-2 px-4 py-2.5 font-mono text-[10px] font-black tracking-widest transition-all ${
+              activeTab === 'LIBRARY' ? 'bg-cyber text-white' : 'text-[#444] hover:text-white'
+            }`}
+          >
+            <Binary size={13} /> GLOBAL LANGUAGE LIBRARY
+          </button>
+        </div>
       </div>
 
-      <div className="space-y-10">
-        {langCategories.length > 0 && (
-          <section>
-            <h2 className="font-mono text-[10px] font-black text-[#444] uppercase tracking-[0.2em] mb-4 flex items-center gap-3">
-              <span className="flex-1 h-px bg-white/[0.04]" />
-              PROGRAMMING LANGUAGES
-              <span className="flex-1 h-px bg-white/[0.04]" />
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {langCategories.map(cat => (
-                <CategoryCard key={cat.id} category={cat} courseCount={getCoursesByCategory(cat.id).length} onClick={setActiveCategory} />
-              ))}
-            </div>
-          </section>
-        )}
+      {activeTab === 'CURRICULUM' ? (
+        <div className="space-y-10">
+          {langCategories.length > 0 && (
+            <section>
+              <h2 className="font-mono text-[10px] font-black text-[#444] uppercase tracking-[0.2em] mb-4 flex items-center gap-3">
+                <span className="flex-1 h-px bg-white/[0.04]" />
+                PROGRAMMING LANGUAGES
+                <span className="flex-1 h-px bg-white/[0.04]" />
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {langCategories.map(cat => (
+                  <CategoryCard key={cat.id} category={cat} courseCount={getCoursesByCategory(cat.id).length} onClick={setActiveCategory} />
+                ))}
+              </div>
+            </section>
+          )}
 
-        {domainCategories.length > 0 && (
-          <section>
-            <h2 className="font-mono text-[10px] font-black text-[#444] uppercase tracking-[0.2em] mb-4 flex items-center gap-3">
-              <span className="flex-1 h-px bg-white/[0.04]" />
-              DOMAIN ARCHITECTURES
-              <span className="flex-1 h-px bg-white/[0.04]" />
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {domainCategories.map(cat => (
-                <CategoryCard key={cat.id} category={cat} courseCount={getCoursesByCategory(cat.id).length} onClick={setActiveCategory} />
-              ))}
-            </div>
-          </section>
-        )}
-      </div>
+          {domainCategories.length > 0 && (
+            <section>
+              <h2 className="font-mono text-[10px] font-black text-[#444] uppercase tracking-[0.2em] mb-4 flex items-center gap-3">
+                <span className="flex-1 h-px bg-white/[0.04]" />
+                DOMAIN ARCHITECTURES
+                <span className="flex-1 h-px bg-white/[0.04]" />
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {domainCategories.map(cat => (
+                  <CategoryCard key={cat.id} category={cat} courseCount={getCoursesByCategory(cat.id).length} onClick={setActiveCategory} />
+                ))}
+              </div>
+            </section>
+          )}
+        </div>
+      ) : (
+        <LanguageLibrary />
+      )}
     </div>
   );
 }
