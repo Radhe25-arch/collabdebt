@@ -187,7 +187,6 @@ export default function CoursesPage() {
 
   useEffect(() => { loadData(); }, []);
 
-  const langCategories   = (categories || []).filter(c => c && !DOMAIN_SLUGS.includes(c.slug));
   const domainCategories = (categories || []).filter(c => c && DOMAIN_SLUGS.includes(c.slug));
   const getCoursesByCategory = catId => (courses || []).filter(c => c && (c.categoryId === catId || c.category?.id === catId));
   const handleCourseClick = slug => navigate(`/courses/${slug}`);
@@ -289,21 +288,6 @@ export default function CoursesPage() {
 
       {activeTab === 'CURRICULUM' ? (
         <div className="space-y-10">
-          {langCategories.length > 0 && (
-            <section>
-              <h2 className="font-mono text-[10px] font-black text-[#444] uppercase tracking-[0.2em] mb-4 flex items-center gap-3">
-                <span className="flex-1 h-px bg-white/[0.04]" />
-                PROGRAMMING LANGUAGES
-                <span className="flex-1 h-px bg-white/[0.04]" />
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {langCategories.map(cat => (
-                  <CategoryCard key={cat.id} category={cat} courseCount={getCoursesByCategory(cat.id).length} onClick={setActiveCategory} />
-                ))}
-              </div>
-            </section>
-          )}
-
           {domainCategories.length > 0 && (
             <section>
               <h2 className="font-mono text-[10px] font-black text-[#444] uppercase tracking-[0.2em] mb-4 flex items-center gap-3">
