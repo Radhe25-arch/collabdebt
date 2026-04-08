@@ -40,13 +40,14 @@ function HostConfigPanel({ battle, onStart, onRefresh }) {
   const [mode, setMode]           = useState('system');
   const [language, setLanguage]   = useState('javascript');
   const [timeLimit, setTimeLimit] = useState(1800);
+  const [ghostMode, setGhostMode] = useState(false);
   const [customProblem, setCustomProblem] = useState('');
   const [configuring, setConfiguring] = useState(false);
 
   const handleStart = async () => {
     setConfiguring(true);
     try {
-      const body = { mode, language, timeLimit };
+      const body = { mode, language, timeLimit, ghostMode };
       if (mode === 'custom') body.problemText = customProblem;
       await api.post(`/battles/${battle.id}/configure`, body);
       toast.success('PARAMETERS LOCKED — REDIRECTING');
@@ -141,6 +142,27 @@ function HostConfigPanel({ battle, onStart, onRefresh }) {
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* Ghost Mode Toggle */}
+          <div>
+            <p className="font-mono text-[9px] font-black text-[#444] uppercase tracking-[0.2em] mb-3">TACTICAL MODIFIERS</p>
+            <button
+               onClick={() => setGhostMode(!ghostMode)}
+               className="flex items-center justify-between w-full p-4 rounded-[4px] border transition-all duration-150"
+               style={{
+                 border: `1px solid ${ghostMode ? 'rgba(220,38,38,0.4)' : 'rgba(255,255,255,0.06)'}`,
+                 background: ghostMode ? 'rgba(220,38,38,0.06)' : 'rgba(255,255,255,0.02)',
+               }}
+            >
+              <div className="text-left">
+                <p className={`font-mono text-[11px] font-black uppercase tracking-wider ${ghostMode ? 'text-crimson' : 'text-white'}`}>GHOST MODE</p>
+                <p className="font-mono text-[10px] text-[#555] mt-0.5">Strict typing. No deletions. One mistake = fail.</p>
+              </div>
+              <div className={`w-4 h-4 rounded-[2px] border flex items-center justify-center ${ghostMode ? 'border-crimson bg-crimson/20' : 'border-white/20'}`}>
+                {ghostMode && <div className="w-2 h-2 rounded-[1px] bg-crimson" />}
+              </div>
+            </button>
           </div>
         </div>
       </div>

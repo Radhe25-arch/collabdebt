@@ -71,16 +71,16 @@ enum FriendStatus {
 // ─── USER ────────────────────────────────────────────────
 
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  username      String    @unique
-  fullName      String
-  passwordHash  String?
-  googleId      String?   @unique
-  avatarUrl     String?
-  bio           String?
-  role          Role      @default(STUDENT)
-  ageGroup      AgeGroup  @default(COLLEGE)
+  id           String   @id @default(cuid())
+  email        String   @unique
+  username     String   @unique
+  fullName     String
+  passwordHash String?
+  googleId     String?  @unique
+  avatarUrl    String?
+  bio          String?
+  role         Role     @default(STUDENT)
+  ageGroup     AgeGroup @default(COLLEGE)
 
   // Gamification
   xp            Int       @default(0)
@@ -90,21 +90,21 @@ model User {
   lastActiveAt  DateTime?
 
   // Stats
-  totalQuizAttempts   Int @default(0)
-  correctQuizAnswers  Int @default(0)
-  coursesCompleted    Int @default(0)
+  totalQuizAttempts  Int @default(0)
+  correctQuizAnswers Int @default(0)
+  coursesCompleted   Int @default(0)
 
   // Flags
-  isVerified    Boolean   @default(false)
-  isActive      Boolean   @default(true)
-  onboarded     Boolean   @default(false)
+  isVerified Boolean @default(false)
+  isActive   Boolean @default(true)
+  onboarded  Boolean @default(false)
 
   // AI Mentor Limits
-  mentorRequests     Int       @default(0)
+  mentorRequests      Int       @default(0)
   lastMentorRequestAt DateTime?
 
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
   interests         UserInterest[]
@@ -117,34 +117,34 @@ model User {
   activityLogs      ActivityLog[]
   refreshTokens     RefreshToken[]
   passwordResets    PasswordReset[]
-  following         Follow[]  @relation("Follower")
-  followers         Follow[]  @relation("Following")
+  following         Follow[]          @relation("Follower")
+  followers         Follow[]          @relation("Following")
   xpTransactions    XPTransaction[]
 
   // New feature relations
-  battlesAsChallenger Battle[]          @relation("BattleChallenger")
-  battlesAsChallenged Battle[]          @relation("BattleChallenged")
-  battleSubmissions   BattleSubmission[] @relation("BattleSubmissions")
-  questCompletions    QuestCompletion[] @relation("QuestCompletions")
-  portfolio           Portfolio?        @relation("UserPortfolio")
-  mentorSessions      MentorSession[]   @relation("MentorSessions")
-  codeRoomsOwned      CodeRoom[]        @relation("CodeRoomOwner")
+  battlesAsChallenger Battle[]              @relation("BattleChallenger")
+  battlesAsChallenged Battle[]              @relation("BattleChallenged")
+  battleSubmissions   BattleSubmission[]    @relation("BattleSubmissions")
+  questCompletions    QuestCompletion[]     @relation("QuestCompletions")
+  portfolio           Portfolio?            @relation("UserPortfolio")
+  mentorSessions      MentorSession[]       @relation("MentorSessions")
+  codeRoomsOwned      CodeRoom[]            @relation("CodeRoomOwner")
   codeRoomsJoined     CodeRoomParticipant[] @relation("CodeRoomParticipant")
-  skillDNA            SkillDNA?         @relation("SkillDNA")
+  skillDNA            SkillDNA?             @relation("SkillDNA")
 
-  friendshipsSent     Friendship[]      @relation("FriendshipSender")
-  friendshipsReceived Friendship[]      @relation("FriendshipReceiver")
+  friendshipsSent     Friendship[] @relation("FriendshipSender")
+  friendshipsReceived Friendship[] @relation("FriendshipReceiver")
 
-  sentMessages        Message[]         @relation("SentMessages")
-  receivedMessages    Message[]         @relation("ReceivedMessages")
+  sentMessages     Message[] @relation("SentMessages")
+  receivedMessages Message[] @relation("ReceivedMessages")
 
   // Recruitment
-  jobsPosted          Job[]             @relation("EmployerJobs")
-  applications        JobApplication[]  @relation("CandidateApplications")
+  jobsPosted   Job[]            @relation("EmployerJobs")
+  applications JobApplication[] @relation("CandidateApplications")
 
   // Community
-  threads             ForumThread[]     @relation("AuthorThreads")
-  comments            ForumComment[]    @relation("AuthorComments")
+  threads  ForumThread[]  @relation("AuthorThreads")
+  comments ForumComment[] @relation("AuthorComments")
 
   @@index([xp])
   @@index([username])
@@ -161,12 +161,12 @@ model UserInterest {
 }
 
 model Follow {
-  id          String @id @default(cuid())
+  id          String   @id @default(cuid())
   followerId  String
   followingId String
   createdAt   DateTime @default(now())
 
-  follower  User @relation("Follower",  fields: [followerId],  references: [id], onDelete: Cascade)
+  follower  User @relation("Follower", fields: [followerId], references: [id], onDelete: Cascade)
   following User @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
 
   @@unique([followerId, followingId])
@@ -204,7 +204,7 @@ model Category {
   name        String   @unique
   slug        String   @unique
   description String?
-  iconName    String?  // icon key for frontend
+  iconName    String? // icon key for frontend
   order       Int      @default(0)
   courses     Course[]
 }
@@ -221,39 +221,39 @@ model Course {
   isPublished Boolean    @default(false)
   order       Int        @default(0)
 
-  categoryId  String
-  category    Category   @relation(fields: [categoryId], references: [id])
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
 
   lessons     Lesson[]
   enrollments Enrollment[]
   badge       Badge?
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([categoryId])
   @@index([slug])
 }
 
 model Lesson {
-  id          String   @id @default(cuid())
+  id          String  @id @default(cuid())
   title       String
   slug        String
-  content     String   // Markdown content
+  content     String // Markdown content
   videoUrl    String?
-  codeStarter String?  // Starter code for embedded editor
-  xpReward    Int      @default(50)
-  order       Int      @default(0)
-  duration    Int      @default(0) // minutes
+  codeStarter String? // Starter code for embedded editor
+  xpReward    Int     @default(50)
+  order       Int     @default(0)
+  duration    Int     @default(0) // minutes
 
-  courseId    String
-  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId String
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
-  quiz        Quiz?
-  progress    LessonProgress[]
+  quiz     Quiz?
+  progress LessonProgress[]
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([courseId, slug])
   @@index([courseId])
@@ -267,21 +267,21 @@ model Enrollment {
   progress    Int       @default(0) // 0-100 percent
   createdAt   DateTime  @default(now())
 
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  course      Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   @@unique([userId, courseId])
   @@index([userId])
 }
 
 model LessonProgress {
-  id          String    @id @default(cuid())
+  id          String   @id @default(cuid())
   userId      String
   lessonId    String
-  completedAt DateTime  @default(now())
+  completedAt DateTime @default(now())
 
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  lesson      Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
 
   @@unique([userId, lessonId])
 }
@@ -297,15 +297,15 @@ model Quiz {
 }
 
 model QuizQuestion {
-  id            String   @id @default(cuid())
-  quizId        String
-  question      String
-  options       Json     // string[]
-  correctIndex  Int
-  explanation   String?
-  order         Int      @default(0)
+  id           String  @id @default(cuid())
+  quizId       String
+  question     String
+  options      Json // string[]
+  correctIndex Int
+  explanation  String?
+  order        Int     @default(0)
 
-  quiz          Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
 
   @@index([quizId])
 }
@@ -314,13 +314,13 @@ model QuizAttempt {
   id        String   @id @default(cuid())
   userId    String
   quizId    String
-  score     Int      // correct answers count
-  total     Int      // total questions
+  score     Int // correct answers count
+  total     Int // total questions
   xpAwarded Int      @default(0)
   createdAt DateTime @default(now())
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  quiz      Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([quizId])
@@ -332,24 +332,24 @@ model XPTransaction {
   id        String   @id @default(cuid())
   userId    String
   amount    Int
-  reason    String   // lesson_complete, quiz_pass, tournament_win, streak_bonus, etc.
-  refId     String?  // ID of related entity
+  reason    String // lesson_complete, quiz_pass, tournament_win, streak_bonus, etc.
+  refId     String? // ID of related entity
   createdAt DateTime @default(now())
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([createdAt])
 }
 
 model ActivityLog {
-  id        String   @id @default(cuid())
-  userId    String
-  date      DateTime @default(now())
-  xpEarned  Int      @default(0)
-  lessons   Int      @default(0)
+  id       String   @id @default(cuid())
+  userId   String
+  date     DateTime @default(now())
+  xpEarned Int      @default(0)
+  lessons  Int      @default(0)
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, date])
   @@index([userId])
@@ -363,7 +363,7 @@ model Badge {
   description String
   iconName    String
   rarity      String      @default("common") // common, rare, epic, legendary
-  courseId    String?     @unique            // if course-completion badge
+  courseId    String?     @unique // if course-completion badge
   course      Course?     @relation(fields: [courseId], references: [id])
   users       UserBadge[]
 }
@@ -374,8 +374,8 @@ model UserBadge {
   badgeId   String
   awardedAt DateTime @default(now())
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  badge     Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge Badge @relation(fields: [badgeId], references: [id], onDelete: Cascade)
 
   @@unique([userId, badgeId])
   @@index([userId])
@@ -397,39 +397,39 @@ model Tournament {
   entries     TournamentEntry[]
   submissions TournamentSubmission[]
 
-  createdAt   DateTime @default(now())
+  createdAt DateTime @default(now())
 
   @@index([status])
   @@index([startsAt])
 }
 
 model TournamentEntry {
-  id           String     @id @default(cuid())
+  id           String   @id @default(cuid())
   userId       String
   tournamentId String
-  score        Int        @default(0)
+  score        Int      @default(0)
   rank         Int?
-  joinedAt     DateTime   @default(now())
-  rewarded     Boolean    @default(false)
+  joinedAt     DateTime @default(now())
+  rewarded     Boolean  @default(false)
 
-  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tournament Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
 
   @@unique([userId, tournamentId])
   @@index([tournamentId, score])
 }
 
 model TournamentSubmission {
-  id           String     @id @default(cuid())
+  id           String   @id @default(cuid())
   userId       String
   tournamentId String
   code         String?
   language     String?
-  score        Int        @default(0)
-  timeTaken    Int?       // seconds
-  submittedAt  DateTime   @default(now())
+  score        Int      @default(0)
+  timeTaken    Int? // seconds
+  submittedAt  DateTime @default(now())
 
-  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  tournament Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
 
   @@index([tournamentId])
 }
@@ -446,7 +446,7 @@ model Notification {
   data      Json?
   createdAt DateTime         @default(now())
 
-  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, read])
 }
@@ -459,7 +459,7 @@ model HallOfFame {
   username   String
   avatarUrl  String?
   xp         Int
-  rank       Int      // 1, 2, or 3
+  rank       Int // 1, 2, or 3
   weekNumber Int
   year       Int
   awardedAt  DateTime @default(now())
@@ -490,16 +490,17 @@ model Battle {
   problemText  String?
   codeStarter  String?
   timeLimit    Int          @default(1800) // seconds — 30 min default
+  ghostMode    Boolean      @default(false)
   startsAt     DateTime?
   endsAt       DateTime?
   winnerId     String?
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
 
-  challenger   User         @relation("BattleChallenger", fields: [challengerId], references: [id], onDelete: Cascade)
-  challenged   User         @relation("BattleChallenged", fields: [challengedId], references: [id], onDelete: Cascade)
-  submissions  BattleSubmission[]
-  report       BattleReport?
+  challenger  User               @relation("BattleChallenger", fields: [challengerId], references: [id], onDelete: Cascade)
+  challenged  User               @relation("BattleChallenged", fields: [challengedId], references: [id], onDelete: Cascade)
+  submissions BattleSubmission[]
+  report      BattleReport?
 
   @@index([challengerId])
   @@index([challengedId])
@@ -512,15 +513,15 @@ model BattleSubmission {
   userId      String
   code        String
   language    String   @default("javascript")
-  passed      Int      @default(0)   // test cases passed
-  total       Int      @default(0)   // total test cases
-  timeTaken   Int?     // ms
-  memoryUsed  Int?     // KB
+  passed      Int      @default(0) // test cases passed
+  total       Int      @default(0) // total test cases
+  timeTaken   Int? // ms
+  memoryUsed  Int? // KB
   submittedAt DateTime @default(now())
   attempt     Int      @default(1)
 
-  battle      Battle   @relation(fields: [battleId], references: [id], onDelete: Cascade)
-  user        User     @relation("BattleSubmissions", fields: [userId], references: [id], onDelete: Cascade)
+  battle Battle @relation(fields: [battleId], references: [id], onDelete: Cascade)
+  user   User   @relation("BattleSubmissions", fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([battleId])
   @@index([userId])
@@ -530,12 +531,12 @@ model BattleReport {
   id              String   @id @default(cuid())
   battleId        String   @unique
   winnerId        String?
-  challengerScore Json     // { accuracy, avgTime, attempts, testsPassed, weakTopics[] }
+  challengerScore Json // { accuracy, avgTime, attempts, testsPassed, weakTopics[] }
   challengedScore Json
-  analysis        String?  // AI-generated analysis text
+  analysis        String? // AI-generated analysis text
   generatedAt     DateTime @default(now())
 
-  battle          Battle   @relation(fields: [battleId], references: [id], onDelete: Cascade)
+  battle Battle @relation(fields: [battleId], references: [id], onDelete: Cascade)
 }
 
 // ─── DAILY QUEST ──────────────────────────────────────────
@@ -557,14 +558,14 @@ enum QuestDifficulty {
 
 model DailyQuest {
   id          String          @id @default(cuid())
-  date        DateTime        // the day this quest is for (00:00:00 UTC)
+  date        DateTime // the day this quest is for (00:00:00 UTC)
   title       String
   description String
   type        QuestType
   target      Int             @default(1)
   xpReward    Int             @default(100)
   difficulty  QuestDifficulty @default(EASY)
-  metadata    Json?           // e.g. { categorySlug: 'python' }
+  metadata    Json? // e.g. { categorySlug: 'python' }
 
   completions QuestCompletion[]
 
@@ -573,17 +574,17 @@ model DailyQuest {
 }
 
 model QuestCompletion {
-  id        String     @id @default(cuid())
-  userId    String
-  questId   String
-  progress  Int        @default(0)
-  completed Boolean    @default(false)
+  id          String    @id @default(cuid())
+  userId      String
+  questId     String
+  progress    Int       @default(0)
+  completed   Boolean   @default(false)
   completedAt DateTime?
-  xpAwarded Int        @default(0)
-  createdAt DateTime   @default(now())
+  xpAwarded   Int       @default(0)
+  createdAt   DateTime  @default(now())
 
-  user      User       @relation("QuestCompletions", fields: [userId], references: [id], onDelete: Cascade)
-  quest     DailyQuest @relation(fields: [questId], references: [id], onDelete: Cascade)
+  user  User       @relation("QuestCompletions", fields: [userId], references: [id], onDelete: Cascade)
+  quest DailyQuest @relation(fields: [questId], references: [id], onDelete: Cascade)
 
   @@unique([userId, questId])
   @@index([userId])
@@ -592,24 +593,24 @@ model QuestCompletion {
 // ─── GITHUB PORTFOLIO ─────────────────────────────────────
 
 model Portfolio {
-  id              String   @id @default(cuid())
-  userId          String   @unique
-  githubUsername  String?
-  githubToken     String?  // encrypted PAT for repo creation
-  repoName        String?
-  repoUrl         String?
-  lastBuiltAt     DateTime?
-  autoSync        Boolean  @default(true)
-  customDomain    String?
-  themeColor      String   @default("#7C3AED")
-  bio             String?
-  skills          Json?    // string[]
-  socialLinks     Json?    // { github, linkedin, twitter, website }
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id             String    @id @default(cuid())
+  userId         String    @unique
+  githubUsername String?
+  githubToken    String? // encrypted PAT for repo creation
+  repoName       String?
+  repoUrl        String?
+  lastBuiltAt    DateTime?
+  autoSync       Boolean   @default(true)
+  customDomain   String?
+  themeColor     String    @default("#7C3AED")
+  bio            String?
+  skills         Json? // string[]
+  socialLinks    Json? // { github, linkedin, twitter, website }
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
-  user            User     @relation("UserPortfolio", fields: [userId], references: [id], onDelete: Cascade)
-  projects        PortfolioProject[]
+  user     User               @relation("UserPortfolio", fields: [userId], references: [id], onDelete: Cascade)
+  projects PortfolioProject[]
 }
 
 model PortfolioProject {
@@ -618,14 +619,14 @@ model PortfolioProject {
   title       String
   description String?
   language    String?
-  code        String?  // saved code from lessons/battles
-  tags        Json?    // string[]
+  code        String? // saved code from lessons/battles
+  tags        Json? // string[]
   repoUrl     String?
   liveUrl     String?
   featured    Boolean  @default(false)
   createdAt   DateTime @default(now())
 
-  portfolio   Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+  portfolio Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
 
   @@index([portfolioId])
 }
@@ -636,11 +637,11 @@ model MentorSession {
   id        String   @id @default(cuid())
   userId    String
   topic     String?
-  messages  Json     // { role, content, timestamp }[]
+  messages  Json // { role, content, timestamp }[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user      User     @relation("MentorSessions", fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation("MentorSessions", fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
@@ -648,31 +649,31 @@ model MentorSession {
 // ─── CODE ROOMS (Collaborative) ───────────────────────────
 
 model CodeRoom {
-  id          String   @id @default(cuid())
-  name        String
-  code        String   @default("")
-  language    String   @default("javascript")
-  ownerId     String
-  isPublic    Boolean  @default(false)
-  maxUsers    Int      @default(4)
-  expiresAt   DateTime?
-  createdAt   DateTime @default(now())
+  id        String    @id @default(cuid())
+  name      String
+  code      String    @default("")
+  language  String    @default("javascript")
+  ownerId   String
+  isPublic  Boolean   @default(false)
+  maxUsers  Int       @default(4)
+  expiresAt DateTime?
+  createdAt DateTime  @default(now())
 
-  owner       User     @relation("CodeRoomOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  owner        User                  @relation("CodeRoomOwner", fields: [ownerId], references: [id], onDelete: Cascade)
   participants CodeRoomParticipant[]
 
   @@index([ownerId])
 }
 
 model CodeRoomParticipant {
-  id         String   @id @default(cuid())
-  roomId     String
-  userId     String
-  joinedAt   DateTime @default(now())
-  cursorPos  Int      @default(0)
+  id        String   @id @default(cuid())
+  roomId    String
+  userId    String
+  joinedAt  DateTime @default(now())
+  cursorPos Int      @default(0)
 
-  room       CodeRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  user       User     @relation("CodeRoomParticipant", fields: [userId], references: [id], onDelete: Cascade)
+  room CodeRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user User     @relation("CodeRoomParticipant", fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([roomId, userId])
 }
@@ -682,22 +683,22 @@ model CodeRoomParticipant {
 model SkillDNA {
   id        String   @id @default(cuid())
   userId    String   @unique
-  data      Json     // { category: { score, trend, weakTopics[], strongTopics[] } }
+  data      Json // { category: { score, trend, weakTopics[], strongTopics[] } }
   updatedAt DateTime @updatedAt
 
-  user      User     @relation("SkillDNA", fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation("SkillDNA", fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Friendship {
-  id          String       @id @default(cuid())
-  senderId    String
-  receiverId  String
-  status      FriendStatus @default(PENDING)
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  id         String       @id @default(cuid())
+  senderId   String
+  receiverId String
+  status     FriendStatus @default(PENDING)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
 
-  sender      User @relation("FriendshipSender",   fields: [senderId],   references: [id], onDelete: Cascade)
-  receiver    User @relation("FriendshipReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  sender   User @relation("FriendshipSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User @relation("FriendshipReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
 
   @@unique([senderId, receiverId])
   @@index([senderId])
@@ -705,15 +706,15 @@ model Friendship {
 }
 
 model Message {
-  id          String   @id @default(cuid())
-  senderId    String
-  receiverId  String
-  content     String
-  createdAt   DateTime @default(now())
-  read        Boolean  @default(false)
+  id         String   @id @default(cuid())
+  senderId   String
+  receiverId String
+  content    String
+  createdAt  DateTime @default(now())
+  read       Boolean  @default(false)
 
-  sender      User     @relation("SentMessages",     fields: [senderId],   references: [id], onDelete: Cascade)
-  receiver    User     @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+  sender   User @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
 
   @@index([senderId, receiverId])
   @@index([createdAt])
@@ -722,44 +723,44 @@ model Message {
 // ─── RECRUITMENT ──────────────────────────────────────────
 
 model Job {
-  id            String    @id @default(cuid())
-  title         String
-  description   String
-  companyName   String
-  location      String
-  salaryRange   String?
-  jobType       String    @default("Full-time") // Full-time, Part-time, Contract, Freelance
-  experienceLevel String  @default("Entry")     // Entry, Mid, Senior, Lead
-  requirements  Json?     // string[]
-  tags          Json?     // string[] — tech stack
-  isActive      Boolean   @default(true)
-  
-  employerId    String
-  employer      User      @relation("EmployerJobs", fields: [employerId], references: [id], onDelete: Cascade)
-  
-  applications  JobApplication[]
-  
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id              String  @id @default(cuid())
+  title           String
+  description     String
+  companyName     String
+  location        String
+  salaryRange     String?
+  jobType         String  @default("Full-time") // Full-time, Part-time, Contract, Freelance
+  experienceLevel String  @default("Entry") // Entry, Mid, Senior, Lead
+  requirements    Json? // string[]
+  tags            Json? // string[] — tech stack
+  isActive        Boolean @default(true)
+
+  employerId String
+  employer   User   @relation("EmployerJobs", fields: [employerId], references: [id], onDelete: Cascade)
+
+  applications JobApplication[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([employerId])
   @@index([isActive])
 }
 
 model JobApplication {
-  id                String    @id @default(cuid())
-  jobId             String
-  candidateId       String
-  status            String    @default("PENDING") // PENDING, REVIEWED, INTERVIEWED, REJECTED, HIRED
-  compatibilityScore Int       @default(0)         // Computed % based on course completion
-  resumeUrl         String?
-  coverLetter       String?
-  
-  job               Job       @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  candidate         User      @relation("CandidateApplications", fields: [candidateId], references: [id], onDelete: Cascade)
-  
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  id                 String  @id @default(cuid())
+  jobId              String
+  candidateId        String
+  status             String  @default("PENDING") // PENDING, REVIEWED, INTERVIEWED, REJECTED, HIRED
+  compatibilityScore Int     @default(0) // Computed % based on course completion
+  resumeUrl          String?
+  coverLetter        String?
+
+  job       Job  @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  candidate User @relation("CandidateApplications", fields: [candidateId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([jobId, candidateId])
   @@index([jobId])
@@ -769,53 +770,53 @@ model JobApplication {
 // ─── COMMUNITY ─────────────────────────────────────────────
 
 model ForumCategory {
-  id          String        @id @default(cuid())
-  name        String        @unique // e.g., JavaScript, System Design
-  slug        String        @unique
+  id          String  @id @default(cuid())
+  name        String  @unique // e.g., JavaScript, System Design
+  slug        String  @unique
   description String?
   iconName    String?
-  order       Int           @default(0)
-  
-  threads     ForumThread[]
+  order       Int     @default(0)
+
+  threads ForumThread[]
 }
 
 model ForumThread {
-  id          String        @id @default(cuid())
-  title       String
-  content     String        // Markdown support
-  isSolved    Boolean       @default(false)
-  isLocked    Boolean       @default(false)
-  isPinned    Boolean       @default(false)
-  views       Int           @default(0)
-  
-  categoryId  String
-  category    ForumCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  
-  authorId    String
-  author      User          @relation("AuthorThreads", fields: [authorId], references: [id], onDelete: Cascade)
-  
-  comments    ForumComment[]
-  
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  id       String  @id @default(cuid())
+  title    String
+  content  String // Markdown support
+  isSolved Boolean @default(false)
+  isLocked Boolean @default(false)
+  isPinned Boolean @default(false)
+  views    Int     @default(0)
+
+  categoryId String
+  category   ForumCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  authorId String
+  author   User   @relation("AuthorThreads", fields: [authorId], references: [id], onDelete: Cascade)
+
+  comments ForumComment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([categoryId])
   @@index([authorId])
 }
 
 model ForumComment {
-  id          String      @id @default(cuid())
-  content     String      // Markdown support
-  isAccepted  Boolean     @default(false) // Solved marker
-  
-  threadId    String
-  thread      ForumThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
-  
-  authorId    String
-  author      User        @relation("AuthorComments", fields: [authorId], references: [id], onDelete: Cascade)
-  
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id         String  @id @default(cuid())
+  content    String // Markdown support
+  isAccepted Boolean @default(false) // Solved marker
+
+  threadId String
+  thread   ForumThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+
+  authorId String
+  author   User   @relation("AuthorComments", fields: [authorId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([threadId])
   @@index([authorId])

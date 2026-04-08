@@ -10,45 +10,63 @@ const TABS = ['Overview', 'Users', 'Courses', 'Tournaments', 'Hall of Fame'];
 
 // ─── OVERVIEW TAB ─────────────────────────────────────────
 function Overview({ stats }) {
-  if (!stats) return <div className="flex justify-center py-12"><Spinner size={22} className="text-blue-700" /></div>;
+  if (!stats) return (
+    <div className="flex flex-col items-center justify-center py-20 gap-4">
+      <Spinner size={24} className="text-cyber" />
+      <span className="font-mono text-[10px] text-[#444] uppercase tracking-[0.2em]">SYNCHRONIZING TELEMETRY...</span>
+    </div>
+  );
+
+  const StatBlock = ({ label, value, icon: Icon, color = 'cyber' }) => (
+    <div className="blade p-5 flex flex-col gap-3">
+      <div className="flex items-center justify-between">
+        <span className="font-mono text-[9px] font-black text-[#444] uppercase tracking-[0.2em]">{label}</span>
+        <div className={`text-${color} opacity-40`}>{Icon}</div>
+      </div>
+      <div className="font-mono font-black text-2xl text-white tracking-tight">{value}</div>
+    </div>
+  );
+
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard label="Total Users"    value={stats.users.total.toLocaleString()}           icon={<Icons.Users size={14} className="text-indigo-600" />} />
-        <StatCard label="Active Today"   value={stats.users.activeToday.toLocaleString()}     icon={<Icons.Zap size={14} className="text-blue-700" />} />
-        <StatCard label="New This Week"  value={stats.users.newThisWeek.toLocaleString()}     icon={<Icons.TrendingUp size={14} className="text-slate-600" />} />
-        <StatCard label="New This Month" value={stats.users.newThisMonth.toLocaleString()}    icon={<Icons.Calendar size={14} className="text-slate-600" />} />
-      </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard label="Published Courses"   value={stats.courses.published}           icon={<Icons.Book size={14} className="text-indigo-600" />} />
-        <StatCard label="Total Enrollments"   value={stats.courses.enrollments.toLocaleString()} icon={<Icons.Users size={14} className="text-blue-700" />} />
-        <StatCard label="Completions"         value={stats.courses.completions.toLocaleString()} icon={<Icons.Check size={14} className="text-indigo-600" />} />
-        <StatCard label="Lessons Completed"   value={stats.learning.lessonsCompleted.toLocaleString()} icon={<Icons.Play size={14} className="text-slate-600" />} />
-      </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard label="Active Tournaments" value={stats.tournaments.active}           icon={<Icons.Trophy size={14} className="text-yellow-400" />} />
-        <StatCard label="Total Battles"      value={stats.battles.total}                icon={<Icons.Zap size={14} className="text-blue-700" />} />
-        <StatCard label="Quiz Attempts"      value={stats.learning.quizAttempts.toLocaleString()} icon={<Icons.Target size={14} className="text-indigo-600" />} />
-        <StatCard label="Completed Battles"  value={stats.battles.completed}            icon={<Icons.Award size={14} className="text-slate-600" />} />
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <StatBlock label="TOTAL OPERATIVES" value={stats.users.total.toLocaleString()}           icon={<Icons.Users size={14} />} />
+        <StatBlock label="ACTIVE PULSE"    value={stats.users.activeToday.toLocaleString()}     icon={<Icons.Zap size={14} />} />
+        <StatBlock label="NEW RECRUITS/W"  value={stats.users.newThisWeek.toLocaleString()}     icon={<Icons.TrendingUp size={14} />} color="emerald" />
+        <StatBlock label="MONTHLY INTAKE"  value={stats.users.newThisMonth.toLocaleString()}    icon={<Icons.Calendar size={14} />} />
       </div>
 
-      <div className="sf-card overflow-hidden">
-        <div className="px-5 py-3 border-b border-slate-200">
-          <span className="font-mono text-xs text-slate-500 uppercase tracking-widest">Top 10 Users by XP</span>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <StatBlock label="MODULES DEPLOYED"  value={stats.courses.published}                  icon={<Icons.Book size={14} />} color="violet" />
+        <StatBlock label="TOTAL ENROLLMENTS" value={stats.courses.enrollments.toLocaleString()} icon={<Icons.Users size={14} />} />
+        <StatBlock label="OPS COMPLETED"     value={stats.courses.completions.toLocaleString()} icon={<Icons.Check size={14} />} color="emerald" />
+        <StatBlock label="LOGIC SOLVED"      value={stats.learning.lessonsCompleted.toLocaleString()} icon={<Icons.Play size={14} />} />
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <StatBlock label="LIVE EVENTS"       value={stats.tournaments.active}                 icon={<Icons.Trophy size={14} />} color="amber" />
+        <StatBlock label="TOTAL BATTLES"     value={stats.battles.total}                      icon={<Icons.Zap size={14} />} />
+        <StatBlock label="QUIZ TELEMETRY"    value={stats.learning.quizAttempts.toLocaleString()} icon={<Icons.Target size={14} />} />
+        <StatBlock label="ARCHIVED OPS"      value={stats.battles.completed}                  icon={<Icons.Award size={14} />} />
+      </div>
+
+      <div className="blade overflow-hidden">
+        <div className="px-5 py-3 border-b border-white/[0.06] bg-white/[0.02]">
+          <span className="font-mono text-[10px] font-black text-[#555] uppercase tracking-[0.2em]">TOP OPERATIVES BY XPEL</span>
         </div>
-        <div className="divide-y divide-sf-border/40">
+        <div className="divide-y divide-white/[0.04]">
           {(stats.topUsers || []).map((u, i) => (
-            <div key={u.id} className="flex items-center gap-4 px-5 py-3">
-              <span className={`font-mono text-xs font-bold w-5 text-center ${i < 3 ? ['text-yellow-400','text-slate-400','text-amber-600'][i] : 'text-slate-500'}`}>{i+1}</span>
-              <Avatar user={u} size={28} />
+            <div key={u.id} className="flex items-center gap-4 px-5 py-3.5 hover:bg-white/[0.01] transition-colors">
+              <span className={`font-mono text-[10px] font-black w-5 text-center ${i < 3 ? ['text-amber-400','text-[#999]','text-amber-700'][i] : 'text-[#333]'}`}>{i+1}</span>
+              <Avatar user={u} size={30} />
               <div className="flex-1">
-                <span className="font-mono text-xs text-slate-900">{u.username}</span>
+                <span className="font-mono text-[11px] font-black text-white uppercase">{u.username}</span>
               </div>
-              <div className="flex items-center gap-1 text-blue-700">
-                <Icons.Zap size={10} />
-                <span className="font-mono text-xs font-bold">{u.xp.toLocaleString()}</span>
+              <div className="flex items-center gap-2 text-cyber">
+                <Icons.Zap size={10} strokeWidth={2.5} />
+                <span className="font-mono text-[11px] font-black">{u.xp.toLocaleString()}</span>
               </div>
-              <span className="font-mono text-xs text-slate-500 w-20 text-right">{u.coursesCompleted} courses</span>
+              <span className="font-mono text-[10px] font-bold text-[#444] w-24 text-right uppercase tracking-wider">{u.coursesCompleted} MODULES</span>
             </div>
           ))}
         </div>
@@ -81,60 +99,64 @@ function UsersTab() {
       const r = await api.patch(`/admin/users/${id}/toggle`);
       toast.success(r.data.message);
       setUsers(u => u.map(x => x.id === id ? { ...x, isActive: r.data.isActive } : x));
-    } catch (_) { toast.error('Failed'); }
+    } catch (_) { toast.error('FAILED'); }
   };
 
   return (
     <div className="space-y-4">
       <div className="flex gap-3 items-center">
         <div className="relative flex-1 max-w-sm">
-          <Icons.Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-          <input className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 placeholder-slate-400 text-slate-900 focus:outline-none focus:border-blue-500 transition-all text-sm pl-9 text-sm" placeholder="Search users..." value={search}
+          <Icons.Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#444]" />
+          <input className="w-full bg-black border border-white/[0.1] rounded-[4px] px-4 py-3 placeholder-[#333] text-white focus:outline-none focus:border-cyber transition-all text-[11px] font-mono pl-9 uppercase tracking-wider" placeholder="SEARCH RECRUITS..." value={search}
             onChange={(e) => { setSearch(e.target.value); load(e.target.value); }} />
         </div>
-        <span className="font-mono text-xs text-slate-500">{total.toLocaleString()} users</span>
+        <span className="font-mono text-[10px] text-[#444] uppercase font-black tracking-widest">{total.toLocaleString()} REGISTERED</span>
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-8"><Spinner size={22} className="text-blue-700" /></div>
+        <div className="flex justify-center py-20"><Spinner size={22} className="text-cyber" /></div>
       ) : (
-        <div className="sf-card overflow-hidden">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-slate-200">
-                {['User','Email','Role','XP','Streak','Status',''].map(h => (
-                  <th key={h} className="px-4 py-3 text-left font-mono text-xs text-slate-500 uppercase tracking-wider">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-sf-border/40">
-              {users.map(u => (
-                <tr key={u.id} className="hover:bg-slate-100/40 transition-colors">
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <Avatar user={u} size={28} />
-                      <span className="font-mono text-xs text-slate-900">{u.username}</span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 font-mono text-xs text-slate-500">{u.email}</td>
-                  <td className="px-4 py-3">
-                    <BadgeTag variant={u.role === 'ADMIN' ? 'gold' : 'gray'}>{u.role}</BadgeTag>
-                  </td>
-                  <td className="px-4 py-3 font-mono text-xs text-blue-700">{u.xp.toLocaleString()}</td>
-                  <td className="px-4 py-3 font-mono text-xs text-slate-500">{u.streak}d</td>
-                  <td className="px-4 py-3">
-                    <BadgeTag variant={u.isActive ? 'teal' : 'red'}>{u.isActive ? 'Active' : 'Suspended'}</BadgeTag>
-                  </td>
-                  <td className="px-4 py-3">
-                    <button onClick={() => toggle(u.id)}
-                      className={`font-mono text-xs transition-colors ${u.isActive ? 'text-red-400 hover:text-red-300' : 'text-indigo-600 hover:text-sf-teal2'}`}>
-                      {u.isActive ? 'Suspend' : 'Activate'}
-                    </button>
-                  </td>
+        <div className="blade overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-white/[0.08] bg-white/[0.01]">
+                  {['OPERATIVE','COMS','ROLE','XPEL','HISTORY','STATUS','ACTION'].map(h => (
+                    <th key={h} className="px-5 py-3 text-left font-mono text-[9px] font-black text-[#555] uppercase tracking-[0.2em]">{h}</th>
+                  ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-white/[0.04]">
+                {users.map(u => (
+                  <tr key={u.id} className="hover:bg-white/[0.02] transition-colors group">
+                    <td className="px-5 py-3.5">
+                      <div className="flex items-center gap-2">
+                        <Avatar user={u} size={28} />
+                        <span className="font-mono text-[11px] font-black text-white uppercase group-hover:text-cyber transition-colors">{u.username}</span>
+                      </div>
+                    </td>
+                    <td className="px-5 py-3.5 font-mono text-[10px] text-[#555] lowercase">{u.email}</td>
+                    <td className="px-5 py-3.5">
+                       <span className={`px-2 py-0.5 rounded-[2px] font-mono text-[9px] font-black tracking-widest uppercase border ${
+                         u.role === 'ADMIN' ? 'border-amber-400/30 text-amber-400 bg-amber-400/10' : 'border-white/10 text-[#666] bg-white/5'
+                       }`}>{u.role}</span>
+                    </td>
+                    <td className="px-5 py-3.5 font-mono text-[11px] font-black text-cyber">{(u.xp||0).toLocaleString()}</td>
+                    <td className="px-5 py-3.5 font-mono text-[10px] text-[#555] font-black uppercase tracking-wider">{u.streak}D STREAK</td>
+                    <td className="px-5 py-3.5">
+                        <span className={`w-2 h-2 rounded-[1px] inline-block ${u.isActive ? 'bg-emerald animate-pulse' : 'bg-crimson'}`} />
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <button onClick={() => toggle(u.id)}
+                        className={`font-mono text-[9px] font-black tracking-[0.1em] uppercase transition-colors ${u.isActive ? 'text-crimson hover:text-crimson/80' : 'text-emerald hover:text-emerald/80'}`}>
+                        {u.isActive ? 'DEACTIVATE' : 'INITIALIZE'}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>
@@ -155,46 +177,50 @@ function CoursesTab() {
       const r = await api.patch(`/admin/courses/${id}/toggle`);
       toast.success(r.data.message);
       setCourses(c => c.map(x => x.id === id ? { ...x, isPublished: !x.isPublished } : x));
-    } catch (_) { toast.error('Failed'); }
+    } catch (_) { toast.error('FAILED'); }
   };
 
-  if (loading) return <div className="flex justify-center py-8"><Spinner size={22} className="text-blue-700" /></div>;
+  if (loading) return <div className="flex justify-center py-20"><Spinner size={22} className="text-cyber" /></div>;
 
   return (
-    <div className="sf-card overflow-hidden">
-      <table className="w-full">
-        <thead>
-          <tr className="border-b border-slate-200">
-            {['Title','Category','Difficulty','Lessons','Enrolled','Status',''].map(h => (
-              <th key={h} className="px-4 py-3 text-left font-mono text-xs text-slate-500 uppercase tracking-wider">{h}</th>
-            ))}
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-sf-border/40">
-          {courses.map(c => (
-            <tr key={c.id} className="hover:bg-slate-100/40 transition-colors">
-              <td className="px-4 py-3 font-body text-sm text-slate-900 max-w-xs truncate">{c.title}</td>
-              <td className="px-4 py-3 font-mono text-xs text-slate-500">{c.category?.name}</td>
-              <td className="px-4 py-3">
-                <BadgeTag variant={c.difficulty === 'BEGINNER' ? 'teal' : c.difficulty === 'INTERMEDIATE' ? 'purple' : 'red'}>
-                  {c.difficulty}
-                </BadgeTag>
-              </td>
-              <td className="px-4 py-3 font-mono text-xs text-slate-500">{c._count?.lessons}</td>
-              <td className="px-4 py-3 font-mono text-xs text-slate-500">{c._count?.enrollments}</td>
-              <td className="px-4 py-3">
-                <BadgeTag variant={c.isPublished ? 'teal' : 'gray'}>{c.isPublished ? 'Published' : 'Draft'}</BadgeTag>
-              </td>
-              <td className="px-4 py-3">
-                <button onClick={() => toggle(c.id)}
-                  className="font-mono text-xs text-slate-500 hover:text-slate-900 transition-colors">
-                  {c.isPublished ? 'Unpublish' : 'Publish'}
-                </button>
-              </td>
+    <div className="blade overflow-hidden">
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead>
+            <tr className="border-b border-white/[0.08] bg-white/[0.01]">
+              {['MODULE','CLASS','TACTICAL','LOGIC','UNIT','INTEL','ACTION'].map(h => (
+                <th key={h} className="px-5 py-3 text-left font-mono text-[9px] font-black text-[#555] uppercase tracking-[0.2em]">{h}</th>
+              ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="divide-y divide-white/[0.04]">
+            {courses.map(c => (
+              <tr key={c.id} className="hover:bg-white/[0.02] transition-colors group">
+                <td className="px-5 py-4 font-mono font-black text-[11px] text-white uppercase max-w-xs truncate group-hover:text-cyber transition-colors">{c.title}</td>
+                <td className="px-5 py-4 font-mono text-[10px] text-[#555] uppercase tracking-wider">{c.category?.name}</td>
+                <td className="px-5 py-4">
+                  <span className={`px-2 py-0.5 rounded-[2px] font-mono text-[9px] font-black border ${
+                    c.difficulty === 'ADVANCED' ? 'border-crimson/30 text-crimson bg-crimson/5' : 'border-cyber/30 text-cyber bg-cyber/5'
+                  }`}>{c.difficulty}</span>
+                </td>
+                <td className="px-5 py-4 font-mono text-[11px] text-[#555]">{c._count?.lessons}</td>
+                <td className="px-5 py-4 font-mono text-[11px] text-[#555] font-black">{(c._count?.enrollments||0).toLocaleString()}</td>
+                <td className="px-5 py-4">
+                  <span className={`font-mono text-[9px] font-black tracking-widest uppercase ${c.isPublished ? 'text-emerald' : 'text-[#444]'}`}>
+                    {c.isPublished ? 'DEPLOYED' : 'PENDING'}
+                  </span>
+                </td>
+                <td className="px-5 py-3.5">
+                  <button onClick={() => toggle(c.id)}
+                    className="font-mono text-[9px] font-black text-[#555] hover:text-white uppercase tracking-wider transition-colors border border-white/[0.08] px-3 py-1.5 rounded-[2px] hover:border-white/20">
+                    {c.isPublished ? 'ARCHIVE' : 'DEPLOY'}
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
@@ -208,35 +234,60 @@ function TournamentsTab() {
     setSaving(true);
     try {
       await api.post('/admin/tournaments', form);
-      toast.success('Tournament created');
+      toast.success('TOURNAMENT DEPLOYED');
       setForm({ title: '', type: 'CODING_CHALLENGE', startsAt: '', endsAt: '', xpBonus: 500, description: '' });
-    } catch (err) { toast.error(err.response?.data?.error || 'Failed'); }
+    } catch (err) { toast.error(err.response?.data?.error || 'DEPLOYMENT FAULT'); }
     setSaving(false);
   };
 
   return (
-    <div className="sf-card p-6 max-w-xl space-y-4">
-      <span className="font-mono text-xs text-slate-500 uppercase tracking-widest block">Create Tournament</span>
-      <Input label="Title" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="Week #50 Quiz Battle" />
-      <div>
-        <label className="block text-sm font-semibold text-slate-700 mb-1.5">Type</label>
-        <select className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 placeholder-slate-400 text-slate-900 focus:outline-none focus:border-blue-500 transition-all text-sm" value={form.type} onChange={e => setForm({ ...form, type: e.target.value })}>
-          <option value="CODING_CHALLENGE">Coding Challenge</option>
-          <option value="QUIZ_BATTLE">Quiz Battle</option>
-          <option value="SPEED_COURSE">Speed Course</option>
-        </select>
+    <div className="blade p-8 max-w-xl space-y-6">
+      <div className="flex items-center gap-3">
+        <Icons.Trophy className="text-amber-400" size={16} />
+        <h3 className="font-mono font-black text-[12px] text-white tracking-[0.2em] uppercase">INITIALIZE EVENT</h3>
       </div>
-      <Input label="Starts At" type="datetime-local" value={form.startsAt} onChange={e => setForm({ ...form, startsAt: e.target.value })} />
-      <Input label="Ends At"   type="datetime-local" value={form.endsAt}   onChange={e => setForm({ ...form, endsAt: e.target.value })} />
-      <Input label="XP Bonus"  type="number" value={form.xpBonus} onChange={e => setForm({ ...form, xpBonus: Number(e.target.value) })} />
-      <div>
-        <label className="block text-sm font-semibold text-slate-700 mb-1.5">Description</label>
-        <textarea className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 placeholder-slate-400 text-slate-900 focus:outline-none focus:border-blue-500 transition-all text-sm resize-none" rows={3} value={form.description}
-          onChange={e => setForm({ ...form, description: e.target.value })} />
+      
+      <div className="space-y-4">
+        <div>
+          <label className="block font-mono text-[9px] font-bold text-[#444] uppercase tracking-[0.2em] mb-2">EVENT DESIGNATION</label>
+          <input className="w-full bg-black border border-white/[0.1] rounded-[4px] px-4 py-3 text-white font-mono text-[11px] uppercase outline-none focus:border-cyber" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="WEEKLY_CRACKDOWN_01" />
+        </div>
+
+        <div>
+           <label className="block font-mono text-[9px] font-bold text-[#444] uppercase tracking-[0.2em] mb-2">ENGAGEMENT CORE</label>
+           <select className="w-full bg-black border border-white/[0.1] rounded-[4px] px-4 py-3 text-white font-mono text-[11px] uppercase outline-none focus:border-cyber cursor-pointer appearance-none" value={form.type} onChange={e => setForm({ ...form, type: e.target.value })}>
+            <option value="CODING_CHALLENGE">CODING_CHALLENGE</option>
+            <option value="QUIZ_BATTLE">QUIZ_BATTLE</option>
+            <option value="SPEED_COURSE">SPEED_COURSE</option>
+          </select>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+             <label className="block font-mono text-[9px] font-bold text-[#444] uppercase tracking-[0.2em] mb-2">T-MINUS START</label>
+             <input type="datetime-local" className="w-full bg-black border border-white/[0.1] rounded-[4px] px-4 py-3 text-white font-mono text-[11px] uppercase outline-none focus:border-cyber [color-scheme:dark]" value={form.startsAt} onChange={e => setForm({ ...form, startsAt: e.target.value })} />
+          </div>
+          <div>
+             <label className="block font-mono text-[9px] font-bold text-[#444] uppercase tracking-[0.2em] mb-2">T-MINUS END</label>
+             <input type="datetime-local" className="w-full bg-black border border-white/[0.1] rounded-[4px] px-4 py-3 text-white font-mono text-[11px] uppercase outline-none focus:border-cyber [color-scheme:dark]" value={form.endsAt} onChange={e => setForm({ ...form, endsAt: e.target.value })} />
+          </div>
+        </div>
+
+        <div>
+           <label className="block font-mono text-[9px] font-bold text-[#444] uppercase tracking-[0.2em] mb-2">REWARD PAYLOAD (XP)</label>
+           <input type="number" className="w-full bg-black border border-white/[0.1] rounded-[4px] px-4 py-3 text-white font-mono text-[11px] uppercase outline-none focus:border-cyber" value={form.xpBonus} onChange={e => setForm({ ...form, xpBonus: Number(e.target.value) })} />
+        </div>
+
+        <div>
+          <label className="block font-mono text-[9px] font-bold text-[#444] uppercase tracking-[0.2em] mb-2">INTEL BRIEFING</label>
+          <textarea className="w-full bg-black border border-white/[0.1] rounded-[4px] px-4 py-3 text-[#B0B0B0] font-mono text-[11px] uppercase outline-none focus:border-cyber resize-none" rows={3} value={form.description}
+            onChange={e => setForm({ ...form, description: e.target.value })} />
+        </div>
+
+        <button onClick={handleCreate} disabled={saving} className="w-full py-4 bg-cyber text-black font-black font-mono text-[11px] rounded-[4px] uppercase tracking-[0.2em] hover:bg-cyber/90 transition-all disabled:opacity-50">
+          DEPLOY TO GRID
+        </button>
       </div>
-      <Button onClick={handleCreate} variant="primary" loading={saving} className="w-full">
-        <Icons.Trophy size={14} /> Create Tournament
-      </Button>
     </div>
   );
 }
@@ -250,30 +301,33 @@ function HallOfFameTab() {
     api.get('/admin/hall-of-fame').then(r => setEntries(r.data.entries || [])).finally(() => setLoading(false));
   }, []);
 
-  const rankColors = ['text-yellow-400', 'text-slate-400', 'text-amber-600'];
+  const rankColors = ['text-amber-400', 'text-[#999]', 'text-amber-700'];
 
-  if (loading) return <div className="flex justify-center py-8"><Spinner size={22} className="text-blue-700" /></div>;
+  if (loading) return <div className="flex justify-center py-20"><Spinner size={22} className="text-cyber" /></div>;
 
   return (
-    <div className="sf-card overflow-hidden">
-      <div className="px-5 py-3 border-b border-slate-200">
-        <span className="font-mono text-xs text-slate-500 uppercase tracking-widest">Hall of Fame — All Time Top Players</span>
+    <div className="blade overflow-hidden">
+      <div className="px-5 py-4 border-b border-white/[0.06] bg-white/[0.01]">
+        <span className="font-mono text-[10px] font-black text-white uppercase tracking-[0.2em]">LEGACY ARCHIVES — ALL-TIME ELITE</span>
       </div>
-      <div className="divide-y divide-sf-border/40">
+      <div className="divide-y divide-white/[0.04]">
         {entries.map(e => (
-          <div key={e.id} className="flex items-center gap-4 px-5 py-3.5">
-            <Icons.Trophy size={14} className={rankColors[e.rank - 1] || 'text-slate-500'} />
-            <div className="font-mono text-xs text-slate-900">{e.username}</div>
+          <div key={e.id} className="flex items-center gap-4 px-6 py-5 hover:bg-white/[0.01] transition-colors">
+            <Icons.Trophy size={14} className={rankColors[e.rank - 1] || 'text-[#444]'} />
+            <div className="font-mono text-[12px] font-black text-white uppercase tracking-tight">{e.username}</div>
             <div className="flex-1" />
-            <div className="font-mono text-xs text-slate-500">Week {e.weekNumber}, {e.year}</div>
-            <div className="flex items-center gap-1 text-blue-700">
-              <Icons.Zap size={10} />
-              <span className="font-mono text-xs">{e.xp.toLocaleString()}</span>
+            <div className="font-mono text-[10px] text-[#555] font-black uppercase tracking-widest">WEEK {e.weekNumber}, {e.year}</div>
+            <div className="flex items-center gap-2 text-cyber ml-6">
+              <Icons.Zap size={11} strokeWidth={2.5} />
+              <span className="font-mono text-[11px] font-black">{(e.xp||0).toLocaleString()}</span>
             </div>
           </div>
         ))}
         {entries.length === 0 && (
-          <p className="px-5 py-8 text-center font-mono text-xs text-slate-500">No hall of fame entries yet — first weekly reset creates them.</p>
+          <div className="px-5 py-20 text-center">
+             <Icons.Trophy size={32} className="text-[#111] mx-auto mb-4" />
+             <p className="font-mono text-[10px] font-black text-[#444] uppercase tracking-[0.2em]">ARCHIVES EMPTY — FIRST RESET PENDING</p>
+          </div>
         )}
       </div>
     </div>
@@ -295,21 +349,23 @@ export default function AdminPage() {
   if (user?.role !== 'ADMIN') return null;
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="max-w-6xl mx-auto space-y-8 py-4 animate-fade-in">
+      <header className="flex items-center justify-between border-b border-white/[0.08] pb-6">
         <div>
-          <h1 className="font-display font-black text-2xl mb-1">Admin Panel</h1>
-          <p className="font-mono text-xs text-slate-500">// full platform control</p>
+          <h1 className="font-mono font-black text-3xl text-white tracking-[0.1em] uppercase mb-1">COMMAND PANEL</h1>
+          <p className="font-mono text-[10px] text-[#444] uppercase font-black tracking-[0.3em]">SYSTEM_ROOT / GLOBAL_OPS</p>
         </div>
-        <BadgeTag variant="gold">ADMIN</BadgeTag>
-      </div>
+        <div className="px-4 py-1.5 rounded-[2px] bg-amber-400/[0.08] border border-amber-400/30">
+           <span className="font-mono text-[10px] font-black text-amber-400 uppercase tracking-widest">ADMIN PRIVILEGES</span>
+        </div>
+      </header>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-white border border-slate-200 rounded-xl p-1 flex-wrap">
+      <div className="flex gap-2 p-1 bg-[#0A0A0A] border border-white/[0.04] rounded-[4px] overflow-x-auto custom-scrollbar no-scrollbar">
         {TABS.map(t => (
           <button key={t} onClick={() => setTab(t)}
-            className={`flex-1 min-w-fit py-2 px-3 rounded-lg font-mono text-xs transition-all whitespace-nowrap ${
-              tab === t ? 'bg-blue-600 text-white' : 'text-slate-600 hover:text-slate-900'
+            className={`min-w-fit py-2.5 px-6 rounded-[2px] font-mono text-[10px] font-black transition-all whitespace-nowrap uppercase tracking-widest ${
+              tab === t ? 'bg-white/10 text-white shadow-sm' : 'text-[#555] hover:text-white hover:bg-white/[0.02]'
             }`}
           >
             {t}
@@ -317,11 +373,13 @@ export default function AdminPage() {
         ))}
       </div>
 
-      {tab === 'Overview'    && <Overview stats={stats} />}
-      {tab === 'Users'       && <UsersTab />}
-      {tab === 'Courses'     && <CoursesTab />}
-      {tab === 'Tournaments' && <TournamentsTab />}
-      {tab === 'Hall of Fame'&& <HallOfFameTab />}
+      <div className="animate-fade-up">
+        {tab === 'Overview'    && <Overview stats={stats} />}
+        {tab === 'Users'       && <UsersTab />}
+        {tab === 'Courses'     && <CoursesTab />}
+        {tab === 'Tournaments' && <TournamentsTab />}
+        {tab === 'Hall of Fame'&& <HallOfFameTab />}
+      </div>
     </div>
   );
 }

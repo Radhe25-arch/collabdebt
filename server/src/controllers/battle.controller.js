@@ -159,7 +159,7 @@ async function respond(req, res, next) {
 async function configure(req, res, next) {
   try {
     const { id } = req.params;
-    const { mode = 'system', language = 'javascript', timeLimit = 1800, problemText, codeStarter } = req.body;
+    const { mode = 'system', language = 'javascript', timeLimit = 1800, ghostMode = false, problemText, codeStarter } = req.body;
 
     const battle = await prisma.battle.findUnique({ where: { id } });
     if (!battle) throw new AppError('Battle not found', 404);
@@ -186,6 +186,7 @@ async function configure(req, res, next) {
         mode,
         language,
         timeLimit,
+        ghostMode,
         problemText: finalProblem,
         codeStarter: finalStarter,
         startsAt: now,

@@ -307,6 +307,10 @@ export default function BattlePage() {
       const res = await api.get(`/battles/${id}`);
       const b   = res.data.battle;
       setBattle(b);
+      
+      // Initialize starter code on first load
+      setCode(prev => !prev && b.codeStarter ? b.codeStarter : prev);
+
       if (b.status === 'COMPLETED' || b.status === 'ENDED') {
         clearInterval(pollRef.current);
         setShowReport(true);
@@ -418,6 +422,12 @@ export default function BattlePage() {
         )}
 
         <div className="flex items-center gap-2">
+          {battle.ghostMode && (
+            <div className="px-3 py-1 flex items-center gap-2 rounded-[4px] border border-crimson/30 bg-crimson/10 mr-2">
+              <span className="w-1.5 h-1.5 rounded-[1px] bg-crimson animate-pulse" />
+              <span className="font-mono text-[9px] font-black text-crimson tracking-widest uppercase">GHOST MODE ACTIVE</span>
+            </div>
+          )}
           {isCompleted && (
             <button className="btn-primary text-[10px]" onClick={() => setShowReport(true)}>
               <TrendingUp size={12} strokeWidth={1.5} /> VIEW TRANSCRIPT
@@ -581,7 +591,44 @@ export default function BattlePage() {
               <div className="flex-1 overflow-hidden relative">
                 <textarea
                   value={code}
-                  onChange={e => setCode(e.target.value)}
+                  onChange={e => {
+                    const newVal = e.target.value;
+                    if (battle?.ghostMode && code) {
+                      if (!newVal.startsWith(code)) {
+                        toast.error('GHOST MODE: Deletions/modifications are strictly prohibited!', { id: 'ghost_err' });
+                        return;
+                      }
+                      // prevent copy-pasting blocks in ghost mode
+                      if (newVal.length > code.length + 2) {
+                        toast.error('GHOST MODE: Pasting blocks is prohibited!', { id: 'ghost_err_paste' });
+                        return;
+                      }
+                    }
+                    setCode(newVal);
+                  }}
+                  onKeyDown={e => {
+                    if (e.key === 'Tab') {
+                      e.preventDefault();
+                      const start = e.target.selectionStart;
+                      const end = e.target.selectionEnd;
+                      setCode(code.substring(0, start) + '  ' + code.substring(end));
+                      setTimeout(() => { e.target.selectionStart = e.target.selectionEnd = start + 2; }, 0);
+                    }
+                    if (battle?.ghostMode) {
+                      if (['Backspace','Delete','ArrowLeft','ArrowUp'].includes(e.key)) {
+                        e.preventDefault();
+                        toast.error('GHOST MODE: Navigator keys & deletions disabled!', { id: 'ghost_err_nav' });
+                      }
+                    }
+                  }}
+                  onSelect={e => {
+                    if (battle?.ghostMode) {
+                      const len = e.target.value.length;
+                      if (e.target.selectionStart !== len || e.target.selectionEnd !== len) {
+                         e.target.selectionStart = e.target.selectionEnd = len;
+                      }
+                    }
+                  }}
                   disabled={!isActive}
                   className="w-full h-full p-6 outline-none border-none resize-none font-mono text-sm text-[#E0E0E0] leading-relaxed custom-scrollbar disabled:opacity-50"
                   style={{ background: 'transparent', tabSize: 2 }}

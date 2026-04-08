@@ -4,7 +4,7 @@ import { useAuthStore, useUIStore } from '@/store';
 import { Avatar } from '@/components/ui';
 import api from '@/lib/api';
 import {
-  LayoutDashboard, BookOpen, Briefcase, MessageSquare, Terminal,
+  LayoutDashboard, BookOpen, MessageSquare, Terminal,
   Keyboard, HelpCircle, Shield, Menu, Bell, ChevronRight,
   Zap, Code, Trophy, Settings, User, X
 } from 'lucide-react';
@@ -12,7 +12,6 @@ import {
 const MAIN_LINKS = [
   { to: '/dashboard',   label: 'HOME',       Icon: LayoutDashboard },
   { to: '/courses',     label: 'CATALOG',    Icon: BookOpen },
-  { to: '/jobs',        label: 'JOB BOARD',  Icon: Briefcase },
   { to: '/forum',       label: 'COMMUNITY',  Icon: MessageSquare },
   { to: '/mentor',      label: 'AI MENTOR',  Icon: Terminal },
   { to: '/typing-test', label: 'SPEED TEST', Icon: Keyboard },
@@ -153,6 +152,22 @@ function Topbar({ sidebarOpen, toggleSidebar }) {
     setNotifs(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
   };
 
+  const handleBattleAccept = async (id, battleId) => {
+    try {
+      await api.post(`/battles/${battleId}/respond`, { accept: true });
+      await markRead(id);
+      setNotifOpen(false);
+      navigate(`/battles/${battleId}`);
+    } catch { toast.error('FAILED TO ACCEPT'); }
+  };
+
+  const handleBattleDecline = async (id, battleId) => {
+    try {
+      await api.post(`/battles/${battleId}/respond`, { accept: false });
+      await markRead(id);
+    } catch { toast.error('FAILED TO DECLINE'); }
+  };
+
   return (
     <header
       style={{
@@ -246,6 +261,12 @@ function Topbar({ sidebarOpen, toggleSidebar }) {
                           <div className={!n.read ? '' : 'pl-3.5'}>
                             <p className="text-xs font-bold text-white">{n.title || 'NOTIFICATION'}</p>
                             <p className="text-[11px] text-[#666] mt-0.5">{n.body || n.message || ''}</p>
+                            {n.type === 'BATTLE_INVITE' && !n.read && (
+                              <div className="flex gap-2 mt-2">
+                                <button onClick={(e) => { e.stopPropagation(); handleBattleAccept(n.id, n.data?.battleId); }} className="px-3 py-1 bg-emerald/10 text-emerald border border-emerald/30 hover:bg-emerald/20 transition-all rounded-[4px] font-mono font-black text-[9px] uppercase tracking-widest">Accept</button>
+                                <button onClick={(e) => { e.stopPropagation(); handleBattleDecline(n.id, n.data?.battleId); }} className="px-3 py-1 bg-crimson/10 text-crimson border border-crimson/30 hover:bg-crimson/20 transition-all rounded-[4px] font-mono font-black text-[9px] uppercase tracking-widest">Decline</button>
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>

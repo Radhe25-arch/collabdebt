@@ -29,8 +29,6 @@ import PrivacyPage     from '@/pages/PrivacyPage';
 import ProfilePage     from '@/pages/ProfilePage';
 import SettingsPage    from '@/pages/SettingsPage';
 import AdminPage       from '@/pages/AdminPage';
-import JobsPage        from '@/pages/JobsPage';
-import EmployerPage    from '@/pages/EmployerPage';
 import ForumPage       from '@/pages/ForumPage';
 
 function AuthCallback() {
@@ -125,8 +123,6 @@ export default function App() {
           <Route path="/portfolio"             element={<PortfolioPage />} />
           <Route path="/mentor"                element={<MentorPage />} />
           <Route path="/typing-test"           element={<TypingTestPage />} />
-          <Route path="/jobs"                  element={<JobsPage />} />
-          <Route path="/employer"              element={<EmployerPage />} />
           <Route path="/forum"                 element={<ForumPage />} />
           <Route path="/rooms"                 element={<RoomsPage />} />
           <Route path="/rooms/:id"             element={<RoomPage />} />
