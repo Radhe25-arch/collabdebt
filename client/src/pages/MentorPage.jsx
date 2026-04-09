@@ -206,7 +206,6 @@ export default function MentorPage() {
   return (
     <>
       <div className="flex h-[calc(100vh-7rem)] overflow-hidden rounded-[4px] border border-white/[0.08] bg-black shadow-sm">
-
         {/* ── LEFT: Minimal Sidebar ── */}
         <div className="w-64 flex-shrink-0 flex flex-col border-r border-white/[0.08] bg-[#050505]">
           <div className="p-4 border-b border-white/[0.08]">
@@ -235,7 +234,6 @@ export default function MentorPage() {
 
         {/* ── MIDDLE: Clean Chat Area ── */}
         <div className="flex-1 flex flex-col min-w-0 bg-[#020202] relative">
-          
           {/* Top Bar - Clean */}
           <div className="h-14 flex items-center justify-between px-6 border-b border-white/[0.08] bg-[#020202]/90 backdrop-blur-md z-10 sticky top-0">
              <div className="flex items-center gap-3">
@@ -252,6 +250,7 @@ export default function MentorPage() {
                     </button>
                   ))}
                 </div>
+              </div>
           </div>
 
           {/* Messages Area */}
@@ -304,8 +303,6 @@ export default function MentorPage() {
           </div>
         </div>
       </div>
-
-
 
       <QuotaModal isOpen={showQuotaModal} onClose={() => setShowQuotaModal(false)} />
       
