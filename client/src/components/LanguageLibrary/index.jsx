@@ -5,6 +5,8 @@ import LanguageCard from './LanguageCard';
 import TechTree from './TechTree';
 import LanguageDetailPanel from './LanguageDetailPanel';
 import { LANGUAGES, PARADIGMS, USAGES, DIFFICULTIES } from '@/data/languages-db';
+import api from '@/lib/api';
+import toast from 'react-hot-toast';
 
 export default function LanguageLibrary() {
   const [viewMode, setViewMode] = useState('GRID'); // GRID | TREE
@@ -31,9 +33,21 @@ export default function LanguageLibrary() {
     });
   }, [filters]);
 
-  const handleStartLearning = (lang) => {
-    // Navigate to course or trigger JIT creation
-    window.location.href = `/courses/${lang.id}/start`;
+  const handleStartLearning = async (lang) => {
+    try {
+      // 1. Initialize course in backend (if missing, creates skeleton)
+      const r = await api.get(`/courses/initialize/${lang.id}`);
+      const { courseId, slug } = r.data;
+      
+      // 2. Enroll the user (logic already in backend, but we ensure enrollment here)
+      await api.post(`/courses/${slug}/enroll`);
+      
+      // 3. Navigate directly to the first lesson (FOUNDATION)
+      window.location.href = `/courses/${slug}/lesson/foundation`;
+    } catch (err) {
+      console.error('Initialization Failed:', err);
+      toast.error('JIT MODULE INITIALIZATION FAILED');
+    }
   };
 
   return (

@@ -114,72 +114,6 @@ function QuotaModal({ isOpen, onClose }) {
   );
 }
 
-// ─── PISTON RUNNER PANEL (Clean dark mode) ────────────────
-function CodePanel({ visible, onClose }) {
-  const [code, setCode]         = useState('// Write code to execute\nconsole.log("Hello, Engineer!");');
-  const [language, setLanguage] = useState('javascript');
-  const [output, setOutput]     = useState('');
-  const [running, setRunning]   = useState(false);
-  const [status, setStatus]     = useState(null);
-
-  const runCode = async () => {
-    setRunning(true); setOutput(''); setStatus('Executing');
-    try {
-      const r = await api.post('/code/execute', { code, language });
-      setOutput(r.data.output);
-      setStatus(r.data.status || 'Finished');
-    } catch (err) {
-      setOutput('Error: ' + (err.response?.data?.error || err.message || 'Execution failed'));
-      setStatus('Failed');
-    }
-    setRunning(false);
-  };
-
-  if (!visible) return null;
-
-  return (
-    <div className="w-[450px] flex-shrink-0 flex flex-col bg-[#0d1117] border-l border-slate-200 fade-in relative z-20">
-      <div className="flex items-center justify-between px-5 py-4 border-b border-[#30363d] bg-[#010409]">
-        <div className="flex items-center gap-3">
-          <div className="w-2 h-2 rounded-full bg-green-500" />
-          <span className="text-[11px] font-mono font-bold text-slate-300 uppercase tracking-[0.2em]">Execution Environment</span>
-        </div>
-        <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors">
-          <Icons.X size={14} />
-        </button>
-      </div>
-
-      <div className="flex items-center gap-2 px-4 py-2 bg-[#0d1117] border-b border-[#30363d] overflow-x-auto no-scrollbar">
-        {['javascript', 'python', 'java', 'cpp', 'go'].map(lang => (
-          <button key={lang} onClick={() => setLanguage(lang)}
-            className={`px-3 py-1 rounded text-[10px] font-mono font-bold capitalize transition-all ${
-              language === lang ? 'bg-blue-600/20 text-blue-400' : 'text-slate-500 hover:text-slate-300'
-            }`}>{lang}</button>
-        ))}
-        <div className="flex-1" />
-        <button onClick={runCode} disabled={running}
-          className="flex items-center gap-2 px-3 py-1 rounded bg-green-600/20 hover:bg-green-600/40 text-green-400 text-[10px] font-bold transition-all disabled:opacity-50 uppercase tracking-widest">
-          {running ? 'Running...' : 'Run'} <Icons.Play size={10} className="fill-current" />
-        </button>
-      </div>
-
-      <div className="flex-1 relative overflow-hidden group">
-        <textarea className="absolute inset-0 w-full h-full bg-[#0d1117] text-[#e6edf3] font-mono text-[13px] p-5 outline-none resize-none custom-scrollbar leading-relaxed"
-          spellCheck={false} value={code} onChange={e => setCode(e.target.value)} />
-      </div>
-
-      <div className="h-64 border-t border-[#30363d] bg-[#010409] flex flex-col">
-        <div className="px-5 py-2 border-b border-[#30363d] flex justify-between items-center text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-slate-500">
-          <span>Output Stream</span>
-          {status && <span className={status === 'Failed' ? 'text-red-400' : 'text-green-400'}>{status}</span>}
-        </div>
-        <div className="flex-1 p-5 font-mono text-[12px] text-slate-300 overflow-y-auto whitespace-pre-wrap leading-relaxed custom-scrollbar">
-          {output || <span className="opacity-30">// Standard output will appear here</span>}
-        </div>
-      </div>
-    </div>
-  );
-}
 
 // ─── MAIN MENTOR PAGE ─────────────────────────────────────
 export default function MentorPage() {
@@ -189,7 +123,6 @@ export default function MentorPage() {
   const [input, setInput]             = useState('');
   const [sending, setSending]         = useState(false);
   const [loading, setLoading]         = useState(true);
-  const [showCodePanel, setShowCodePanel] = useState(true);
   const [showQuotaModal, setShowQuotaModal] = useState(false);
   const [activeMode, setActiveMode]   = useState('dev');
   
@@ -319,10 +252,6 @@ export default function MentorPage() {
                     </button>
                   ))}
                 </div>
-                <button onClick={() => setShowCodePanel(!showCodePanel)} className="p-1.5 rounded-[4px] hover:bg-white/[0.04] text-[#666] hover:text-white transition-colors border border-transparent hover:border-white/[0.08]">
-                   <Icons.Terminal size={14} />
-                </button>
-             </div>
           </div>
 
           {/* Messages Area */}
@@ -374,10 +303,9 @@ export default function MentorPage() {
             </div>
           </div>
         </div>
-
-        {/* ── RIGHT: Console Panel ── */}
-        <CodePanel visible={showCodePanel} onClose={() => setShowCodePanel(false)} />
       </div>
+
+
 
       <QuotaModal isOpen={showQuotaModal} onClose={() => setShowQuotaModal(false)} />
       

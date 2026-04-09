@@ -1,45 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useAuthStore } from '@/store';
 import { Avatar } from '@/components/ui';
-import { Globe, Calendar, TrendingUp, Search, Flame, Zap, Trophy, ChevronRight } from 'lucide-react';
+import { Globe, Calendar, TrendingUp, Search, Flame, Zap, Trophy, ChevronRight, Loader2 } from 'lucide-react';
+import api from '@/lib/api';
+import toast from 'react-hot-toast';
 
 // ─── SEEDED PRNG ──────────────────────────────────────────
-function mulberry32(a) {
-  return function () {
-    a |= 0; a = a + 0x6D2B79F5 | 0;
-    let t = Math.imul(a ^ a >>> 15, 1 | a);
-    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
-    return ((t ^ t >>> 14) >>> 0) / 4294967296;
-  };
-}
-
-const FIRST_NAMES = [
-  'Aarav','Aditi','Alex','Amira','Ananya','Arjun','Aisha','Benjamin','Carlos','Chen',
-  'Clara','Daniel','David','Elena','Emma','Ethan','Fatima','Gabriel','Hannah','Hugo',
-  'Isabella','James','Jordan','Kai','Liam','Lucia','Maria','Mateo','Maya','Mei',
-  'Mohammed','Nadia','Nathan','Neha','Noah','Olivia','Omar','Priya','Quinn','Rafael',
-  'Ravi','Sakura','Samuel','Sara','Sofia','Soren','Tanya','Theo','Uma','Viktor',
-  'Wei','Xander','Yuki','Zara','Zoe','Marco','Skyler','Thorsten','Ava','Charlotte',
-  'Sophia','Amelia','Harper','Lucas','Elijah','Aiden','Juan','Ahmed','Ali','Miguel',
-  'Luna','Leo','Mila','Aria','Riley','Chloe','Layla','Lily','Eleanor','Grace',
-];
-const LAST_NAMES = [
-  'Rivera','Chen','Thorne','Vance','Park','Hayes','OShea','Lin','Shah','Kulkarni',
-  'Diaz','Garcia','Martinez','Rodriguez','Lopez','Gonzalez','Wilson','Anderson','Thomas','Taylor',
-  'Moore','Jackson','Martin','Lee','Perez','Thompson','White','Harris','Sanchez','Clark',
-  'Ramirez','Lewis','Robinson','Walker','Young','Allen','King','Wright','Scott','Torres',
-  'Nguyen','Hill','Flores','Green','Adams','Nelson','Baker','Hall','Campbell','Mitchell',
-  'Patel','Kim','Nakamura','Tanaka','Mueller','Fischer','Schmidt','Weber','Ivanov','Petrov',
-  'Singh','Sharma','Gupta','Verma','Khan','Ali','Ahmed','Yamamoto','Sato','Suzuki',
-];
-
-const BADGE_POOL = [
-  'CODE WARRIOR','SPEED DEMON','BUG HUNTER','ALGORITHM PRO','FULL STACK',
-  'OPEN SOURCE','NIGHT OWL','EARLY BIRD','TEAM PLAYER','STREAK MASTER',
-  'QUIZ CHAMPION','FAST LEARNER','PYTHONISTA','JS NINJA','DATA WIZARD',
-  'SEC EXPERT','CLOUD ARCH','MOBILE DEV','DEVOPS PRO','AI ENGINEER',
-];
-
 const XP_THRESHOLDS = [0,500,1200,2500,4500,7500,12000,18000,26000,36000];
 const LEVEL_NAMES   = ['BEGINNER','APPRENTICE','CODER','DEVELOPER','SENIOR DEV','ARCHITECT','PRO','EXPERT','MASTER','LEGEND'];
 
@@ -59,38 +25,14 @@ function getLevelColor(lvl) {
   return colors[lvl - 1] || '#555';
 }
 
-function generateUsers(count, seed = 77777) {
-  const rng = mulberry32(seed);
-  const users = [];
-  const usedNames = new Set();
-
-  for (let i = 0; i < count; i++) {
-    const firstName = FIRST_NAMES[Math.floor(rng() * FIRST_NAMES.length)];
-    const lastName  = LAST_NAMES[Math.floor(rng() * LAST_NAMES.length)];
-    const suffix    = Math.floor(rng() * 9999);
-    let username = `${firstName.toLowerCase()}_${lastName.toLowerCase()}${suffix}`;
-    while (usedNames.has(username)) username += Math.floor(rng() * 10);
-    usedNames.add(username);
-
-    const raw = rng();
-    const xp  = Math.floor(Math.pow(raw, 0.6) * 48000) + Math.floor(rng() * 2000);
-    const level  = getLevel(xp);
-    const streak = Math.floor(Math.pow(rng(), 1.5) * 365);
-    const badge  = BADGE_POOL[Math.floor(rng() * BADGE_POOL.length)];
-
-    users.push({
-      id: `sf_user_${i}`,
-      username,
-      fullName: `${firstName} ${lastName}`,
-      xp, level, streak, badge,
-      coursesCompleted: Math.floor(rng() * level * 4),
-      avatarHue: Math.floor(rng() * 360),
-    });
-  }
-  users.sort((a, b) => b.xp - a.xp);
-  users.forEach((u, i) => { u.rank = i + 1; });
-  return users;
-}
+const FIRST_NAMES = []; // Purged bots
+const LAST_NAMES  = []; 
+const BADGE_POOL  = [
+  'CODE WARRIOR','SPEED DEMON','BUG HUNTER','ALGORITHM PRO','FULL STACK',
+  'OPEN SOURCE','NIGHT OWL','EARLY BIRD','TEAM PLAYER','STREAK MASTER',
+  'QUIZ CHAMPION','FAST LEARNER','PYTHONISTA','JS NINJA','DATA WIZARD',
+  'SEC EXPERT','CLOUD ARCH','MOBILE DEV','DEVOPS PRO','AI ENGINEER',
+];
 
 const TABS = [
   { key: 'global', label: 'GLOBAL',  Icon: Globe },
@@ -250,52 +192,35 @@ export default function LeaderboardPage() {
   const [tab, setTab] = useState('global');
   const [visibleCount, setVisibleCount] = useState(PER_PAGE);
   const [searchQuery, setSearchQuery] = useState('');
+  
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [total, setTotal] = useState(0);
+  const [myRank, setMyRank] = useState(null);
 
-  const allUsers = useMemo(() => generateUsers(25000), []);
-
-  const { mergedUsers, myRank } = useMemo(() => {
-    if (!user) return { mergedUsers: allUsers, myRank: null };
-    const userXp = user.xp || 0;
-    let insertIdx = allUsers.findIndex(u => u.xp <= userXp);
-    if (insertIdx === -1) insertIdx = allUsers.length;
-    const rank = insertIdx + 1;
-    const merged = [...allUsers];
-    merged.splice(insertIdx, 0, {
-      id: user.id, username: user.username,
-      fullName: user.fullName || user.username,
-      avatarUrl: user.avatarUrl, xp: userXp,
-      level: user.level || 1, streak: user.streak || 0,
-      badge: 'SKILLFORGER',
-      coursesCompleted: user.coursesCompleted || 0,
-      isRealUser: true,
-    });
-    merged.forEach((u, i) => { u.rank = i + 1; });
-    return { mergedUsers: merged, myRank: rank };
-  }, [allUsers, user]);
+  useEffect(() => {
+    setLoading(true);
+    let endpoint = '/leaderboard/global';
+    if (tab === 'weekly') endpoint = '/leaderboard/weekly';
+    
+    api.get(endpoint, { params: { limit: 100 } })
+      .then(r => {
+        setUsers(r.data.users || []);
+        setTotal(r.data.total || r.data.users?.length || 0);
+        if (r.data.myRank) setMyRank(r.data.myRank);
+      })
+      .catch(() => setUsers([]))
+      .finally(() => setLoading(false));
+  }, [tab]);
 
   const filteredUsers = useMemo(() => {
-    let list = mergedUsers;
-    if (tab === 'weekly') {
-      list = [...mergedUsers].sort((a, b) => {
-        const aW = Math.floor((a.xp * (a.streak || 1)) / 100);
-        const bW = Math.floor((b.xp * (b.streak || 1)) / 100);
-        return bW - aW;
-      }).map((u, i) => ({ ...u, rank: i + 1 }));
-    } else if (tab === 'rising') {
-      list = [...mergedUsers]
-        .filter(u => u.level <= 6)
-        .sort((a, b) => b.xp - a.xp)
-        .map((u, i) => ({ ...u, rank: i + 1 }));
-    }
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      list = list.filter(u =>
-        u.username?.toLowerCase().includes(q) ||
-        u.fullName?.toLowerCase().includes(q)
-      ).map((u, i) => ({ ...u, rank: i + 1 }));
-    }
-    return list;
-  }, [mergedUsers, tab, searchQuery]);
+    if (!searchQuery.trim()) return users;
+    const q = searchQuery.toLowerCase();
+    return users.filter(u => 
+      u.username?.toLowerCase().includes(q) || 
+      u.fullName?.toLowerCase().includes(q)
+    );
+  }, [users, searchQuery]);
 
   const visibleUsers = filteredUsers.slice(0, visibleCount);
   const hasMore = visibleCount < filteredUsers.length;

@@ -10,11 +10,14 @@ import {
 } from 'lucide-react';
 
 const MAIN_LINKS = [
-  { to: '/dashboard',   label: 'HOME',       Icon: LayoutDashboard },
-  { to: '/courses',     label: 'CATALOG',    Icon: BookOpen },
-  { to: '/forum',       label: 'COMMUNITY',  Icon: MessageSquare },
-  { to: '/mentor',      label: 'AI MENTOR',  Icon: Terminal },
-  { to: '/typing-test', label: 'SPEED TEST', Icon: Keyboard },
+  { to: '/dashboard',     label: 'HOME',          Icon: LayoutDashboard },
+  { to: '/courses',       label: 'ARCHIVE',       Icon: BookOpen },
+  { to: '/mentor',        label: 'AI MENTOR',     Icon: Terminal },
+  { to: '/battles',       label: 'THE ARENA',     Icon: Zap },
+  { to: '/leaderboard',   label: 'HALL OF FAME',  Icon: Trophy },
+  { to: '/community',     label: 'COMMUNITY',     Icon: User },
+  { to: '/lab',           label: 'THE LAB',       Icon: Code },
+  { to: '/settings',      label: 'SYSTEM',        Icon: Settings },
 ];
 
 const BOTTOM_LINKS = [
@@ -51,7 +54,6 @@ function Sidebar({ open }) {
 
   return (
     <aside
-      style={{ width: open ? 240 : 0 }}
       className="fixed left-0 top-0 h-screen z-40 flex flex-col overflow-hidden transition-all duration-300"
       style={{ 
         width: open ? 240 : 0,
@@ -91,31 +93,50 @@ function Sidebar({ open }) {
         ))}
       </nav>
 
-      {/* User Identity */}
+      {/* User Identity — Industrial Dark Premium */}
       {user && (
         <div
-          className="px-3 py-4 flex-shrink-0"
-          style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
+          className="px-3 py-6 flex-shrink-0"
+          style={{ borderTop: '1px solid rgba(255,255,255,0.06)', background: 'linear-gradient(180deg, transparent 0%, rgba(59,130,246,0.02) 100%)' }}
         >
-          <p className="font-mono text-[9px] font-bold text-[#333] uppercase tracking-[0.2em] mb-3 px-1">
-            SECURITY IDENTITY
-          </p>
+          <div className="flex items-center justify-between mb-4 px-1">
+             <p className="font-mono text-[9px] font-black text-[#444] uppercase tracking-[0.3em]">
+               OPERATIVE_ID
+             </p>
+             <div className="w-1.5 h-1.5 rounded-full bg-emerald animate-pulse" />
+          </div>
+          
           <Link
             to="/profile"
-            className="flex items-center gap-3 p-3 rounded-[4px] border border-white/[0.06] hover:border-white/[0.12] hover:bg-white/[0.02] transition-all duration-150 group"
+            className="flex flex-col gap-4 p-4 rounded-[4px] border border-white/[0.08] bg-white/[0.01] hover:bg-white/[0.03] transition-all duration-300 group relative overflow-hidden"
           >
-            <Avatar user={user} size={32} />
-            <div className="flex-1 min-w-0">
-              <p className="font-mono text-[11px] font-black text-white truncate tracking-wide uppercase">
-                {user?.username}
-              </p>
-              <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="font-mono text-[9px] font-bold text-cyber">LV {user?.level || 1}</span>
-                <span className="text-[#333]">·</span>
-                <span className="font-mono text-[9px] font-bold text-[#555]">{(user?.xp || 0).toLocaleString()} XP</span>
+            {/* Background Glow */}
+            <div className="absolute -right-4 -bottom-4 w-12 h-12 bg-cyber/5 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+            
+            <div className="flex items-center gap-3 relative z-10">
+              <Avatar user={user} size={36} className="border border-white/10 group-hover:border-cyber/30 transition-colors" />
+              <div className="flex-1 min-w-0">
+                <p className="font-mono text-[12px] font-black text-white truncate tracking-tighter uppercase group-hover:text-cyber transition-colors">
+                  {user?.username}
+                </p>
+                <p className="font-mono text-[9px] font-bold text-[#555] opacity-80 uppercase">VERIFIED_UNIT</p>
               </div>
             </div>
-            <ChevronRight size={12} strokeWidth={1.5} className="text-[#333] group-hover:text-[#666] transition-colors" />
+
+            <div className="grid grid-cols-2 gap-2 pt-2 border-t border-white/[0.04]">
+               <div className="flex flex-col">
+                  <span className="font-mono text-[8px] font-black text-[#444] uppercase tracking-widest">RANK</span>
+                  <span className="font-mono text-[10px] font-black text-cyber">LV {user?.level || 1}</span>
+               </div>
+               <div className="flex flex-col">
+                  <span className="font-mono text-[8px] font-black text-[#444] uppercase tracking-widest">STREAK</span>
+                  <span className="font-mono text-[10px] font-black text-amber">{user?.streak || 0} DAY</span>
+               </div>
+            </div>
+            
+            <div className="w-full h-1 bg-white/[0.04] rounded-full overflow-hidden">
+               <div className="h-full bg-cyber" style={{ width: '65%' }} />
+            </div>
           </Link>
         </div>
       )}
@@ -179,7 +200,7 @@ function Topbar({ sidebarOpen, toggleSidebar }) {
       className="fixed top-0 right-0 z-30 h-16 flex items-center justify-between px-6 transition-all duration-300"
     >
       {/* Left — hamburger */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-6">
         <button
           onClick={toggleSidebar}
           className="text-[#666] hover:text-white transition-colors duration-150 p-1"
@@ -194,6 +215,32 @@ function Topbar({ sidebarOpen, toggleSidebar }) {
             </span>
           </div>
         )}
+        
+        {/* Live Telemetry */}
+        <div className="hidden md:flex items-center gap-8 pl-6 border-l border-white/[0.08]">
+           <div className="flex flex-col">
+              <span className="font-mono text-[10px] font-black text-[#444] uppercase tracking-widest">SYSTEM_STABILITY</span>
+              <div className="flex items-center gap-2 mt-0.5">
+                 <div className="flex gap-0.5">
+                    {[1, 2, 3, 4, 5].map(i => <div key={i} className={`w-0.5 h-2 ${i < 5 ? 'bg-emerald' : 'bg-emerald/30'}`} />)}
+                 </div>
+                 <span className="font-mono text-[10px] font-black text-emerald uppercase">OPTIMAL</span>
+              </div>
+           </div>
+           
+           <div className="flex flex-col">
+              <span className="font-mono text-[10px] font-black text-[#444] uppercase tracking-widest">XP_TELEMETRY</span>
+              <span className="font-mono text-[10px] font-black text-white mt-0.5 uppercase">{(user?.xp || 0).toLocaleString()} UNITS</span>
+           </div>
+
+           <div className="flex flex-col">
+              <span className="font-mono text-[10px] font-black text-[#444] uppercase tracking-widest">DRIVE_STREAK</span>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                 <Zap size={10} className="text-amber fill-amber/20" />
+                 <span className="font-mono text-[10px] font-black text-amber uppercase">{user?.streak || 0} DAYS</span>
+              </div>
+           </div>
+        </div>
       </div>
 
       {/* Right */}

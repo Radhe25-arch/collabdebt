@@ -110,6 +110,58 @@ courseRouter.post('/:id/enroll', authenticate, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// --- JIT INITIALIZATION PROTOCOL ---
+courseRouter.get('/initialize/:targetId', authenticate, async (req, res, next) => {
+  try {
+    const { targetId } = req.params;
+    
+    // 1. Check if course already exists
+    let course = await prisma.course.findFirst({
+      where: { OR: [{ id: targetId }, { slug: targetId }] },
+      include: { lessons: { orderBy: { order: 'asc' } } }
+    });
+
+    if (course) {
+      return res.json({ courseId: course.id, slug: course.slug, lessons: course.lessons });
+    }
+
+    // 2. Fetch or create "Industrial" category
+    let category = await prisma.category.findUnique({ where: { slug: 'industrial' } });
+    if (!category) {
+      category = await prisma.category.create({
+        data: { name: 'Industrial', slug: 'industrial', description: 'Just-In-Time technical modules.', order: 10 }
+      });
+    }
+
+    // 3. Create Course Skeleton (No-Bluf Initialization)
+    // We assume targetId is a valid language ID from the frontend library
+    const title = targetId.charAt(0).toUpperCase() + targetId.slice(1).replace(/_/g, ' ');
+    
+    course = await prisma.course.create({
+      data: {
+        title,
+        slug: targetId,
+        description: `High-precision technical mastery module for ${title}.`,
+        categoryId: category.id,
+        difficulty: 'INTERMEDIATE',
+        isPublished: true,
+        lessons: {
+          create: [
+            { title: 'FOUNDATION', slug: 'foundation', order: 0, content: '', xpReward: 50 },
+            { title: 'LOGIC', slug: 'logic', order: 1, content: '', xpReward: 100 },
+            { title: 'ADVANCED', slug: 'advanced', order: 2, content: '', xpReward: 150 },
+            { title: 'REAL-WORLD', slug: 'real-world', order: 3, content: '', xpReward: 200 }
+          ]
+        }
+      },
+      include: { lessons: { orderBy: { order: 'asc' } } }
+    });
+
+    console.log(`[JIT] Initialized new module: ${title}`);
+    res.json({ courseId: course.id, slug: course.slug, lessons: course.lessons });
+  } catch (err) { next(err); }
+});
+
 // ─── LESSONS ──────────────────────────────────────────────
 
 lessonRouter.get('/:id', optionalAuth, async (req, res, next) => {

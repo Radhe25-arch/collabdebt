@@ -45,13 +45,19 @@ const Navbar = () => {
           </div>
           
           <div className="hidden md:flex items-center gap-6">
-            {['CURRICULUM', 'BATTLES', 'MENTOR', 'SPEED TEST', 'FORUM'].map(item => (
+            {[
+              { label: 'ARCHIVE', to: '/courses' },
+              { label: 'THE ARENA', to: '/battles' },
+              { label: 'AI MENTOR', to: '/mentor' },
+              { label: 'HALL OF FAME', to: '/leaderboard' },
+              { label: 'THE LAB', to: '/lab' }
+            ].map(item => (
               <a 
-                key={item} 
-                href={item === 'SPEED TEST' ? '/typing-test' : `/${item.toLowerCase().replace(' ', '-')}`}
-                className="text-[11px] font-bold text-[#666] hover:text-white transition-colors tracking-widest"
+                key={item.label} 
+                href={item.to}
+                className="text-[11px] font-bold text-[#666] hover:text-white transition-colors tracking-widest uppercase"
               >
-                {item}
+                {item.label}
               </a>
             ))}
           </div>
@@ -299,8 +305,8 @@ export default function LandingPage() {
             <BentoCard 
               className="md:col-span-4 h-[300px]"
               icon={Shield}
-              title="VERIFIED PROOF"
-              desc="Stop collecting certificates. Build a provable, on-chain portfolio of engineering achievements verified by AI."
+              title="SYSTEM STATUS"
+              desc="Real-time transparency into platform architecture, latency, and system stability. Built for reliability."
               delay={0.4}
             />
             <BentoCard 
@@ -367,9 +373,9 @@ export default function LandingPage() {
           
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-12">
             {[
-              { title: 'SYSTEM', links: ['CORE', 'STATUS', 'API', 'AUTH'] },
-              { title: 'LEARN', links: ['RUST', 'ZIG', 'CARBON', 'MOJO'] },
-              { title: 'ELITE', links: ['ARENA', 'GUILDS', 'RECRUIT', 'PRIME'] }
+              { title: 'SYSTEM', links: ['TERMINAL', 'STATUS', 'API', 'AUTH'] },
+              { title: 'LEARN', links: ['RUST', 'ZIG', 'CARBON', 'ARCHIVE'] },
+              { title: 'ELITE', links: ['ARENA', 'GUILDS', 'HALL OF FAME', 'LAB'] }
             ].map(col => (
               <div key={col.title}>
                 <h4 className="font-mono text-[10px] font-black text-[#666] tracking-[0.2em] mb-6 uppercase">{col.title}</h4>

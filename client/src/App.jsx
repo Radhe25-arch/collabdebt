@@ -22,7 +22,7 @@ import BattlePage      from '@/pages/BattlePage';
 import QuestPage       from '@/pages/QuestPage';
 import PortfolioPage   from '@/pages/PortfolioPage';
 import MentorPage      from '@/pages/MentorPage';
-import TypingTestPage  from '@/pages/TypingTestPage';
+import CommunityPage   from '@/pages/CommunityPage';
 import RoomsPage, { RoomPage } from '@/pages/RoomsPage';
 import SupportPage     from '@/pages/SupportPage';
 import PrivacyPage     from '@/pages/PrivacyPage';
@@ -30,6 +30,7 @@ import ProfilePage     from '@/pages/ProfilePage';
 import SettingsPage    from '@/pages/SettingsPage';
 import AdminPage       from '@/pages/AdminPage';
 import ForumPage       from '@/pages/ForumPage';
+import LabPage         from '@/pages/LabPage';
 
 function AuthCallback() {
   const [params] = useSearchParams();
@@ -122,7 +123,7 @@ export default function App() {
           <Route path="/quests"                element={<QuestPage />} />
           <Route path="/portfolio"             element={<PortfolioPage />} />
           <Route path="/mentor"                element={<MentorPage />} />
-          <Route path="/typing-test"           element={<TypingTestPage />} />
+          <Route path="/community"             element={<CommunityPage />} />
           <Route path="/forum"                 element={<ForumPage />} />
           <Route path="/rooms"                 element={<RoomsPage />} />
           <Route path="/rooms/:id"             element={<RoomPage />} />
@@ -130,6 +131,7 @@ export default function App() {
           <Route path="/privacy"               element={<PrivacyPage />} />
           <Route path="/profile"               element={<ProfilePage />} />
           <Route path="/settings"              element={<SettingsPage />} />
+          <Route path="/lab"                   element={<LabPage />} />
           <Route path="/admin"                 element={<AdminPage />} />
           <Route path="*"                      element={<Navigate to="/dashboard" replace />} />
         </Route>
