@@ -15,7 +15,11 @@ import {
   Stars as Sparkles,
   ChevronRight,
   Globe,
-  Database
+  Database,
+  Trophy,
+  MessageSquare,
+  Activity,
+  Box
 } from 'lucide-react';
 import { Button } from '@/components/ui';
 
@@ -41,7 +45,7 @@ const Navbar = () => {
             <div className="w-8 h-8 bg-white flex items-center justify-center rounded-[4px]">
               <div className="w-4 h-4 bg-black rounded-[2px]" />
             </div>
-            <span className="font-bold text-lg tracking-tighter text-white">SKILLFORGE</span>
+            <span className="font-bold text-lg tracking-tighter text-white uppercase">SKILLFORGE</span>
           </div>
           
           <div className="hidden md:flex items-center gap-6">
@@ -66,7 +70,7 @@ const Navbar = () => {
         <div className="flex items-center gap-4">
           <button 
             onClick={() => navigate('/login')}
-            className="text-[11px] font-bold text-[#666] hover:text-white transition-colors tracking-widest"
+            className="text-[11px] font-bold text-[#666] hover:text-white transition-colors tracking-widest uppercase"
           >
             LOG IN
           </button>
@@ -103,7 +107,7 @@ const CodeTerminal = () => {
   }, []);
 
   return (
-    <div className="w-full max-w-2xl glass-overlay rounded-[4px] overflow-hidden shadow-2xl">
+    <div className="w-full max-w-2xl glass-overlay rounded-[4px] overflow-hidden shadow-2xl relative">
       <div className="h-8 bg-white/5 border-b border-white/10 flex items-center px-4 gap-1.5">
         <div className="w-2.5 h-2.5 rounded-full bg-crimson/50" />
         <div className="w-2.5 h-2.5 rounded-full bg-amber/50" />
@@ -123,42 +127,42 @@ const CodeTerminal = () => {
           className="inline-block w-1.5 h-4 bg-cyber ml-1"
         />
       </div>
+      <div className="absolute bottom-0 right-0 w-8 h-8 border-r border-b border-white/20 translate-x-2 translate-y-2 pointer-events-none" />
     </div>
   );
 };
 
-// ─── BENTO CARD ──────────────────────────────────────────
-const BentoCard = ({ icon: Icon, title, desc, className = "", delay = 0 }) => {
-  const cardRef = useRef(null);
-
-  const handleMouseMove = (e) => {
-    if (!cardRef.current) return;
-    const { left, top } = cardRef.current.getBoundingClientRect();
-    cardRef.current.style.setProperty('--mouse-x', `${e.clientX - left}px`);
-    cardRef.current.style.setProperty('--mouse-y', `${e.clientY - top}px`);
-  };
-
-  return (
-    <motion.div
-      ref={cardRef}
-      onMouseMove={handleMouseMove}
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ delay }}
-      whileHover={{ y: -5 }}
-      className={`bento-card p-6 flex flex-col gap-4 group ${className}`}
-    >
-      <div className="w-10 h-10 rounded-[4px] bg-white/5 border border-white/10 flex items-center justify-center transition-colors group-hover:border-cyber/30">
-        <Icon size={18} className="text-[#666] group-hover:text-cyber transition-colors" />
+// ─── PRODUCT GLIMPSE ─────────────────────────────────────
+const ProductGlimpse = ({ title, icon: Icon, children, delay = 0 }) => (
+  <motion.div 
+    initial={{ opacity: 0, y: 40 }}
+    whileInView={{ opacity: 1, y: 0 }}
+    viewport={{ once: true }}
+    transition={{ duration: 0.8, delay }}
+    className="group relative"
+  >
+    <div className="absolute -inset-2 bg-gradient-to-b from-cyber/20 to-transparent blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+    <div className="relative blade p-1 rounded-[4px] bg-white/[0.02] border border-white/[0.08] overflow-hidden">
+      <div className="bg-[#050505] rounded-[2px] p-6 lg:p-8 min-h-[400px]">
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-[4px] border border-white/10 bg-white/[0.02] flex items-center justify-center">
+              <Icon size={18} className="text-cyber" />
+            </div>
+            <div>
+              <h3 className="font-black text-sm text-white uppercase tracking-widest leading-none mb-1">{title}</h3>
+              <p className="font-mono text-[9px] text-[#444] uppercase tracking-widest">MODULE_ID // ALPHA_STABLE</p>
+            </div>
+          </div>
+          <div className="flex gap-1">
+            {[1, 2, 3].map(i => <div key={i} className="w-0.5 h-3 bg-white/[0.05]" />)}
+          </div>
+        </div>
+        {children}
       </div>
-      <div>
-        <h3 className="font-black text-sm text-white uppercase tracking-wider mb-2">{title}</h3>
-        <p className="text-xs text-[#555] leading-relaxed group-hover:text-[#888] transition-colors">{desc}</p>
-      </div>
-    </motion.div>
-  );
-};
+    </div>
+  </motion.div>
+);
 
 // ─── MAIN PAGE ───────────────────────────────────────────
 export default function LandingPage() {
@@ -169,220 +173,255 @@ export default function LandingPage() {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative pt-40 pb-20 px-6 overflow-hidden">
+      <section className="relative pt-48 pb-24 px-6 overflow-hidden">
         <div className="max-w-7xl mx-auto text-center relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/10 rounded-full mb-8"
+            className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/[0.03] border border-white/[0.08] rounded-full mb-10"
           >
             <Sparkles size={12} className="text-cyber" />
-            <span className="text-[10px] font-bold text-[#666] tracking-[0.2em] uppercase">V4.0 // PRODUCTION READY</span>
+            <span className="font-mono text-[10px] font-black text-[#555] tracking-[0.25em] uppercase">SYSTEM_INITIALIZED // V4.0 ELITE</span>
           </motion.div>
 
           <motion.h1 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-shimmer text-6xl md:text-8xl font-black tracking-tighter leading-[0.9] mb-8"
+            className="text-shimmer text-6xl md:text-9xl font-black tracking-tighter leading-[0.85] mb-10"
           >
-            MASTER THE CRAFT<br />
-            <span className="text-white">OF ENGINEERING.</span>
+            ENGINEER YOUR<br />
+            <span className="text-white">ASCENSION.</span>
           </motion.h1>
 
           <motion.p 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="max-w-2xl mx-auto text-[#666] text-lg md:text-xl mb-12 font-medium"
+            className="max-w-2xl mx-auto text-[#666] text-lg md:text-xl mb-14 font-medium leading-relaxed"
           >
-            High-precision gamified learning for the world's most demanding technical teams. No shortcuts. Just pure engineering mastery.
+            The world's most sophisticated technical mastery ecosystem. Built for the elite, powered by AI, validated by the arena.
           </motion.p>
 
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="flex flex-wrap justify-center gap-4"
+            className="flex flex-wrap justify-center gap-6"
           >
             <Button 
               size="xl" 
               variant="primary" 
-              className="shimmer-btn font-black px-10 tracking-[0.1em]"
+              className="shimmer-btn font-black h-16 px-12 tracking-[0.2em] bg-cyber border-none text-sm"
               onClick={() => navigate('/register')}
             >
               INITIALIZE PROTOCOL
             </Button>
-            <Button 
-              size="xl" 
-              variant="secondary" 
-              className="px-10 border-white/10 hover:border-white/30 tracking-[0.1em]"
+            <button 
               onClick={() => navigate('/courses')}
+              className="group h-16 px-12 border border-white/10 hover:border-white/30 rounded-[4px] font-mono font-black text-[11px] uppercase tracking-[0.2em] transition-all flex items-center gap-3 bg-white/[0.01]"
             >
-              EXPLORE ARCHIVE
-            </Button>
-          </motion.div>
-
-          {/* New: Technical Universe Teaser */}
-          <motion.div 
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="mt-32 relative py-20 px-6 border border-white/5 rounded-[4px] bg-white/[0.01] overflow-hidden"
-          >
-            <div className="absolute inset-0 bg-grid opacity-10" />
-            <div className="relative z-10">
-              <h4 className="font-mono text-[10px] text-[#444] tracking-[0.4em] uppercase mb-12">DATABASE ACCESS // 265+ REPOSITORIES</h4>
-              <div className="flex flex-wrap justify-center gap-x-8 gap-y-6 max-w-4xl mx-auto">
-                {['RUST', 'ZIG', 'MOJO', 'CARBON', 'HASKELL', 'ELIXIR', 'GO', 'SWIFT', 'KOTLIN', 'JULIA', 'NIM', 'SOLIDITY', 'CLOJURE', 'ERLANG', 'SCALA', 'BUN', 'DENO', 'GRAIN', 'GLEAM', 'VAL'].map((lang, i) => (
-                  <motion.span 
-                    key={lang}
-                    initial={{ opacity: 0 }}
-                    whileInView={{ opacity: [0, 0.4, 0.2] }}
-                    transition={{ delay: i * 0.05, duration: 2, repeat: Infinity, repeatType: 'reverse' }}
-                    className="font-mono text-[10px] font-bold text-white tracking-widest cursor-default hover:text-cyber transition-colors"
-                  >
-                    {lang}
-                  </motion.span>
-                ))}
-              </div>
-            </div>
-            
-            {/* Animated Glows */}
-            <div className="absolute -top-24 -left-24 w-48 h-48 bg-cyber/10 blur-[100px] rounded-full" />
-            <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-violet/10 blur-[100px] rounded-full" />
+              EXPLORE ARCHIVE <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+            </button>
           </motion.div>
 
           <motion.div 
-            initial={{ opacity: 0, scale: 0.9 }}
+            initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.5, type: 'spring' }}
-            className="mt-24 flex justify-center"
+            className="mt-32 flex justify-center"
           >
             <CodeTerminal />
           </motion.div>
         </div>
         
-        {/* Subtle decorative grid */}
         <div className="absolute inset-0 bg-grid opacity-20 pointer-events-none" />
       </section>
 
-      {/* Bento Section */}
-      <section className="py-32 px-6">
+      {/* Product Glimpses Section */}
+      <section className="py-20 px-6 relative overflow-hidden">
         <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-end gap-8 mb-16">
-            <div className="max-w-lg">
-              <h2 className="font-mono text-[10px] font-black text-cyber uppercase tracking-[0.3em] mb-4 underline decoration-cyber/30 underline-offset-8">THE ECOSYSTEM</h2>
-              <h3 className="text-4xl md:text-5xl font-black tracking-tight uppercase leading-none">MACHINED FOR<br />PERFORMANCE</h3>
-            </div>
-            <div className="text-[#444] font-medium max-w-sm text-sm">
-              We've deconstructed the learning process into its core components. Every byte of SkillForge is engineered for high-density knowledge transfer.
-            </div>
+          <div className="flex flex-col mb-24 max-w-3xl">
+            <h2 className="font-mono text-[10px] font-black text-cyber uppercase tracking-[0.5em] mb-6 underline decoration-cyber/30 underline-offset-8">SUBSYSTEM_GLIMPSE</h2>
+            <h3 className="text-5xl md:text-7xl font-black tracking-tighter uppercase leading-[0.9]">MACHINED FOR<br />THE ELITE.</h3>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-            <BentoCard 
-              className="md:col-span-8 h-[300px]"
-              icon={Cpu}
-              title="AI MENTOR ENGINE"
-              desc="Real-time static and dynamic code analysis that understands intent, not just syntax. Your personal engineering lead, available 24/7."
-              delay={0.1}
-            />
-            <BentoCard 
-              className="md:col-span-4 h-[300px]"
-              icon={Zap}
-              title="1V1 ARENA"
-              desc="High-stakes competitive duels against the world's top talent. Low-latency, server-synced, absolute precision."
-              delay={0.2}
-            />
-            <BentoCard 
-              className="md:col-span-4 h-[300px]"
-              icon={Layers}
-              title="265+ ARCHIVES"
-              desc="From Kernel development in Zig to High-frequency trading systems in Rust. The most comprehensive curriculum in existence."
-              delay={0.3}
-            />
-            <BentoCard 
-              className="md:col-span-4 h-[300px]"
-              icon={Shield}
-              title="SYSTEM STATUS"
-              desc="Real-time transparency into platform architecture, latency, and system stability. Built for reliability."
-              delay={0.4}
-            />
-            <BentoCard 
-              className="md:col-span-4 h-[300px]"
-              icon={Globe}
-              title="ELITE NETWORK"
-              desc="Access private study rooms, engineering guilds, and direct recruitment pipelines to the world's most innovative teams."
-              delay={0.5}
-            />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+            {/* Glimpse 1: Dashboard */}
+            <ProductGlimpse title="COMMAND_CENTER" icon={Layout}>
+              <div className="space-y-6">
+                <div className="grid grid-cols-3 gap-3">
+                  {[
+                    { label: 'TELEMETRY', val: '24.1k', color: 'text-cyber' },
+                    { label: 'STREAK', val: '42D', color: 'text-amber-500' },
+                    { label: 'UPLINK', val: '99.9%', color: 'text-emerald-500' }
+                  ].map(stat => (
+                    <div key={stat.label} className="p-4 bg-white/[0.02] border border-white/[0.06] rounded-[2px]">
+                      <p className="font-mono text-[8px] text-[#444] mb-1">{stat.label}</p>
+                      <p className={`font-black text-lg ${stat.color}`}>{stat.val}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="blade p-5 bg-white/[0.01]">
+                   <p className="font-mono text-[9px] text-[#444] mb-4">ACTIVE_ARCHIVES</p>
+                   <div className="space-y-3">
+                      {[
+                        { name: 'K8S ORCHESTRATION', p: 85 },
+                        { name: 'RUST KERNEL DEV', p: 40 },
+                        { name: 'HFT ALGO DESIGN', p: 12 }
+                      ].map(course => (
+                        <div key={course.name} className="space-y-2">
+                           <div className="flex justify-between font-mono text-[10px] font-black">
+                             <span className="text-white">{course.name}</span>
+                             <span className="text-cyber">{course.p}%</span>
+                           </div>
+                           <div className="h-1.5 w-full bg-white/[0.05]">
+                             <motion.div 
+                               initial={{ width: 0 }}
+                               whileInView={{ width: `${course.p}%` }}
+                               className="h-full bg-cyber" 
+                             />
+                           </div>
+                        </div>
+                      ))}
+                   </div>
+                </div>
+              </div>
+            </ProductGlimpse>
+
+            {/* Glimpse 2: AI Mentor */}
+            <ProductGlimpse title="NEURAL_MENTOR" icon={Cpu} delay={0.2}>
+              <div className="flex flex-col h-full space-y-4">
+                <div className="flex-1 space-y-4">
+                  <div className="flex justify-start">
+                    <div className="bg-white/[0.04] p-4 rounded-[4px] border border-white/[0.08] max-w-[80%]">
+                      <p className="font-mono text-[11px] text-[#888]">Analyze my memory allocation in the Rust kernel module.</p>
+                    </div>
+                  </div>
+                  <div className="flex justify-end">
+                    <div className="bg-cyber/[0.08] p-4 rounded-[4px] border border-cyber/20 max-w-[80%]">
+                      <p className="font-mono text-[11px] text-white">SYSTEM_ID: MENTOR_V4<br/><br/>I've detected a potential race condition in your `alloc_node` block. Recommend using an atomic reference count for safety.</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="h-12 bg-white/[0.02] border border-white/[0.08] rounded-[2px] px-4 flex items-center justify-between">
+                   <span className="font-mono text-[10px] text-[#333]">Awaiting query...</span>
+                   <Terminal size={14} className="text-[#333]" />
+                </div>
+              </div>
+            </ProductGlimpse>
+
+            {/* Glimpse 3: Leaderboard */}
+            <ProductGlimpse title="HALL_OF_FAME" icon={Trophy} delay={0.3}>
+              <div className="space-y-3">
+                {[
+                  { r: 1, n: 'VALENTINA_K', xp: '128,401', meta: 'SYSTEM ARCHITECT' },
+                  { r: 2, n: 'CHEN_WEI', xp: '124,110', meta: 'KERNEL EXPERT' },
+                  { r: 3, n: 'SARAH_LANCE', xp: '119,902', meta: 'SECURITY LEAD' }
+                ].map(entry => (
+                  <div key={entry.r} className="flex items-center gap-4 p-4 bg-white/[0.02] border-l-2 border-white/[0.06] hover:border-cyber transition-all">
+                    <span className="font-mono font-black text-lg text-[#333]">0{entry.r}</span>
+                    <div className="flex-1">
+                      <p className="font-black text-xs text-white uppercase tracking-wider">{entry.n}</p>
+                      <p className="font-mono text-[8px] text-[#444] uppercase">{entry.meta}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-black text-sm text-cyber">{entry.xp}</p>
+                      <p className="font-mono text-[8px] text-[#444] uppercase">XP</p>
+                    </div>
+                  </div>
+                ))}
+                <div className="pt-4 flex justify-center">
+                  <button className="font-mono text-[9px] font-black text-[#444] hover:text-white uppercase tracking-[0.3em]">VIEW_GLOBAL_STANDINGS</button>
+                </div>
+              </div>
+            </ProductGlimpse>
+
+            {/* Glimpse 4: The Lab */}
+            <ProductGlimpse title="THE_LAB" icon={Box} delay={0.4}>
+              <div className="flex flex-col h-full bg-black/40 border border-white/[0.04] p-4 rounded-[4px]">
+                 <div className="flex justify-between items-center pb-4 border-b border-white/[0.08] mb-4">
+                    <span className="font-mono text-[9px] text-[#444]">KERNEL_SPOOLER // READY</span>
+                    <Activity size={12} className="text-emerald-500" />
+                 </div>
+                 <div className="flex-1 font-mono text-[11px] text-cyber/60 leading-relaxed overflow-hidden">
+                    [0.001] SYTEM INITIALIZING...<br/>
+                    [0.014] KERNEL VERSION 6.2.1-SF VERIFIED<br/>
+                    [0.042] MEMORY SEGMENTS ALLOCATED [0x7FF01]<br/>
+                    [0.105] LOADING NEURAL WEIGHTS...<br/>
+                    [0.219] SUCCESS: SYSTEM OPTIMAL.<br/>
+                    <br/>
+                    <span className="text-white cursor-blink italic">Awaiting technical pulse</span>
+                 </div>
+              </div>
+            </ProductGlimpse>
           </div>
         </div>
       </section>
 
       {/* Trust / Stats */}
-      <section className="py-20 border-y border-white/5 bg-white/[0.01]">
-        <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-12">
+      <section className="py-24 border-y border-white/[0.05] bg-white/[0.01] relative">
+        <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-12 text-center">
           {[
             { val: "24.7K", label: "ACTIVE ENGINEERS" },
             { val: "183K", label: "BATTLES FOUGHT" },
-            { val: "250+", label: "ELITE COURSES" },
-            { val: "99.9%", label: "JUDGE0 UPTIME" }
+            { val: "265+", label: "ELITE MODULES" },
+            { val: "99.9%", label: "SYSTEM UPTIME" }
           ].map((stat, i) => (
-            <div key={i} className="text-center">
-              <div className="text-3xl font-black text-white mb-2">{stat.val}</div>
-              <div className="font-mono text-[9px] font-black text-[#444] tracking-[0.2em]">{stat.label}</div>
+            <div key={i}>
+              <div className="text-4xl font-black text-white mb-2 tracking-tighter">{stat.val}</div>
+              <div className="font-mono text-[9px] font-black text-[#333] tracking-[0.3em] uppercase">{stat.label}</div>
             </div>
           ))}
         </div>
       </section>
 
       {/* Final CTA */}
-      <section className="py-40 px-6 relative overflow-hidden text-center">
+      <section className="py-56 px-6 relative overflow-hidden text-center">
         <div className="max-w-3xl mx-auto relative z-10">
-          <h2 className="text-5xl md:text-7xl font-black tracking-tighter mb-8 lowercase">
-            Your journey starts<br />
-            <span className="text-cyber">at the metal.</span>
+          <h2 className="text-6xl md:text-8xl font-black tracking-tighter mb-12 uppercase leading-[0.85]">
+            START YOUR<br />
+            <span className="text-cyber">DEVOLUTION.</span>
           </h2>
           <Button 
             size="xl" 
             variant="primary" 
-            className="shimmer-btn font-black px-12 tracking-[0.2em]"
+            className="shimmer-btn font-black h-20 px-16 tracking-[0.3em] text-sm"
             onClick={() => navigate('/register')}
           >
-            START PROTOCOL
+            INITIALIZE PROTOCOL
           </Button>
+          <p className="mt-10 font-mono text-[10px] text-[#444] uppercase tracking-widest">NO_BLUF // PRODUCTION_READY</p>
         </div>
         
-        {/* Glow behind CTA */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-cyber/10 blur-[120px] rounded-full" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-cyber/10 blur-[160px] rounded-full pointer-events-none" />
       </section>
 
       {/* Footer */}
-      <footer className="py-20 px-6 border-t border-white/5">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-12">
-          <div>
-            <div className="flex items-center gap-2 mb-6">
-              <div className="w-6 h-6 bg-white flex items-center justify-center rounded-[2px]">
-                <div className="w-3 h-3 bg-black rounded-[1px]" />
+      <footer className="py-24 px-6 border-t border-white/[0.05] bg-[#020202]">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-16">
+          <div className="max-w-xs">
+            <div className="flex items-center gap-2 mb-8">
+              <div className="w-8 h-8 bg-white flex items-center justify-center rounded-[4px]">
+                <div className="w-4 h-4 bg-black rounded-[2px]" />
               </div>
-              <span className="font-bold text-sm tracking-tighter text-white uppercase">SKILLFORGE</span>
+              <span className="font-bold text-lg tracking-tighter text-white">SKILLFORGE</span>
             </div>
-            <p className="text-xs text-[#444] max-w-[200px]">Modern engineering education for the elite 1%.</p>
+            <p className="text-xs text-[#555] leading-relaxed">Modern engineering education for the elite 1%. Machined with precision, validated by system telemetry.</p>
           </div>
           
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-12">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-16">
             {[
               { title: 'SYSTEM', links: ['TERMINAL', 'STATUS', 'API', 'AUTH'] },
-              { title: 'LEARN', links: ['RUST', 'ZIG', 'CARBON', 'ARCHIVE'] },
-              { title: 'ELITE', links: ['ARENA', 'GUILDS', 'HALL OF FAME', 'LAB'] }
+              { title: 'ARCHIVE', links: ['RUST', 'ZIG', 'CARBON', 'JULIA'] },
+              { title: 'ELITE', links: ['ARENA', 'GUILDS', 'HALL OF FAME', 'THE LAB'] }
             ].map(col => (
               <div key={col.title}>
-                <h4 className="font-mono text-[10px] font-black text-[#666] tracking-[0.2em] mb-6 uppercase">{col.title}</h4>
-                <ul className="space-y-3">
+                <h4 className="font-mono text-[10px] font-black text-[#555] tracking-[0.3em] mb-8 uppercase underline decoration-[#111] underline-offset-8">{col.title}</h4>
+                <ul className="space-y-4">
                   {col.links.map(link => (
                     <li key={link}>
-                      <a href="#" className="text-[10px] font-bold text-[#444] hover:text-white transition-colors">{link}</a>
+                      <a href="#" className="text-[10px] font-bold text-[#444] hover:text-white transition-colors tracking-widest uppercase">{link}</a>
                     </li>
                   ))}
                 </ul>
@@ -390,11 +429,11 @@ export default function LandingPage() {
             ))}
           </div>
         </div>
-        <div className="max-w-7xl mx-auto mt-20 pt-8 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <div className="text-[9px] font-mono text-[#333] tracking-[0.1em]">© 2026 SKILLFORGE // ALL RIGHTS RESERVED</div>
-          <div className="flex gap-6">
-            <Github size={14} className="text-[#333] hover:text-white cursor-pointer" />
-            <Globe size={14} className="text-[#333] hover:text-white cursor-pointer" />
+        <div className="max-w-7xl mx-auto mt-24 pt-10 border-t border-white/[0.05] flex flex-col sm:flex-row justify-between items-center gap-6">
+          <div className="font-mono text-[9px] text-[#333] tracking-[0.2em] uppercase">© 2026 SKILLFORGE OPERATIONS // ALL RIGHTS RESERVED</div>
+          <div className="flex gap-8">
+            <Github size={16} className="text-[#333] hover:text-white cursor-pointer transition-colors" />
+            <Globe size={16} className="text-[#333] hover:text-white cursor-pointer transition-colors" />
           </div>
         </div>
       </footer>

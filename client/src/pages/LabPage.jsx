@@ -16,12 +16,19 @@ console.log(initServer());`);
   
   const runCode = () => {
     setOutput(["[SYSTEM] INITIALIZING VIRTUAL ENVIRONMENT...", "[SIGNAL] EXECUTING PACKETS..."]);
-    // Simple eval simulation for demonstration (No-Bluf)
     try {
       const logs = [];
-      const mockConsole = { log: (...args) => logs.push(args.join(' ')) };
-      // Wrap in IIFE to capture logs
-      new Function('console', code)(mockConsole);
+      const mockConsole = { 
+        log: (...args) => logs.push(args.join(' ')),
+        error: (...args) => logs.push(`[ERROR] ${args.join(' ')}`),
+        warn: (...args) => logs.push(`[WARN] ${args.join(' ')}`)
+      };
+      
+      // Masking global print() which triggers browser print dialog
+      // and redirecting it to our mock console
+      const sandboxPrint = (...args) => mockConsole.log(...args);
+
+      new Function('console', 'print', code)(mockConsole, sandboxPrint);
       setTimeout(() => setOutput(prev => [...prev, ...logs, "[SYSTEM] EXECUTION COMPLETE."]), 500);
     } catch (err) {
       setOutput(prev => [...prev, `[ERROR] ${err.message}`]);

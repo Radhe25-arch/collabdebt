@@ -274,7 +274,7 @@ export default function LeaderboardPage() {
 
       {/* ── YOUR RANK ── */}
       {user && myRank && (
-        <YourRankCard user={user} rank={myRank} totalUsers={mergedUsers.length} />
+        <YourRankCard user={user} rank={myRank} totalUsers={total || users.length} />
       )}
 
       {/* ── CONTENT GRID ── */}
@@ -298,17 +298,14 @@ export default function LeaderboardPage() {
                   <RankBadge rank={i + 1} />
                   <UserAvatar user={e} size={38} />
                   <div className="flex-1 min-w-0">
-                    <p className="font-mono text-[12px] font-black text-white truncate uppercase">{e.fullName}</p>
+                    <p className="font-mono text-[12px] font-black text-white truncate uppercase">{e.fullName || e.username}</p>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <span className="font-mono text-[9px] font-bold uppercase" style={{ color: getLevelColor(e.level) }}>
-                        {LEVEL_NAMES[e.level - 1]}
+                      <span className="font-mono text-[9px] font-bold uppercase" style={{ color: getLevelColor(e.level || 1) }}>
+                        {LEVEL_NAMES[(e.level || 1) - 1]}
                       </span>
                       <span className="text-[#333]">·</span>
                       <span className="font-mono text-[10px] font-bold text-cyber">{(e.xp || 0).toLocaleString()} XP</span>
                     </div>
-                    {e.badge && (
-                      <span className="font-mono text-[8px] font-bold text-[#555] uppercase tracking-wider">{e.badge}</span>
-                    )}
                   </div>
                 </div>
               </div>
@@ -325,7 +322,7 @@ export default function LeaderboardPage() {
             <div className="grid grid-cols-2 gap-3">
               <div className="p-3 rounded-[4px] border border-white/[0.06]" style={{ background: 'rgba(255,255,255,0.02)' }}>
                 <p className="font-mono text-[9px] font-bold text-[#555] uppercase tracking-wider">ACTIVE USERS</p>
-                <p className="font-mono text-lg font-black text-white mt-1">25,001</p>
+                <p className="font-mono text-lg font-black text-white mt-1">{(total || 25001).toLocaleString()}</p>
               </div>
               <div className="p-3 rounded-[4px] border border-white/[0.06]" style={{ background: 'rgba(255,255,255,0.02)' }}>
                 <p className="font-mono text-[9px] font-bold text-[#555] uppercase tracking-wider">AVG LEVEL</p>
@@ -343,17 +340,17 @@ export default function LeaderboardPage() {
           <div className="blade p-5 space-y-3">
             <p className="font-mono text-[9px] font-black text-[#444] uppercase tracking-[0.25em]">LEVEL DISTRIBUTION</p>
             {LEVEL_NAMES.map((name, i) => {
-              const count = allUsers.filter(u => u.level === i + 1).length;
-              const pct = ((count / allUsers.length) * 100).toFixed(1);
+              const count = users.filter(u => (u.level || 1) === i + 1).length;
+              const pct = users.length > 0 ? ((count / users.length) * 100).toFixed(1) : '0.0';
               return (
                 <div key={name} className="flex items-center gap-2">
                   <span className="font-mono text-[9px] font-bold w-24 uppercase" style={{ color: getLevelColor(i + 1) }}>
                     {name}
                   </span>
-                  <div className="flex-1 h-px bg-white/[0.06]">
+                  <div className="flex-1 h-px bg-white/[0.04]">
                     <div className="h-px" style={{ width: `${pct}%`, background: getLevelColor(i + 1) }} />
                   </div>
-                  <span className="font-mono text-[9px] font-bold text-[#444] w-10 text-right">{pct}%</span>
+                  <span className="font-mono text-[9px] font-bold text-[#333] w-10 text-right">{pct}%</span>
                 </div>
               );
             })}

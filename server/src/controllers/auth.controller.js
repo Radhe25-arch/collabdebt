@@ -2,7 +2,7 @@ const bcrypt = require('bcryptjs');
 const { prisma } = require('../config/db');
 const { signAccessToken, signRefreshToken, verifyRefreshToken } = require('../utils/jwt');
 const { awardXP } = require('../utils/xp');
-const emailService = require('../utils/email');
+const emailService = require('../services/mail.service');
 const AppError = require('../utils/AppError');
 
 async function register(req, res, next) {
@@ -24,7 +24,7 @@ async function register(req, res, next) {
       },
     });
     await awardXP(user.id, 100, 'welcome_bonus');
-    emailService.sendWelcome(user).catch(err => {
+    emailService.sendSignUpWelcome(user).catch(err => {
       console.error(`[SIGNUP_EMAIL] Critical failure: ${err.message}`);
     });
     const accessToken  = signAccessToken({ sub: user.id, role: user.role });

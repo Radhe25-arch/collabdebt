@@ -5,7 +5,7 @@ import Icons from '@/assets/icons';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
 
-/* ─── Minimal Quiz Modal ───────────────────────────────────── */
+/* ─── Minimal Quiz Modal (Industrial Dark) ────────────────── */
 function QuizGateModal({ quiz, lessonId, onPass, onClose }) {
   const [answers, setAnswers] = useState({});
   const [submitted, setSubmitted] = useState(false);
@@ -29,45 +29,47 @@ function QuizGateModal({ quiz, lessonId, onPass, onClose }) {
       setResults(r.data);
       setSubmitted(true);
       if (r.data.passed) {
-        toast.success(`Quiz passed! +${r.data.xpAwarded} XP 🎉`);
+        toast.success(`SYSTEM: TARGET_CLEARED (+${r.data.xpAwarded} XP)`);
       } else {
-        toast.error(`${r.data.correct}/${r.data.total} correct — need 70% to proceed`);
+        toast.error(`FAIL: ${r.data.correct}/${r.data.total} CORRECT. 70% THRESHOLD REQUIRED.`);
       }
-    } catch { toast.error('Submission failed'); }
+    } catch { toast.error('SIGNAL LOST: Submission failed'); }
     setLoading(false);
   };
 
   const retry = () => { setAnswers({}); setSubmitted(false); setResults(null); };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-      <div className="w-full max-w-lg bg-white border border-slate-200 rounded-3xl shadow-2xl flex flex-col max-h-[85vh] overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl">
+      <div className="w-full max-w-lg bg-[#0A0A0A] border border-white/[0.1] rounded-[4px] shadow-2xl flex flex-col max-h-[85vh] overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 bg-slate-50/50 border-b border-slate-100 flex-shrink-0">
+        <div className="flex items-center justify-between px-6 py-4 bg-white/[0.02] border-b border-white/[0.08] flex-shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-              <Icons.Target size={14} className="text-blue-600" />
+            <div className="w-8 h-8 rounded-[2px] bg-cyber/[0.08] border border-cyber/30 flex items-center justify-center">
+              <Icons.Target size={14} className="text-cyber" />
             </div>
             <div>
-              <p className="font-semibold text-sm text-slate-900">Knowledge Check</p>
-              <p className="text-[11px] text-slate-500">Pass to complete lesson</p>
+              <p className="font-mono font-black text-[11px] text-white uppercase tracking-widest">KNOWLEDGE_ASSESSMENT</p>
+              <p className="font-mono text-[9px] text-[#444] uppercase tracking-tighter">BREACH SECURITY GATE TO PROCEED</p>
             </div>
           </div>
-          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors">
+          <button onClick={onClose} className="text-[#333] hover:text-white transition-colors">
             <Icons.X size={16} />
           </button>
         </div>
 
-        <div className="overflow-y-auto flex-1 p-6 space-y-6">
+        <div className="overflow-y-auto flex-1 p-6 space-y-6 custom-scrollbar">
           {!submitted ? (
             <>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-[11px] font-mono text-slate-400 uppercase tracking-widest">{shuffled.length} Questions</span>
-                <span className="text-[11px] font-mono text-blue-600 font-semibold bg-blue-50 px-2 py-0.5 rounded-full">70% to pass</span>
+                <span className="text-[10px] font-mono text-[#444] uppercase tracking-widest">{shuffled.length} SEGMENTS</span>
+                <span className="text-[10px] font-mono text-cyber font-black uppercase tracking-widest px-2 py-0.5 border border-cyber/20 bg-cyber/[0.04]">70% THRESHOLD</span>
               </div>
               {shuffled.map((q, qi) => (
-                <div key={q.id} className="space-y-3">
-                  <p className="text-sm text-slate-800 font-medium leading-relaxed">{qi + 1}. {q.question}</p>
+                <div key={q.id} className="space-y-4">
+                  <p className="font-mono text-xs text-[#E0E0E0] leading-relaxed select-none">
+                    <span className="text-[#333] mr-2">[{qi + 1}]</span> {q.question}
+                  </p>
                   <div className="space-y-2">
                     {(q.options || []).map((opt, oi) => {
                       const isSelected = answers[qi] === oi;
@@ -75,14 +77,14 @@ function QuizGateModal({ quiz, lessonId, onPass, onClose }) {
                         <button
                           key={oi}
                           onClick={() => setAnswers({ ...answers, [qi]: oi })}
-                          className={`w-full text-left px-4 py-3 rounded-xl border text-sm transition-all focus:outline-none flex items-center gap-3 ${
+                          className={`w-full text-left px-4 py-3 rounded-[4px] border font-mono text-[11px] transition-all flex items-center gap-3 ${
                             isSelected
-                              ? 'bg-blue-50 border-blue-200 text-blue-800 shadow-sm'
-                              : 'bg-white border-slate-200 text-slate-600 hover:border-blue-200 hover:bg-slate-50'
+                              ? 'bg-cyber/[0.08] border-cyber/50 text-white shadow-[0_0_10px_rgba(59,130,246,0.1)]'
+                              : 'bg-white/[0.01] border-white/[0.04] text-[#888] hover:border-white/[0.1] hover:text-white'
                           }`}
                         >
-                          <div className={`w-4 h-4 rounded-full border flex-shrink-0 flex items-center justify-center ${isSelected ? 'border-blue-600' : 'border-slate-300'}`}>
-                            {isSelected && <div className="w-2 h-2 rounded-full bg-blue-600" />}
+                          <div className={`w-3 h-3 rounded-[2px] border flex-shrink-0 flex items-center justify-center ${isSelected ? 'border-cyber bg-cyber' : 'border-[#222]'}`}>
+                            {isSelected && <Icons.Check size={8} className="text-white" />}
                           </div>
                           {opt}
                         </button>
@@ -93,18 +95,20 @@ function QuizGateModal({ quiz, lessonId, onPass, onClose }) {
               ))}
             </>
           ) : (
-            <div className="flex flex-col items-center text-center py-4 space-y-4">
-              <div className={`w-20 h-20 rounded-full flex items-center justify-center border-4 ${results?.passed ? 'bg-green-50 border-green-400 text-green-500' : 'bg-red-50 border-red-400 text-red-500'}`}>
+            <div className="flex flex-col items-center text-center py-4 space-y-8">
+              <div className={`w-20 h-20 rounded-[4px] flex items-center justify-center border-2 ${results?.passed ? 'bg-emerald/[0.08] border-emerald/50 text-emerald' : 'bg-crimson/[0.08] border-crimson/50 text-crimson'}`}>
                 {results?.passed ? <Icons.Check size={40} /> : <Icons.X size={40} />}
               </div>
               <div>
-                <h3 className="text-2xl font-bold text-slate-900 mb-1">{results?.passed ? 'Great job!' : 'Needs review'}</h3>
-                <p className="text-slate-500 text-sm">You got <span className="font-semibold text-slate-700">{results?.correct} out of {results?.total}</span> correct ({Math.round((results?.correct / results?.total) * 100)}%)</p>
+                <h3 className="font-mono text-2xl font-black text-white mb-2 uppercase tracking-tighter">{results?.passed ? 'ACCESS_GRANTED' : 'ACCESS_DENIED'}</h3>
+                <p className="font-mono text-[#555] text-[11px] uppercase tracking-widest">
+                  ACCURACY: <span className="text-white font-black">{Math.round((results?.correct / results?.total) * 100)}%</span>
+                </p>
               </div>
               
               {results?.passed && (
-                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-yellow-50 text-yellow-700 border border-yellow-200 rounded-full text-xs font-semibold mt-2">
-                  <Icons.Zap size={14} className="text-yellow-500" /> +{results.xpAwarded} XP Earned
+                <div className="inline-flex items-center gap-1.5 px-4 py-2 border border-amber/20 bg-amber/[0.04] text-amber-500 rounded-[4px] font-mono text-[10px] font-black uppercase tracking-widest animate-pulse">
+                  <Icons.Zap size={14} className="fill-current" /> +{results.xpAwarded} XP HARVESTED
                 </div>
               )}
 
@@ -112,22 +116,16 @@ function QuizGateModal({ quiz, lessonId, onPass, onClose }) {
                 {results?.results?.map((r, i) => {
                   const q = shuffled[i];
                   return (
-                    <div key={i} className={`p-4 rounded-xl border text-sm ${r.correct ? 'border-green-100 bg-green-50/50' : 'border-red-100 bg-red-50/50'}`}>
-                      <p className="text-slate-800 font-medium mb-2">{i + 1}. {q.question}</p>
+                    <div key={i} className={`p-4 rounded-[4px] border font-mono text-[11px] ${r.correct ? 'border-emerald/10 bg-emerald/[0.02]' : 'border-crimson/10 bg-crimson/[0.02]'}`}>
+                      <p className="text-[#888] mb-3 leading-relaxed">[{i + 1}] {q.question}</p>
                       <div className="flex items-start gap-2">
-                        {r.correct ? (
-                          <Icons.Check size={16} className="text-green-600 mt-0.5 shrink-0" />
-                        ) : (
-                          <Icons.X size={16} className="text-red-500 mt-0.5 shrink-0" />
-                        )}
-                        <div>
-                          {r.correct ? (
-                            <p className="text-green-700 font-medium">Correct!</p>
-                          ) : (
-                            <p className="text-red-600 font-medium mb-1">Incorrect. The correct answer was: <span className="font-bold">{String.fromCharCode(65 + r.correctIndex)}</span></p>
-                          )}
-                          {!r.correct && r.explanation && <p className="text-slate-500 text-xs mt-1 leading-relaxed">{r.explanation}</p>}
-                        </div>
+                         <span className={r.correct ? 'text-emerald' : 'text-crimson'}>
+                           {r.correct ? 'PASS // ' : 'FAIL // '}
+                         </span>
+                         <div>
+                           {!r.correct && <p className="text-white mb-1">CORRECT_INDEX: {String.fromCharCode(65 + r.correctIndex)}</p>}
+                           {!r.correct && r.explanation && <p className="text-[#555] text-[10px] tracking-tight">{r.explanation}</p>}
+                         </div>
                       </div>
                     </div>
                   );
@@ -138,26 +136,26 @@ function QuizGateModal({ quiz, lessonId, onPass, onClose }) {
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 bg-slate-50/50 border-t border-slate-100 flex-shrink-0 flex gap-3">
+        <div className="px-6 py-4 border-t border-white/[0.06] flex gap-3">
           {!submitted ? (
             <button
               onClick={handleSubmit}
               disabled={loading}
-              className="w-full py-3 rounded-xl bg-blue-600 text-sm font-semibold text-white hover:bg-blue-700 transition-all disabled:opacity-50 shadow-sm"
+              className="w-full py-3 rounded-[4px] bg-cyber text-white font-mono text-[11px] font-black uppercase tracking-widest hover:bg-[#2563EB] transition-all disabled:opacity-50"
             >
-              {loading ? 'Submitting...' : 'Submit Answers'}
+              {loading ? 'TRANSMITTING...' : 'EXECUTE_EVALUATION'}
             </button>
           ) : results?.passed ? (
             <button
               onClick={onPass}
-              className="w-full py-3 rounded-xl bg-green-600 text-sm font-semibold text-white hover:bg-green-700 transition-all shadow-sm flex items-center justify-center gap-2"
+              className="w-full py-3 rounded-[4px] bg-emerald text-white font-mono text-[11px] font-black uppercase tracking-widest hover:bg-emerald/80 transition-all flex items-center justify-center gap-2"
             >
-              Continue to next <Icons.ArrowRight size={16} />
+              BREACH SECURE SECTOR <Icons.ArrowRight size={14} />
             </button>
           ) : (
             <div className="flex w-full gap-3">
-              <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 bg-white text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-all">Review Lesson</button>
-              <button onClick={retry} className="flex-1 py-3 rounded-xl bg-blue-600 text-sm font-semibold text-white hover:bg-blue-700 transition-all shadow-sm">Try Again</button>
+              <button onClick={onClose} className="flex-1 py-3 rounded-[4px] border border-white/[0.08] text-white font-mono text-[10px] font-black uppercase tracking-widest hover:bg-white/[0.02]">RE-ANALYZE</button>
+              <button onClick={retry} className="flex-1 py-3 rounded-[4px] bg-cyber text-white font-mono text-[10px] font-black uppercase tracking-widest hover:bg-[#2563EB]">RE-TRY SIGNAL</button>
             </div>
           )}
         </div>
@@ -166,7 +164,7 @@ function QuizGateModal({ quiz, lessonId, onPass, onClose }) {
   );
 }
 
-/* ─── Main Lesson Page ─────────────────────────────────────── */
+/* ─── Main Lesson Page (Industrial Dark) ─────────────────── */
 export default function LessonPage() {
   const { slug, lesson: lessonSlug } = useParams();
   const navigate = useNavigate();
@@ -197,23 +195,31 @@ export default function LessonPage() {
       const r = await api.post(`/lessons/${lesson.id}/complete`);
       setIsCompleted(true);
       setShowXP(r.data.xpAwarded);
-      toast.success(`+${r.data.xpAwarded} XP earned!`);
+      toast.success(`SYSTEM: +${r.data.xpAwarded} XP`);
+
+      // Find next lesson to auto-advance
+      const currentIdx = lesson.course.lessons?.findIndex(l => l.id === lesson.id);
+      const nextLesson = lesson.course.lessons?.[currentIdx + 1];
 
       if (r.data.courseCompleted) {
-        toast.success('🏆 Course Complete! Returning to library...');
+        toast.success('GOAL: COURSE_FINALIZED. RETURNING TO ARCHIVE.');
         setTimeout(() => navigate(`/courses/${slug}`), 2500);
+      } else if (nextLesson) {
+        toast.success(`NAV: NEXT_MODULE DETECTED - ${nextLesson.title}`);
+        setTimeout(() => navigate(`/courses/${slug}/${nextLesson.slug}`), 1000);
       } else {
-        // Auto-advance back to the course outline immediately to click the next lesson
         setTimeout(() => navigate(`/courses/${slug}`), 1000);
       }
-    } catch { toast.error('Could not mark complete'); }
+    } catch { toast.error('ERROR: DATA_PERSISTENCE_FAILED'); }
     setCompleting(false);
   }, [isCompleted, completing, lesson, slug, navigate]);
 
   const handleMarkComplete = () => {
     if (isCompleted) {
-      // If already complete, just go back to outline
-      navigate(`/courses/${slug}`);
+      const currentIdx = lesson.course.lessons?.findIndex(l => l.id === lesson.id);
+      const nextLesson = lesson.course.lessons?.[currentIdx + 1];
+      if (nextLesson) navigate(`/courses/${slug}/${nextLesson.slug}`);
+      else navigate(`/courses/${slug}`);
       return;
     }
     if (lesson?.quiz) {
@@ -241,160 +247,160 @@ export default function LessonPage() {
   };
 
   if (loading) return (
-    <div className="flex flex-col justify-center items-center gap-4 min-h-[60vh]">
-      <Spinner size={32} className="text-blue-600" />
-      <div className="text-center space-y-1">
-        <p className="text-slate-800 font-semibold text-lg">Loading Lesson...</p>
-        <p className="text-slate-500 text-sm max-w-sm mx-auto">
-          If this is the first time this expert topic is being accessed, our AI is architecting the curriculum Just-In-Time. This can take up to 15 seconds.
+    <div className="flex flex-col justify-center items-center gap-6 min-h-[60vh]">
+      <Spinner size={32} className="text-cyber" />
+      <div className="text-center space-y-2">
+        <p className="font-mono text-white font-black text-xl uppercase tracking-widest animate-pulse">ARCHITECTING_MODULE...</p>
+        <p className="font-mono text-[#555] text-[10px] max-w-sm mx-auto uppercase tracking-tighter leading-relaxed">
+          Our AI is synthesizing the expert curriculum JIT. This operation requires 10-15 seconds of system throughput.
         </p>
       </div>
     </div>
   );
   if (!lesson) return null;
 
-  // Rule: Only show the code compiler panel if the lesson explicitly provides codeStarter
-  // or if the content has "Interactive Practice" mentioned. 
-  // Let's use codeStarter as the primary flag for "needs compiler".
   const requiresPractice = !!lesson.codeStarter;
 
   return (
-    <div className="max-w-[1200px] mx-auto pb-16">
-      {/* ── Top bar with Clean Breadcrumbs ────────────────── */}
-      <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
-        {/* Clean Breadcrumb: No double arrows. Text-based navigation. */}
-        <div className="flex items-center gap-2 text-sm">
+    <div className="max-w-[1400px] mx-auto pb-16 pt-4 animate-fade-in px-4 md:px-6">
+      {/* ── Top bar ────────────────── */}
+      <div className="flex items-center justify-between mb-8 flex-wrap gap-4 border-b border-white/[0.04] pb-6">
+        <div className="flex items-center gap-3 font-mono text-[11px] font-black uppercase tracking-widest">
           <button
             onClick={() => navigate(`/courses/${slug}`)}
-            className="text-slate-400 hover:text-blue-600 transition-colors font-medium"
+            className="text-[#444] hover:text-white transition-colors"
           >
-            {lesson.course?.title || 'Course'}
+            {lesson.course?.title || 'ARCHIVE'}
           </button>
-          <span className="text-slate-300">/</span>
-          <span className="text-slate-900 font-semibold">{lesson.title}</span>
+          <span className="text-[#222]">/</span>
+          <span className="text-cyber underline decoration-cyber/20 underline-offset-4">{lesson.title}</span>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 text-slate-500">
-            <Icons.Clock size={12} />
-            <span className="text-xs font-semibold">{lesson.duration}m</span>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-[2px] bg-white/[0.01] border border-white/[0.06] text-[#666] font-mono text-[10px] font-black uppercase">
+            <Icons.Clock size={12} className="text-[#333]" />
+            <span>EST: {lesson.duration}M</span>
           </div>
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 text-amber-600">
-            <Icons.Zap size={12} />
-            <span className="text-xs font-bold">+{lesson.xpReward} XP</span>
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-[2px] bg-amber/[0.04] border border-amber/20 text-amber-500 font-mono text-[10px] font-black uppercase tracking-widest">
+            <Icons.Zap size={12} className="fill-current" />
+            <span>+{lesson.xpReward} XP</span>
           </div>
           <button
             onClick={handleMarkComplete}
             disabled={completing}
-            className={`flex items-center gap-2 px-5 py-2 rounded-full text-xs font-bold transition-all shadow-sm ${
+            className={`flex items-center gap-3 px-6 py-2 rounded-[2px] font-mono text-[11px] font-black uppercase tracking-widest transition-all ${
               isCompleted
-                ? 'bg-green-50 text-green-700 hover:bg-green-100 border border-green-200'
-                : 'bg-blue-600 text-white hover:bg-blue-700 hover:shadow-md'
+                ? 'bg-emerald/[0.1] text-emerald border border-emerald/30 hover:bg-emerald/[0.15]'
+                : 'bg-cyber text-white hover:bg-[#2563EB] shadow-[0_0_20px_rgba(59,130,246,0.15)]'
             }`}
           >
             {isCompleted ? (
-              <><Icons.Check size={14} /> Continue next</>
+              <><Icons.Check size={14} /> NEXT_MODULE</>
             ) : completing ? '...' : (
-              <><Icons.Check size={14} /> Mark Complete</>
+              <><Icons.Check size={14} fill="currentColor" /> COMPLETE_UNIT</>
             )}
           </button>
         </div>
       </div>
 
       {/* ── Dynamic Layout ───────────────────────────────── */}
-      <div className={`grid grid-cols-1 ${requiresPractice ? 'lg:grid-cols-5 gap-6' : 'lg:grid-cols-1 max-w-3xl mx-auto'}`}>
+      <div className={`grid grid-cols-1 ${requiresPractice ? 'lg:grid-cols-12 gap-10' : 'max-w-4xl mx-auto'}`}>
 
-        {/* ── Left: Content ─────────────────────────────── */}
-        <div className={requiresPractice ? 'lg:col-span-3 space-y-6' : 'space-y-6'}>
-          <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
-            <div className="p-8 lg:p-10">
-              <h1 className="font-display font-bold text-3xl text-slate-900 tracking-tight mb-6">{lesson.title}</h1>
-              
-              {/* Content renderer */}
-              <div className="space-y-5 text-base text-slate-600 leading-relaxed font-body">
-                {lesson.content?.split('\n\n').map((para, i) => {
-                  if (para.startsWith('# '))  return <h1  key={i} className="font-display font-bold text-2xl text-slate-900 mt-8 mb-4">{para.slice(2)}</h1>;
-                  if (para.startsWith('## ')) return <h2  key={i} className="font-display font-semibold text-xl text-slate-900 mt-6 mb-3">{para.slice(3)}</h2>;
-                  if (para.startsWith('### ')) return <h3  key={i} className="font-display font-medium text-lg text-slate-800 mt-5">{para.slice(4)}</h3>;
-                  if (para.startsWith('> [!TIP]')) return (
-                    <div key={i} className="bg-blue-50/50 border-l-2 border-blue-500 pl-4 py-3 my-4 flex gap-3">
-                      <Icons.Info size={16} className="text-blue-500 shrink-0 mt-0.5" />
-                      <p className="text-blue-900 text-sm mt-0">{para.replace('> [!TIP]', '').replace('> ', '').trim()}</p>
+        {/* ── Left: Content (Industrial Blade) ──────────── */}
+        <div className={requiresPractice ? 'lg:col-span-7 space-y-8' : 'space-y-8'}>
+          <div className="bg-transparent rounded-none overflow-hidden">
+            <div className="mb-10">
+              <h1 className="font-black text-4xl text-white tracking-tighter uppercase mb-4 leading-none">{lesson.title}</h1>
+              <div className="h-0.5 w-12 bg-cyber" />
+            </div>
+            
+            <div className="space-y-6 font-mono text-[13px] text-[#A0A0A0] leading-relaxed">
+              {lesson.content?.split('\n\n').map((para, i) => {
+                if (para.startsWith('# '))  return <h1  key={i} className="font-black text-2xl text-white mt-12 mb-6 uppercase tracking-tight">{para.slice(2)}</h1>;
+                if (para.startsWith('## ')) return <h2  key={i} className="font-black text-xl text-white mt-10 mb-5 uppercase tracking-wide border-l-2 border-cyber/50 pl-4">{para.slice(3)}</h2>;
+                if (para.startsWith('### ')) return <h3  key={i} className="font-bold text-lg text-white mt-8 mb-4 uppercase">{para.slice(4)}</h3>;
+                if (para.startsWith('> [!TIP]')) return (
+                  <div key={i} className="bg-cyber/[0.04] border border-cyber/20 p-5 my-6 flex gap-4">
+                    <Icons.Info size={16} className="text-cyber shrink-0 mt-0.5" />
+                    <p className="text-cyber text-[12px] font-bold uppercase tracking-tight leading-normal m-0">{para.replace('> [!TIP]', '').replace('> ', '').trim()}</p>
+                  </div>
+                );
+                if (para.startsWith('```')) {
+                  const codeContent = para.replace(/```\w*\n?/, '').replace(/```$/, '');
+                  return (
+                    <div key={i} className="my-8 group relative">
+                      <div className="absolute top-0 right-0 px-3 py-1 font-mono text-[9px] font-black text-[#333] uppercase">SNIPPET_RAW</div>
+                      <pre className="p-6 bg-[#050505] border border-white/[0.08] text-cyber/90 overflow-x-auto shadow-inner selection:bg-cyber/30 selection:text-white">{codeContent}</pre>
                     </div>
                   );
-                  if (para.startsWith('```')) {
-                    const codeContent = para.replace(/```\w*\n?/, '').replace(/```$/, '');
-                    return (
-                      <div key={i} className="my-6">
-                        <pre className="p-5 bg-slate-50 border border-slate-100 rounded-2xl font-mono text-sm text-slate-800 overflow-x-auto shadow-inner">{codeContent}</pre>
-                      </div>
-                    );
-                  }
-                  if (para.startsWith('- ')) {
-                    return (
-                      <ul key={i} className="space-y-2 pl-4 mb-4">
-                        {para.split('\n').filter(l => l.startsWith('- ')).map((li, j) => (
-                          <li key={j} className="flex items-start gap-2 text-slate-600">
-                            <span className="text-blue-500 mt-1 shrink-0">•</span>
-                            <span>{li.slice(2)}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    );
-                  }
-                  return <p key={i}>{para.replace(/\*\*(.*?)\*\*/g, (match, words) => words)}</p>; // Basic bold stripping if needed, or proper markdown. For now, keep simple paragraph.
-                })}
-              </div>
+                }
+                if (para.startsWith('- ')) {
+                  return (
+                    <ul key={i} className="space-y-3 pl-4 mb-6">
+                      {para.split('\n').filter(l => l.startsWith('- ')).map((li, j) => (
+                        <li key={j} className="flex items-start gap-3">
+                          <span className="text-cyber mt-1.5 shrink-0 w-1 h-1 bg-cyber" />
+                          <span className="text-[#888]">{li.slice(2)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  );
+                }
+                return <p key={i} className="mb-4">{para.replace(/\*\*(.*?)\*\*/g, (match, words) => <span className="text-white font-black">{words}</span>)}</p>;
+              })}
             </div>
             
             {/* Footer action */}
-            <div className="p-8 lg:p-10 bg-slate-50/50 border-t border-slate-100 flex items-center justify-between">
+            <div className="mt-16 pt-10 border-t border-white/[0.06] flex items-center justify-between">
               <div>
-                <p className="font-semibold text-slate-900">Done reading?</p>
-                <p className="text-sm text-slate-500">Mark as complete to track your progress.</p>
+                <p className="font-mono text-[11px] font-black text-white uppercase tracking-widest">UNIT_TERMINATED?</p>
+                <p className="font-mono text-[9px] text-[#444] uppercase tracking-tighter">SYNCHRONIZE PROGRESS TO PERSIST DATA.</p>
               </div>
               <button
                 onClick={handleMarkComplete}
                 disabled={completing}
-                className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all ${
+                className={`px-8 py-3 rounded-[2px] font-mono text-[11px] font-black uppercase tracking-widest transition-all ${
                   isCompleted
-                    ? 'bg-slate-200 text-slate-600 hover:bg-slate-300'
-                    : 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm'
+                    ? 'bg-white/[0.04] text-[#666] border border-white/[0.08] hover:text-white'
+                    : 'bg-cyber text-white hover:bg-[#2563EB] shadow-md'
                 }`}
               >
-                {isCompleted ? 'Next Lesson →' : 'Complete Lesson'}
+                {isCompleted ? 'CONTINUE_SIGNAL →' : 'ARCHIVE_PROGRESS'}
               </button>
             </div>
           </div>
         </div>
 
-        {/* ── Right: Code Editor (Conditional) ───────────── */}
+        {/* ── Right: Code Editor (Mechanismorphism) ────────── */}
         {requiresPractice && (
-          <div className="lg:col-span-2">
-            <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm sticky top-6">
+          <div className="lg:col-span-5 h-[calc(100vh-12rem)] sticky top-6">
+            <div className="flex flex-col h-full bg-[#050505] border border-white/[0.08] rounded-[2px] shadow-2xl relative overflow-hidden">
+               {/* Decorative Mechanism */}
+               <div className="absolute top-0 right-0 w-16 h-16 bg-white/[0.02] -rotate-45 translate-x-8 -translate-y-8 border-b border-white/10" />
+               
               {/* Editor toolbar */}
-              <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-slate-50/50">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center shadow-sm">
-                    <Icons.Terminal size={14} className="text-slate-600" />
+              <div className="flex items-center justify-between px-5 py-3 border-b border-white/[0.08] bg-white/[0.01]">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-[2px] bg-black border border-white/[0.1] flex items-center justify-center">
+                    <Icons.Terminal size={14} className="text-white" />
                   </div>
-                  <span className="text-sm font-semibold text-slate-800">Practice Editor</span>
+                  <span className="font-mono text-[10px] font-black text-white uppercase tracking-widest">PRACTICE_ENVIRONMENT</span>
                 </div>
                 <button
                   onClick={() => setCode(lesson.codeStarter || '// Practice your code here...\n')}
-                  className="text-xs font-semibold text-slate-400 hover:text-blue-600 transition-colors"
+                  className="font-mono text-[9px] font-bold text-[#333] hover:text-white transition-colors uppercase tracking-widest"
                 >
-                  Reset
+                  REBOOT
                 </button>
               </div>
 
               {/* Code textarea */}
-              <div className="relative">
+              <div className="flex-1 relative bg-black">
                 <textarea
                   value={code}
                   onChange={(e) => setCode(e.target.value)}
-                  className="w-full bg-slate-900 text-slate-100 font-mono text-sm p-5 outline-none resize-none"
-                  style={{ height: 380, tabSize: 2 }}
+                  className="w-full h-full bg-transparent text-cyber/80 font-mono text-[13px] p-6 outline-none resize-none selection:bg-cyber/30 selection:text-white"
+                  style={{ tabSize: 2 }}
                   spellCheck={false}
                   onKeyDown={(e) => {
                     if (e.key === 'Tab') {
@@ -409,27 +415,27 @@ export default function LessonPage() {
               </div>
 
               {/* Run button */}
-              <div className="bg-slate-900 border-t border-slate-800">
+              <div className="bg-[#080808] border-t border-white/[0.08]">
                 <button
                   onClick={runCode}
-                  className="flex items-center justify-center gap-2 text-green-400 hover:bg-slate-800 hover:text-green-300 transition-colors font-semibold text-sm w-full py-4"
+                  className="flex items-center justify-center gap-3 text-emerald font-mono font-black text-[12px] uppercase tracking-[0.3em] w-full py-5 hover:bg-emerald/[0.04] transition-all"
                 >
-                  <Icons.Play size={14} /> Run Code
+                  <Icons.Play size={14} className="fill-current" /> EXECUTE_SIGNAL
                 </button>
 
                 {/* Output panel */}
                 {output && (
-                  <div className="border-t border-slate-800 bg-black min-h-[120px] max-h-48 overflow-y-auto">
-                    <div className="flex items-center justify-between px-5 py-2 sticky top-0 bg-black/90 backdrop-blur-sm">
-                      <span className="text-[10px] font-mono font-semibold text-slate-500 uppercase tracking-widest">Output / Console</span>
-                      <button onClick={() => setOutput(null)} className="text-[10px] font-mono font-semibold text-slate-500 hover:text-slate-300 transition-colors">Clear</button>
+                  <div className="border-t border-white/[0.08] bg-black max-h-48 overflow-y-auto">
+                    <div className="flex items-center justify-between px-5 py-3 sticky top-0 bg-black/90 backdrop-blur-sm border-b border-white/[0.02]">
+                      <span className="font-mono text-[9px] font-black text-[#333] uppercase tracking-[0.2em]">CONSOLE_FEED</span>
+                      <button onClick={() => setOutput(null)} className="font-mono text-[9px] text-[#444] hover:text-white transition-colors uppercase">CLEAR</button>
                     </div>
-                    <div className="px-5 pb-4 space-y-1">
+                    <div className="px-6 pb-6 pt-2 space-y-1">
                       {output.lines.length === 0 ? (
-                        <p className="font-mono text-xs text-slate-600 italic">// execution finished with no output</p>
+                        <p className="font-mono text-[10px] text-[#222] italic uppercase">// waiting for execution signal...</p>
                       ) : output.lines.map((line, i) => (
-                        <p key={i} className={`font-mono text-xs whitespace-pre-wrap ${
-                          output.isError && i === output.lines.length - 1 ? 'text-red-400' : 'text-slate-300'
+                        <p key={i} className={`font-mono text-[11px] whitespace-pre-wrap ${
+                          output.isError && i === output.lines.length - 1 ? 'text-crimson' : 'text-[#666]'
                         }`}>{line}</p>
                       ))}
                     </div>
@@ -441,16 +447,16 @@ export default function LessonPage() {
         )}
       </div>
 
-      {/* ── XP Float ───────────────────────────────────── */}
+      {/* ── XP Float (Industrial) ─────────────────────────── */}
       {showXP && (
-        <div className="fixed bottom-10 right-10 z-[100] animate-bounce">
-          <div className="flex items-center gap-3 bg-white text-slate-900 px-6 py-4 rounded-full shadow-2xl border border-slate-100">
-            <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
-              <Icons.Zap size={20} className="text-amber-500" />
+        <div className="fixed bottom-12 right-12 z-[100] animate-bounce">
+          <div className="flex items-center gap-4 bg-black border border-amber/30 p-5 rounded-[4px] shadow-[0_0_30px_rgba(245,158,11,0.1)]">
+            <div className="w-10 h-10 rounded-[2px] bg-amber/[0.08] flex items-center justify-center">
+              <Icons.Zap size={20} className="text-amber-500 fill-current" />
             </div>
             <div>
-              <p className="text-xs text-slate-500 font-semibold mb-0.5">Lesson Complete</p>
-              <span className="font-display font-black tracking-tight text-xl text-amber-600">+{showXP} XP</span>
+              <p className="font-mono text-[10px] text-[#666] font-black uppercase tracking-widest mb-0.5">UNITS_ACQUIRED</p>
+              <span className="font-mono font-black tracking-widest text-2xl text-amber-500">+{showXP} XP</span>
             </div>
           </div>
         </div>
