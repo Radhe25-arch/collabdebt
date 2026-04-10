@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useAuthStore } from '@/store';
 import { Avatar, Button, Spinner } from '@/components/ui';
 import {
   Zap, BookOpen, Target, Trophy, Play, ArrowRight, Terminal,
   Users, Check, TrendingUp, Flame, ChevronRight, Activity,
-  Layout, Sparkles, Clock, Cpu, Shield, Layers, Code, Command
+  Layout, Sparkles, Clock, Cpu, Shield, Layers, Code, Bell
 } from 'lucide-react';
 import api from '@/lib/api';
 
@@ -14,24 +14,26 @@ const LEVEL_NAMES = ['Beginner','Apprentice','Coder','Developer','Senior Dev','A
 const THRESHOLDS  = [0,500,1200,2500,4500,7500,12000,18000,26000,36000];
 
 // ─── MINIMALIST TELEMETRY CARD ──────────────────────────
-function TelemetryCard({ label, value, icon: Icon, trend, color = 'white' }) {
+function StatCard({ label, value, icon: Icon, subtext }) {
   return (
-    <div className="bg-[#050505] rounded-[16px] border border-white/5 p-8 transition-all hover:bg-[#0a0a0c] hover:border-white/10 group relative">
-      <div className="flex flex-col gap-6">
+    <div className="bg-[#0A0A0A] rounded-2xl border border-white/10 p-6 hover:border-white/20 transition-colors group">
+      <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between">
-           <span className="text-[10px] font-bold text-slate-600 uppercase tracking-[0.2em] italic">{label}</span>
-           <Icon size={16} className="text-slate-600 group-hover:text-white transition-colors" />
+           <span className="text-sm font-medium text-slate-400">{label}</span>
+           <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center border border-white/5 group-hover:bg-white/10 transition-colors">
+              <Icon size={16} className="text-slate-300" />
+           </div>
         </div>
-        <div className="flex items-baseline gap-2">
-           <p className="text-3xl font-black text-white italic tracking-tighter uppercase leading-none">{value}</p>
-           {trend && <span className="text-[10px] font-bold text-emerald-500/80 italic">{trend}</span>}
+        <div className="flex items-baseline gap-2 mt-2">
+           <p className="text-3xl font-bold text-white tracking-tight leading-none">{value}</p>
+           {subtext && <span className="text-xs font-medium text-slate-500">{subtext}</span>}
         </div>
       </div>
     </div>
   );
 }
 
-// ─── COMMAND CENTER DASHBOARD ───────────────────────────
+// ─── DASHBOARD PAGE ─────────────────────────────────────
 export default function DashboardPage() {
   const { user } = useAuthStore();
   const navigate = useNavigate();
@@ -64,170 +66,168 @@ export default function DashboardPage() {
   );
 
   return (
-    <div className="max-w-7xl mx-auto pb-40 space-y-16 animate-reveal">
+    <div className="max-w-7xl mx-auto pb-32 space-y-10">
       
-      {/* ── MINIMALIST OPERATIONAL HEADER ── */}
-      <div className="flex flex-col md:flex-row items-end justify-between gap-10 pb-16 border-b border-white/5">
-        <div className="flex items-center gap-10">
-          <Avatar user={user} size={100} className="rounded-[24px] border border-white/10 grayscale" />
+      {/* ── HEADER ── */}
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pb-10 border-b border-white/10">
+        <div className="flex items-center gap-6">
+          <Avatar user={user} size={80} className="rounded-2xl border border-white/10" />
           <div>
-            <div className="flex items-center gap-4 mb-4">
-               <h1 className="text-5xl font-black text-white tracking-[-0.05em] uppercase italic leading-none">Command Center</h1>
-               <div className="px-3 py-1 bg-white/5 border border-white/10 rounded-full">
-                  <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest leading-none">Live Session</span>
-               </div>
-            </div>
-            <p className="text-[11px] font-mono font-bold text-slate-600 uppercase tracking-[0.3em] italic">Operative_UID: {user?.id?.slice(-12).toUpperCase()} // Status: Optimal</p>
+            <h1 className="text-3xl font-bold text-white tracking-tight mb-2">Welcome back, {user?.username}</h1>
+            <p className="text-sm font-medium text-slate-400">Continue building your skills and tracking your progress.</p>
           </div>
         </div>
         
         <div className="flex items-center gap-4">
-           <Button className="rounded-full h-14 px-12 bg-white text-black hover:bg-slate-200 border-none text-[11px] font-bold tracking-[0.2em] uppercase transition-transform hover:scale-[1.02]" onClick={() => navigate('/courses')}>
-             Load Operational Module
+           <Button className="rounded-full h-10 px-6 bg-white text-black hover:bg-slate-200 border-none text-sm font-medium transition-transform active:scale-95" onClick={() => navigate('/courses')}>
+             Browse courses
            </Button>
         </div>
       </div>
 
-      {/* ── CORE TELEMETRY MATRIX ── */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <TelemetryCard label="Operational XP" value={xp.toLocaleString()} icon={Zap} trend="+2.4k" />
-        <TelemetryCard label="Modules_Final" value={user?.coursesCompleted || 0} icon={Layers} />
-        <TelemetryCard label="Arena_Protocol" value="4.2" icon={Shield} trend="Active" />
-        <TelemetryCard label="Cycle_Streak" value={`${user?.streak || 0}d`} icon={Flame} />
+      {/* ── STATS MATRIX ── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatCard label="Total Experience" value={xp.toLocaleString()} icon={Zap} subtext="XP Earned" />
+        <StatCard label="Courses Completed" value={user?.coursesCompleted || 0} icon={Layers} />
+        <StatCard label="Arena Rating" value="Unranked" icon={Target} />
+        <StatCard label="Current Streak" value={`${user?.streak || 0}`} icon={Flame} subtext="Days" />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
-        {/* ── MAIN SYSTEM FLOW ── */}
-        <div className="lg:col-span-2 space-y-12">
+        {/* ── MAIN CONTENT AREA ── */}
+        <div className="lg:col-span-2 space-y-8">
           
-          {/* PRIMARY TASK RELEASE */}
-          {recentEnrollment && (
-            <div className="bg-[#050505] rounded-[32px] p-16 border border-white/5 relative overflow-hidden group">
-               <div className="relative z-10">
-                  <div className="flex items-center gap-3 mb-10">
-                     <span className="text-[10px] font-mono font-bold text-blue-500 uppercase tracking-[0.4em] italic underline">Active_Operation</span>
+          {/* RECENT COURSE */}
+          {recentEnrollment ? (
+            <div className="bg-[#0A0A0A] rounded-3xl p-8 border border-white/10 relative overflow-hidden group">
+               <div className="relative z-10 w-full md:w-4/5">
+                  <div className="flex items-center gap-2 mb-6">
+                     <div className="w-2 h-2 rounded-full bg-blue-500" />
+                     <span className="text-xs font-semibold text-blue-400 uppercase tracking-wider">Continue Learning</span>
                   </div>
-                  <h3 className="text-6xl font-black text-white mb-6 tracking-[-0.06em] uppercase leading-none italic">{recentEnrollment.course?.title}</h3>
-                  <p className="text-slate-500 mb-16 max-w-xl font-medium text-lg leading-relaxed tracking-tight">{recentEnrollment.course?.description}</p>
+                  <h3 className="text-3xl font-bold text-white mb-4 tracking-tight">{recentEnrollment.course?.title}</h3>
+                  <p className="text-slate-400 mb-8 max-w-xl font-normal text-base leading-relaxed tracking-tight line-clamp-2">
+                     {recentEnrollment.course?.description}
+                  </p>
                   
-                  <div className="space-y-4 mb-16">
+                  <div className="space-y-3 mb-10">
                      <div className="flex justify-between items-end">
-                        <span className="text-[10px] font-mono font-bold text-slate-600 uppercase tracking-widest italic">{recentEnrollment.progress}% Mastered</span>
-                        <span className="text-[10px] font-mono font-bold text-white uppercase tracking-widest italic">Node: Execution</span>
+                        <span className="text-sm font-medium text-white">{recentEnrollment.progress}% Complete</span>
                      </div>
-                     <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                     <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
                         <motion.div 
                           initial={{ width: 0 }}
                           animate={{ width: `${recentEnrollment.progress}%` }}
-                          transition={{ duration: 1, ease: "easeOut" }}
-                          className="h-full bg-white opacity-80" 
+                          transition={{ duration: 0.8, ease: "easeOut" }}
+                          className="h-full bg-blue-500" 
                         />
                      </div>
                   </div>
 
-                  <div className="flex items-center gap-10">
-                     <Button 
-                       className="rounded-full h-16 px-12 bg-white text-black hover:bg-slate-100 border-none font-bold text-[11px] tracking-[0.2em] uppercase italic"
-                       onClick={() => navigate(`/courses/${recentEnrollment.course?.slug}`)}
-                     >
-                       RESUME EXECUTION
-                     </Button>
-                     <p className="text-[10px] font-mono font-bold text-slate-700 uppercase tracking-widest italic animate-pulse underline">Awaiting Input Control...</p>
-                  </div>
+                  <Button 
+                    className="rounded-full h-11 px-8 bg-white text-black hover:bg-slate-200 border-none font-medium text-sm transition-transform active:scale-95"
+                    onClick={() => navigate(`/courses/${recentEnrollment.course?.slug}`)}
+                  >
+                    Resume course
+                  </Button>
                </div>
+               
+               {/* Decorative background element */}
+               <div className="absolute right-0 bottom-0 w-64 h-64 bg-blue-500/5 rounded-full blur-[80px] pointer-events-none" />
+            </div>
+          ) : (
+            <div className="bg-[#0A0A0A] rounded-3xl p-10 border border-white/10 text-center flex flex-col items-center">
+               <BookOpen size={48} className="text-slate-600 mb-6" />
+               <h3 className="text-2xl font-bold text-white mb-3 tracking-tight">Ready to start?</h3>
+               <p className="text-slate-400 mb-8 max-w-md">You haven't enrolled in any courses yet. Explore our curriculum to find the right learning path for you.</p>
+               <Button className="rounded-full h-11 px-8 bg-white text-black hover:bg-slate-200 font-medium border-none" onClick={() => navigate('/courses')}>
+                 Explore Curriculum
+               </Button>
             </div>
           )}
 
-          {/* SYSTEM METRICS GRAPHIC */}
-          <div className="bg-[#050505] rounded-[32px] p-16 border border-white/5">
-             <div className="flex items-center justify-between mb-16">
-                <h3 className="text-2xl font-black text-white tracking-tighter uppercase italic">Operational Sync</h3>
-                <span className="text-[10px] font-mono font-bold text-slate-700 uppercase tracking-[0.3em] italic">Export_Raw_Telemetry</span>
+          {/* ACTIVITY OVERVIEW */}
+          <div className="bg-[#0A0A0A] rounded-3xl p-8 border border-white/10">
+             <div className="flex items-center justify-between mb-8">
+                <h3 className="text-xl font-bold text-white tracking-tight">Activity Overview</h3>
+                <span className="text-sm font-medium text-slate-500">Last 90 days</span>
              </div>
              
-             <div className="h-40 flex items-end gap-1.5">
-                {Array.from({ length: 90 }).map((_, i) => {
-                  const h = 5 + Math.random() * 95;
+             {/* Simple visual representation of activity (similar to Github contribution graph concept but simpler) */}
+             <div className="h-40 flex items-end gap-2">
+                {Array.from({ length: 45 }).map((_, i) => {
+                  const h = 10 + Math.random() * 90;
                   return (
                     <div 
                       key={i} 
-                      className={`flex-1 rounded-sm bg-white/${i % 10 === 0 ? '20' : '5'} hover:bg-white/40 transition-colors`}
+                      className={`flex-1 rounded-sm bg-white/${i % 7 === 0 ? '10' : '5'} hover:bg-white/20 transition-colors`}
                       style={{ height: `${h}%` }}
                     />
                   );
                 })}
              </div>
-             <div className="flex justify-between mt-8 text-[9px] font-mono font-bold text-slate-800 uppercase tracking-[0.4em] italic">
-                <span>EPOCH_INIT</span>
-                <span>SYSTEM_CYCLE_STABLE</span>
-                <span>EPOCH_CURRENT</span>
+             <div className="flex justify-between mt-6 text-xs font-medium text-slate-500">
+                <span>Start</span>
+                <span>Current</span>
              </div>
           </div>
         </div>
 
-        {/* ── ASCENSION MATRIX (SIDEBAR) ── */}
-        <div className="space-y-12">
+        {/* ── SIDEBAR ── */}
+        <div className="space-y-8">
           
-          {/* LEVEL MATRIX — MINIMALIST LINEAR */}
-          <div className="bg-[#050505] rounded-[32px] p-12 border border-white/5 relative bg-subtle-grid">
-             <h4 className="text-[10px] font-mono font-bold text-slate-600 mb-12 uppercase tracking-[0.3em] italic">Ascension_Matrix</h4>
+          {/* LEVEL PROGRESS */}
+          <div className="bg-[#0A0A0A] rounded-3xl p-8 border border-white/10">
+             <h4 className="text-sm font-semibold text-slate-400 mb-6 uppercase tracking-wider">Your Progress</h4>
              
-             <div className="space-y-10">
-                <div className="flex flex-col gap-4">
-                   <div className="flex justify-between items-end">
-                      <span className="text-4xl font-black text-white italic uppercase">{lvl}</span>
-                      <span className="text-[10px] font-mono font-bold text-slate-500 uppercase italic">Rank: {LEVEL_NAMES[lvl-1]}</span>
+             <div className="space-y-8">
+                <div className="flex flex-col gap-3">
+                   <div className="flex justify-between items-end mb-2">
+                      <span className="text-3xl font-bold text-white">{lvl}</span>
+                      <span className="text-sm font-medium text-blue-400">{LEVEL_NAMES[lvl-1]}</span>
                    </div>
-                   <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                   <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
                       <motion.div 
-                        initial={{ width: 0 }} animate={{ width: `${xpPct}%` }}
-                        className="h-full bg-white opacity-60" 
+                        initial={{ width: 0 }} 
+                        animate={{ width: `${xpPct}%` }}
+                        className="h-full bg-blue-500" 
                       />
                    </div>
-                   <div className="flex justify-between text-[9px] font-mono font-bold text-slate-700 uppercase italic">
+                   <div className="flex justify-between text-xs font-medium text-slate-500 mt-1">
                       <span>{xp.toLocaleString()} XP</span>
-                      <span>Target: {nextXP.toLocaleString()}</span>
+                      <span>Next level: {nextXP.toLocaleString()} XP</span>
                    </div>
                 </div>
 
-                <div className="pt-10 border-t border-white/5 space-y-6">
-                   <p className="text-[10px] font-mono font-bold text-slate-600 uppercase tracking-widest italic">Global_Ranking</p>
+                <div className="pt-6 border-t border-white/10">
                    <div className="flex items-center justify-between">
-                      <p className="text-base font-black text-white italic uppercase tracking-tighter">Pos: #128</p>
-                      <p className="text-[10px] font-mono font-bold text-blue-500 uppercase italic underline">View_Hierarchy</p>
+                      <p className="text-sm font-medium text-slate-300">Global Ranking</p>
+                      <p className="text-sm font-bold text-white">#128</p>
                    </div>
                 </div>
              </div>
           </div>
 
-          {/* ARENA PROTOCOL */}
-          <div className="bg-white rounded-[32px] p-12 text-black transition-transform hover:scale-[1.02] cursor-pointer">
-             <div className="flex items-center gap-3 mb-8">
-                <Activity size={16} className="text-black" />
-                <span className="text-[10px] font-mono font-bold uppercase tracking-[0.4em]">Arena_Final</span>
+          {/* NOTIFICATIONS / ACTIVITY */}
+          <div className="bg-[#0A0A0A] rounded-3xl p-8 border border-white/10">
+             <div className="flex items-center justify-between mb-6">
+                <h4 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">Recent Activity</h4>
+                <Bell size={14} className="text-slate-500" />
              </div>
-             <h4 className="text-4xl font-black mb-8 tracking-[-0.06em] italic uppercase leading-none">The Battlefield.</h4>
-             <p className="text-[11px] font-bold text-black/60 mb-12 uppercase tracking-[0.2em] italic leading-relaxed">System termination in 23 hours. Initialize submission immediately.</p>
-             <Button className="w-full h-16 rounded-full bg-black text-white hover:bg-slate-900 border-none font-bold text-[11px] tracking-[0.3em] uppercase italic">
-                INITIATE COMBAT
-             </Button>
-          </div>
-
-          {/* SYSTEM ALERTS */}
-          <div className="bg-[#050505] rounded-[32px] p-12 border border-white/5">
-             <h4 className="text-[10px] font-mono font-bold text-slate-600 mb-10 uppercase tracking-[0.3em] italic">System_Alerts</h4>
-             <div className="space-y-6">
+             <div className="space-y-5">
                 {[
-                  { t: 'Module_Update', d: 'New Architect course available.' },
-                  { t: 'Registry_Sync', d: 'Your portfolio has been indexed.' },
-                  { t: 'Security_Patch', d: 'Node build 14.2 operational.' }
+                  { title: 'Course Enrolled', desc: 'Started Advanced System Design' },
+                  { title: 'Level Up', desc: 'You reached Level 4 Developer' },
+                  { title: 'Achievement Unlocked', desc: 'Completed 7-day streak' }
                 ].map((a, i) => (
-                  <div key={a.t} className="flex gap-4">
-                     <div className="w-1.5 h-1.5 rounded-full bg-white/20 mt-1 flex-shrink-0" />
+                  <div key={i} className="flex gap-4">
+                     <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center flex-shrink-0 border border-white/5">
+                        <Check size={12} className="text-blue-400" />
+                     </div>
                      <div>
-                        <p className="text-[11px] font-bold text-white uppercase italic tracking-widest">{a.t}</p>
-                        <p className="text-[10px] font-medium text-slate-600 italic">{a.d}</p>
+                        <p className="text-sm font-semibold text-white">{a.title}</p>
+                        <p className="text-xs font-medium text-slate-500 mt-1">{a.desc}</p>
                      </div>
                   </div>
                 ))}
@@ -239,3 +239,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+
