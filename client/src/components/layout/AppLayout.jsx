@@ -33,16 +33,16 @@ function NavItem({ to, label, Icon }) {
   return (
     <Link
       to={to}
-      className={`flex items-center gap-3 px-3 py-2.5 rounded-[4px] transition-all duration-150 group ${
+      className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all duration-200 group ${
         isActive
-          ? 'bg-cyber/[0.08] text-cyber border border-cyber/20'
-          : 'text-[#666] hover:text-white hover:bg-white/[0.03] border border-transparent'
+          ? 'bg-blue-600/10 text-blue-500 shadow-sm border border-blue-500/10'
+          : 'text-slate-500 hover:text-white hover:bg-white/[0.03] border border-transparent'
       }`}
     >
-      <Icon size={15} strokeWidth={1.5} className="flex-shrink-0" />
-      <span className="font-mono text-[11px] font-bold tracking-[0.1em]">{label}</span>
+      <Icon size={16} strokeWidth={isActive ? 2 : 1.5} className="flex-shrink-0" />
+      <span className="text-[12px] font-semibold tracking-tight">{label}</span>
       {isActive && (
-        <div className="ml-auto w-1 h-4 bg-cyber rounded-none" />
+        <div className="ml-auto w-1 h-3.5 bg-blue-500 rounded-full" />
       )}
     </Link>
   );
@@ -57,20 +57,20 @@ function Sidebar({ open }) {
       className="fixed left-0 top-0 h-screen z-40 flex flex-col overflow-hidden transition-all duration-300"
       style={{ 
         width: open ? 240 : 0,
-        background: '#000',
-        borderRight: '1px solid rgba(255,255,255,0.06)',
+        background: 'var(--navy-950)',
+        borderRight: '1px solid rgba(255,255,255,0.04)',
       }}
     >
       {/* Logo */}
       <div
-        className="flex items-center gap-3 px-5 h-16 flex-shrink-0 cursor-pointer"
-        style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
+        className="flex items-center gap-3 px-6 h-16 flex-shrink-0 cursor-pointer"
+        style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}
         onClick={() => navigate('/')}
       >
-        <div className="w-7 h-7 rounded-[4px] border border-cyber/30 flex items-center justify-center flex-shrink-0">
-          <Code size={14} strokeWidth={1.5} className="text-cyber" />
+        <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center flex-shrink-0 shadow-lg shadow-blue-600/20">
+          <Code size={16} strokeWidth={2} className="text-white" />
         </div>
-        <span className="font-mono font-black text-sm text-white tracking-[0.15em] uppercase whitespace-nowrap">
+        <span className="font-bold text-base text-white tracking-tight uppercase italic whitespace-nowrap">
           SkillForge
         </span>
       </div>
@@ -93,49 +93,35 @@ function Sidebar({ open }) {
         ))}
       </nav>
 
-      {/* User Identity — Industrial Dark Premium */}
+      {/* User Identity — Premium */}
       {user && (
         <div
-          className="px-3 py-6 flex-shrink-0"
-          style={{ borderTop: '1px solid rgba(255,255,255,0.06)', background: 'linear-gradient(180deg, transparent 0%, rgba(59,130,246,0.02) 100%)' }}
+          className="px-4 py-8 flex-shrink-0"
+          style={{ borderTop: '1px solid rgba(255,255,255,0.04)', background: 'linear-gradient(180deg, transparent 0%, rgba(59,130,246,0.02) 100%)' }}
         >
-          <div className="flex items-center justify-between mb-4 px-1">
-             <p className="font-mono text-[9px] font-black text-[#444] uppercase tracking-[0.3em]">
-               OPERATIVE_ID
-             </p>
-             <div className="w-1.5 h-1.5 rounded-full bg-emerald animate-pulse" />
-          </div>
-          
           <Link
             to="/profile"
-            className="flex flex-col gap-4 p-4 rounded-[4px] border border-white/[0.08] bg-white/[0.01] hover:bg-white/[0.03] transition-all duration-300 group relative overflow-hidden"
+            className="flex flex-col gap-4 p-4 rounded-2xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.05] transition-all duration-300 group relative overflow-hidden"
           >
-            {/* Background Glow */}
-            <div className="absolute -right-4 -bottom-4 w-12 h-12 bg-cyber/5 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
-            
             <div className="flex items-center gap-3 relative z-10">
-              <Avatar user={user} size={36} className="border border-white/10 group-hover:border-cyber/30 transition-colors" />
+              <Avatar user={user} size={40} className="border border-white/10 group-hover:border-blue-500/30 transition-colors rounded-xl" />
               <div className="flex-1 min-w-0">
-                <p className="font-mono text-[12px] font-black text-white truncate tracking-tighter uppercase group-hover:text-cyber transition-colors">
+                <p className="text-sm font-bold text-white truncate tracking-tight group-hover:text-blue-400 transition-colors">
                   {user?.username}
                 </p>
-                <p className="font-mono text-[9px] font-bold text-[#555] opacity-80 uppercase">VERIFIED_UNIT</p>
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">PRO OPERATIVE</p>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 pt-2 border-t border-white/[0.04]">
+            <div className="grid grid-cols-2 gap-2 pt-3 border-t border-white/[0.04]">
                <div className="flex flex-col">
-                  <span className="font-mono text-[8px] font-black text-[#444] uppercase tracking-widest">RANK</span>
-                  <span className="font-mono text-[10px] font-black text-cyber">LV {user?.level || 1}</span>
+                  <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Level</span>
+                  <span className="text-[11px] font-black text-blue-400">{user?.level || 1}</span>
                </div>
                <div className="flex flex-col">
-                  <span className="font-mono text-[8px] font-black text-[#444] uppercase tracking-widest">STREAK</span>
-                  <span className="font-mono text-[10px] font-black text-amber">{user?.streak || 0} DAY</span>
+                  <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Streak</span>
+                  <span className="text-[11px] font-black text-amber-500">{user?.streak || 0} Days</span>
                </div>
-            </div>
-            
-            <div className="w-full h-1 bg-white/[0.04] rounded-full overflow-hidden">
-               <div className="h-full bg-cyber" style={{ width: '65%' }} />
             </div>
           </Link>
         </div>
@@ -193,11 +179,11 @@ function Topbar({ sidebarOpen, toggleSidebar }) {
     <header
       style={{
         left: sidebarOpen ? 240 : 0,
-        background: 'rgba(0,0,0,0.92)',
-        backdropFilter: 'blur(16px)',
-        borderBottom: '1px solid rgba(255,255,255,0.06)',
+        background: 'rgba(15,23,42,0.85)',
+        backdropFilter: 'blur(20px)',
+        borderBottom: '1px solid rgba(255,255,255,0.04)',
       }}
-      className="fixed top-0 right-0 z-30 h-16 flex items-center justify-between px-6 transition-all duration-300"
+      className="fixed top-0 right-0 z-30 h-16 flex items-center justify-between px-8 transition-all duration-300"
     >
       {/* Left — hamburger */}
       <div className="flex items-center gap-6">
@@ -363,7 +349,7 @@ export default function AppLayout() {
   const { sidebarOpen, toggleSidebar } = useUIStore();
 
   return (
-    <div className="min-h-screen bg-black font-sans text-white">
+    <div className="min-h-screen bg-[#0f172a] font-sans text-white selection:bg-blue-600/30">
       <Sidebar open={sidebarOpen} />
       <Topbar sidebarOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
       <main

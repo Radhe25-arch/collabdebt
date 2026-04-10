@@ -20,11 +20,11 @@ const MODES = [
 function TypingIndicator() {
   return (
     <div className="flex gap-4 fade-in">
-      <div className="w-8 h-8 rounded-[4px] border border-cyber/30 bg-cyber/[0.08] flex items-center justify-center text-[9px] font-bold text-cyber tracking-widest uppercase">AI</div>
-      <div className="px-5 py-4 rounded-[4px] bg-black border border-white/[0.08] flex items-center justify-center">
-        <div className="flex gap-1.5 h-2 items-center">
+      <div className="w-10 h-10 rounded-xl bg-blue-600/10 flex items-center justify-center text-[10px] font-bold text-blue-500 tracking-widest uppercase shadow-sm">AI</div>
+      <div className="px-6 py-5 rounded-3xl bg-[#1e293b] border border-white/5 flex items-center justify-center">
+        <div className="flex gap-2 h-2 items-center">
           {[0, 1, 2].map(i => (
-            <div key={i} className="w-1.5 h-1.5 rounded-[1px] bg-[#555] animate-bounce" style={{ animationDelay: `${i * 0.1}s` }} />
+            <div key={i} className="w-2 h-2 rounded-full bg-blue-500/40 animate-bounce" style={{ animationDelay: `${i * 0.15}s` }} />
           ))}
         </div>
       </div>
@@ -42,22 +42,22 @@ function MsgContent({ content }) {
           const lang  = lines[0].replace('```', '').trim() || 'code';
           const code  = lines.slice(1, -1).join('\n');
           return (
-            <div key={i} className="relative group rounded-[4px] overflow-hidden border border-white/[0.08]">
-              <div className="flex items-center justify-between px-4 py-2 bg-[rgba(255,255,255,0.02)] border-b border-white/[0.06]">
-                <span className="font-mono text-[10px] text-[#555] uppercase tracking-widest font-bold">{lang}</span>
+            <div key={i} className="relative group rounded-2xl overflow-hidden border border-white/10">
+              <div className="flex items-center justify-between px-5 py-3 bg-white/5 border-b border-white/5 font-mono text-[11px] text-slate-500 uppercase tracking-widest font-bold">
+                <span>{lang}</span>
                 <button onClick={() => { navigator.clipboard.writeText(code); toast.success('COPIED'); }}
-                  className="font-mono text-[10px] text-[#555] hover:text-white opacity-0 group-hover:opacity-100 transition-all uppercase font-bold tracking-wider">COPY</button>
+                  className="hover:text-blue-400 opacity-0 group-hover:opacity-100 transition-all">COPY</button>
               </div>
-              <pre className="bg-black p-4 overflow-x-auto text-[13px] font-mono text-[#E0E0E0] leading-relaxed custom-scrollbar"><code>{code}</code></pre>
+              <pre className="bg-slate-950 p-6 overflow-x-auto text-[13px] font-mono text-slate-300 leading-relaxed custom-scrollbar uppercase italic"><code>{code}</code></pre>
             </div>
           );
         }
         const rendered = part.split(/(\*\*.*?\*\*|`.*?`)/g).map((chunk, ci) => {
           if (chunk.startsWith('**') && chunk.endsWith('**')) return <strong key={ci} className="font-bold text-white">{chunk.slice(2,-2)}</strong>;
-          if (chunk.startsWith('`') && chunk.endsWith('`')) return <code key={ci} className="font-mono text-[12px] font-bold bg-[#111] border border-white/[0.08] px-1.5 py-0.5 rounded-[2px] text-cyber">{chunk.slice(1,-1)}</code>;
+          if (chunk.startsWith('`') && chunk.endsWith('`')) return <code key={ci} className="font-mono text-xs font-bold bg-blue-600/10 border border-blue-600/20 px-1.5 py-0.5 rounded-lg text-blue-400">{chunk.slice(1,-1)}</code>;
           return <span key={ci}>{chunk}</span>;
         });
-        return <div key={i} className="text-[14px] leading-[1.7] whitespace-pre-wrap text-[#B0B0B0] font-sans">{rendered}</div>;
+        return <div key={i} className="text-base leading-relaxed whitespace-pre-wrap text-slate-300 font-medium">{rendered}</div>;
       })}
     </div>
   );
@@ -103,12 +103,12 @@ function Message({ msg, onRetry }) {
 function QuotaModal({ isOpen, onClose }) {
   if (!isOpen) return null;
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm px-4 fade-in">
-      <div className="bg-[#050505] border border-white/[0.08] p-8 rounded-[4px] max-w-sm w-full text-center shadow-2xl">
-        <Icons.Zap size={32} className="text-cyber mx-auto mb-4" />
-        <h3 className="text-lg font-mono font-black tracking-tight text-white uppercase mb-2">Request Limit Reached</h3>
-        <p className="text-sm font-mono text-[#666] mb-6">Your daily quota is full. Resources reallocate at 12:00 UTC.</p>
-        <button onClick={onClose} className="w-full py-3 bg-white/10 hover:bg-white/20 text-white font-bold text-[10px] font-mono uppercase tracking-[0.2em] transition-all rounded-[4px]">Acknowledge</button>
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#0f172a]/80 backdrop-blur-xl px-4 fade-in">
+      <div className="bg-[#1e293b] border border-white/10 p-10 rounded-[40px] max-w-sm w-full text-center shadow-2xl">
+        <Sparkles size={32} className="text-blue-500 mx-auto mb-6" />
+        <h3 className="text-xl font-black tracking-tight text-white mb-3">Quota Fully Allocated</h3>
+        <p className="text-sm font-medium text-slate-400 mb-8 leading-relaxed">Your professional daily quota is full. Resources reallocate at 00:00 UTC.</p>
+        <Button onClick={onClose} className="w-full h-14 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-2xl border-none glow-blue">Acknowledge</Button>
       </div>
     </div>
   );
@@ -205,47 +205,47 @@ export default function MentorPage() {
 
   return (
     <>
-      <div className="flex h-[calc(100vh-7rem)] overflow-hidden rounded-[4px] border border-white/[0.08] bg-black shadow-sm">
-        {/* ── LEFT: Minimal Sidebar ── */}
-        <div className="w-64 flex-shrink-0 flex flex-col border-r border-white/[0.08] bg-[#050505]">
-          <div className="p-4 border-b border-white/[0.08]">
-            <button onClick={newSession} className="w-full flex items-center justify-between gap-2 px-4 py-2.5 rounded-[4px] bg-white/[0.02] border border-white/[0.06] text-white font-mono uppercase text-[10px] font-black hover:bg-white/[0.06] hover:border-white/[0.1] transition-all">
-              NEW OPERATION <Icons.Plus size={12} />
+      <div className="flex h-[calc(100vh-8rem)] overflow-hidden rounded-[40px] border border-white/5 bg-[#0f172a] shadow-2xl">
+        {/* ── LEFT: Side Panel ── */}
+        <div className="w-72 flex-shrink-0 flex flex-col border-r border-white/5 bg-[#1e293b]/50">
+          <div className="p-6 border-b border-white/5">
+            <button onClick={newSession} className="w-full flex items-center justify-between gap-2 px-5 py-4 rounded-2xl bg-blue-600 text-white font-bold text-xs hover:bg-blue-500 transition-all glow-blue group">
+              NEW OPERATION <Icons.Plus size={14} className="group-hover:rotate-90 transition-transform" />
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-3 space-y-1 custom-scrollbar">
+          <div className="flex-1 overflow-y-auto p-4 space-y-2 custom-scrollbar">
             {sessions.map(s => (
               <button key={s.id} onClick={() => selectSession(s)}
-                className={`w-full text-left p-3 rounded-[4px] group flex flex-col gap-1 transition-all relative ${
-                  activeSession?.id === s.id ? 'bg-[#111] border border-white/[0.1] shadow-sm' : 'border border-transparent hover:bg-white/[0.02]'
+                className={`w-full text-left p-4 rounded-2xl group flex flex-col gap-1.5 transition-all relative ${
+                  activeSession?.id === s.id ? 'bg-blue-600/10 border border-blue-600/10 shadow-sm' : 'border border-transparent hover:bg-white/[0.02]'
                 }`}>
                 <div className="flex justify-between items-start w-full gap-2">
-                   <p className="font-mono text-[10px] uppercase font-black text-white truncate">{s.topic || 'SESSION'}</p>
+                   <p className={`text-[13px] font-bold truncate ${activeSession?.id === s.id ? 'text-blue-400' : 'text-slate-300'}`}>{s.topic || 'Discussion'}</p>
                    {activeSession?.id === s.id && (
-                     <span onClick={(e) => deleteSession(s.id, e)} className="text-[#555] hover:text-crimson/80 transition-colors p-0.5"><Icons.X size={12}/></span>
+                     <span onClick={(e) => deleteSession(s.id, e)} className="text-slate-600 hover:text-red-500 transition-colors p-0.5"><Icons.X size={14}/></span>
                    )}
                 </div>
-                <div className="text-[9px] font-mono font-bold uppercase tracking-widest text-[#555]">{Array.isArray(s.messages) ? s.messages.length : 0} EXCHANGES</div>
+                <div className="text-[10px] font-bold uppercase tracking-widest text-slate-500">{Array.isArray(s.messages) ? s.messages.length : 0} Exchanges</div>
               </button>
             ))}
           </div>
         </div>
 
-        {/* ── MIDDLE: Clean Chat Area ── */}
-        <div className="flex-1 flex flex-col min-w-0 bg-[#020202] relative">
-          {/* Top Bar - Clean */}
-          <div className="h-14 flex items-center justify-between px-6 border-b border-white/[0.08] bg-[#020202]/90 backdrop-blur-md z-10 sticky top-0">
-             <div className="flex items-center gap-3">
-                <span className="w-1.5 h-1.5 rounded-[1px] bg-emerald animate-pulse shadow-sm" />
-                <h3 className="font-mono text-[12px] font-black text-white uppercase tracking-[0.2em]">LOGIC_HUB AI</h3>
+        {/* ── MIDDLE: Chat Interface ── */}
+        <div className="flex-1 flex flex-col min-w-0 bg-[#0f172a] relative">
+          {/* Top Header */}
+          <div className="h-20 flex items-center justify-between px-8 border-b border-white/5 bg-[#0f172a]/95 backdrop-blur-md z-10 sticky top-0">
+             <div className="flex items-center gap-4">
+                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_10px_#10b981] animate-pulse" />
+                <h3 className="font-bold text-lg text-white tracking-tight">LogicHub AI 4.0</h3>
              </div>
              
              <div className="flex items-center gap-4">
-                <div className="flex bg-[#0A0A0A] rounded-[4px] p-0.5 border border-white/[0.06]">
+                <div className="flex bg-[#1e293b] rounded-2xl p-1 border border-white/5">
                   {MODES.map(m => (
                     <button key={m.id} onClick={() => setActiveMode(m.id)}
-                      className={`px-3 py-1 rounded-[2px] font-mono text-[9px] font-bold uppercase tracking-widest transition-all ${activeMode === m.id ? 'bg-white/10 text-white' : 'text-[#666] hover:text-white hover:bg-white/[0.02]'}`}>
+                      className={`px-6 py-2 rounded-xl text-xs font-bold transition-all ${activeMode === m.id ? 'bg-blue-600 text-white' : 'text-slate-500 hover:text-white'}`}>
                       {m.label}
                     </button>
                   ))}

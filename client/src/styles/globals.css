@@ -11,65 +11,71 @@
 
 /* ─── CSS VARIABLES ─────────────────────────────────────── */
 :root {
-  /* Canvas — Pure permanent black */
-  --background: 0 0% 0%;
+  /* Navy Premium Palette — Inspired by Acquire.com */
+  --navy-950: #0f172a;
+  --navy-900: #1e293b;
+  --navy-800: #334155;
+  --navy-700: #475569;
+
+  /* Standard Design Tokens */
+  --background: 222 47% 7%;
   --foreground: 0 0% 100%;
 
-  /* Card surfaces */
-  --card: 0 0% 0%;
+  /* Card surfaces — High Trust */
+  --card: 222 47% 11%;
   --card-foreground: 0 0% 100%;
 
   /* Popover / Overlays */
-  --popover: 0 0% 0%;
+  --popover: 222 47% 7%;
   --popover-foreground: 0 0% 100%;
 
-  /* Primary — Cyber Blue */
+  /* Primary — Premium Blue */
   --primary: 217 91% 60%;
   --primary-foreground: 0 0% 100%;
 
-  /* Secondary — Ultra-dim surface */
-  --secondary: 0 0% 4%;
+  /* Secondary — Professional Surface */
+  --secondary: 222 47% 15%;
   --secondary-foreground: 0 0% 100%;
 
   /* Muted */
-  --muted: 0 0% 6%;
-  --muted-foreground: 0 0% 40%;
+  --muted: 222 47% 20%;
+  --muted-foreground: 215 20% 65%;
 
-  /* Accent — Electric Violet */
-  --accent: 263 70% 50%;
+  /* Accent — Cyber Blue Clear */
+  --accent: 217 91% 60%;
   --accent-foreground: 0 0% 100%;
 
-  /* Destructive — Crimson */
-  --destructive: 0 72% 51%;
+  /* Destructive — Red */
+  --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 100%;
 
-  /* Borders — Hairline mechanical */
-  --border: 0 0% 100% / 0.1;
-  --input: 0 0% 100% / 0.1;
+  /* Borders & Shadows */
+  --border: 215 25% 27% / 0.3;
+  --input: 215 25% 27% / 0.5;
   --ring: 217 91% 60%;
 
-  /* Sharp machined radius */
-  --radius: 4px;
+  /* Premium Radius */
+  --radius: 24px; /* rounded-3xl style */
 
   /* Functional accent colors */
   --cyber: #3B82F6;
-  --violet: #7C3AED;
+  --violet: #8B5CF6;
   --emerald: #10B981;
-  --crimson: #DC2626;
+  --crimson: #EF4444;
   --amber: #F59E0B;
 
   /* Legacy mapping */
   --p: var(--cyber);
   --p-alt: #2563EB;
-  --bg: #000000;
-  --bg-subtle: #060606;
+  --bg: var(--navy-950);
+  --bg-subtle: var(--navy-900);
   --txt: #FFFFFF;
-  --txt-muted: #666666;
+  --txt-muted: #94a3b8;
 }
 
 /* ─── GLOBAL RESET ──────────────────────────────────────── */
 *, *::before, *::after {
-  border-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.08);
 }
 
 html {
@@ -79,7 +85,7 @@ html {
 }
 
 body {
-  background: #000000;
+  background: var(--navy-950);
   color: #FFFFFF;
   font-family: 'Inter', -apple-system, sans-serif;
   line-height: 1.6;
@@ -90,17 +96,17 @@ body {
   color: #FFFFFF;
 }
 
-/* Scrollbar — mechanical feel */
+/* Scrollbar — Professional feel */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 0; }
-::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(59,130,246,0.3); }
 
 /* ─── TYPOGRAPHY ────────────────────────────────────────── */
 h1, h2, h3, h4, h5 {
   font-family: 'Inter', sans-serif;
-  font-weight: 800;
-  letter-spacing: -0.03em;
+  font-weight: 700;
+  letter-spacing: -0.025em;
   color: #FFFFFF;
 }
 
@@ -108,34 +114,34 @@ code, pre, kbd {
   font-family: 'JetBrains Mono', monospace;
 }
 
-/* Data label — always uppercase JetBrains Mono */
+/* Data label — Professional Inter */
 .data-label {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Inter', sans-serif;
   font-size: 0.625rem;
-  font-weight: 700;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.15em;
-  color: #666666;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
 }
 
-/* Data value — JetBrains Mono, white */
+/* Data value — Inter, white */
 .data-value {
-  font-family: 'JetBrains Mono', monospace;
-  font-weight: 800;
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
   color: #FFFFFF;
 }
 
-/* ─── MECHAMORPHISM BLADE CARD ──────────────────────────── */
+/* ─── PREMIUM NAVY CARDS ────────────────────────────────── */
 .sf-card {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--navy-900);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--radius);
   color: #FFFFFF;
-  transition: border-color 0.2s linear, background 0.15s linear;
+  transition: border-color 0.2s linear, transform 0.2s ease-out;
 }
 .sf-card:hover {
-  border-color: rgba(255, 255, 255, 0.15);
-  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(59, 130, 246, 0.3);
+  transform: translateY(-2px);
 }
 
 /* Blade — mechanical flat panel */

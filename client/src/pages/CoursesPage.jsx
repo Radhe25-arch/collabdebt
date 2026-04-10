@@ -1,311 +1,213 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  Search, 
+  Filter, 
+  BookOpen, 
+  Zap, 
+  Code, 
+  ChevronRight, 
+  Star, 
+  ArrowRight,
+  Shield,
+  Clock,
+  Layout,
+  Globe,
+  Database,
+  Terminal,
+  Layers,
+  Sparkles,
+  BarChart3,
+  BadgeCheck
+} from 'lucide-react';
+import { Button, Input, Spinner } from '@/components/ui';
 import api from '@/lib/api';
-import { Spinner } from '@/components/ui';
-import { BookOpen, Globe, Settings, Terminal, Layers, Zap, Shield, Box, Play, TrendingUp, ArrowRight, ArrowLeft, RefreshCw, Check, LayoutGrid, Binary } from 'lucide-react';
-import LanguageLibrary from '@/components/LanguageLibrary';
 
-const LANG_META = {
-  javascript:     { Icon: Zap,         color: '#F59E0B' },
-  typescript:     { Icon: Zap,         color: '#3B82F6' },
-  python:         { Icon: Terminal,    color: '#60A5FA' },
-  'web-dev':      { Icon: Globe,       color: '#6366F1' },
-  devops:         { Icon: Settings,    color: '#F97316' },
-  systems:        { Icon: Terminal,    color: '#888' },
-  'system-design':{ Icon: Layers,      color: '#8B5CF6' },
-  'ai-ml':        { Icon: Zap,         color: '#A855F7' },
-  cybersecurity:  { Icon: Shield,      color: '#DC2626' },
-  blockchain:     { Icon: Box,         color: '#F59E0B' },
-  'mobile-dev':   { Icon: Play,        color: '#10B981' },
-  'data-science': { Icon: TrendingUp,  color: '#06B6D4' },
-  'backend-dev':  { Icon: Terminal,    color: '#555' },
+// ─── PREMIUM COURSE CARD (LIST STYLE) ─────────────────────
+const CourseListCard = ({ course, onAction }) => {
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="group bg-[#1e293b] border border-white/5 rounded-[32px] p-1 shadow-sm hover:shadow-xl hover:shadow-blue-600/5 hover:border-blue-600/20 transition-all duration-300"
+    >
+      <div className="bg-slate-900/40 rounded-[31px] p-8 flex flex-col lg:flex-row items-center gap-10">
+        
+        {/* Course Identity */}
+        <div className="flex-1 flex gap-8 items-start w-full">
+           <div className="w-20 h-20 rounded-3xl bg-blue-600/10 flex items-center justify-center flex-shrink-0 group-hover:bg-blue-600/20 transition-colors">
+              <Code size={36} className="text-blue-500" />
+           </div>
+           <div className="flex-1">
+              <div className="flex items-center gap-2 mb-2">
+                 <div className="flex items-center gap-1">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} size={11} className={i < 4 ? 'fill-yellow-500 text-yellow-500' : 'text-slate-700'} />
+                    ))}
+                 </div>
+                 <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest bg-white/5 px-2.5 py-1 rounded-full">Elite Rating</span>
+              </div>
+              <h3 className="text-2xl font-black text-white tracking-tight leading-none mb-4 group-hover:text-blue-400 transition-colors">{course.title}</h3>
+              <p className="text-slate-500 text-base leading-relaxed line-clamp-2 max-w-2xl">{course.description}</p>
+           </div>
+        </div>
+
+        {/* Course Metadata — 'Business Listing' Style */}
+        <div className="flex-shrink-0 grid grid-cols-2 lg:flex lg:flex-row items-center gap-10 border-t lg:border-t-0 lg:border-l border-white/5 pt-8 lg:pt-0 lg:pl-10 w-full lg:w-auto">
+           
+           <div className="space-y-1 min-w-[120px]">
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] leading-none mb-2">Difficulty</p>
+              <div className="flex items-center gap-2">
+                 <div className={`w-2 h-2 rounded-full ${course.level === 'Advanced' ? 'bg-red-500' : course.level === 'Intermediate' ? 'bg-blue-500' : 'bg-emerald-500'}`} />
+                 <span className="text-white font-black tracking-tight">{course.level || 'Intermediate'}</span>
+              </div>
+           </div>
+
+           <div className="space-y-1 min-w-[150px]">
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] leading-none mb-2">Skills Gained</p>
+              <span className="text-slate-300 font-bold text-sm tracking-tight">{course.tags?.slice(0, 2).join(', ').toUpperCase() || 'SYSTEMS, SCALE'}</span>
+           </div>
+
+           <div className="space-y-1 min-w-[100px]">
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] leading-none mb-2">Lessons</p>
+              <span className="text-white font-black tracking-tight">{course._count?.lessons || 24} MODULES</span>
+           </div>
+
+           <div className="col-span-2 lg:col-span-1 border-t lg:border-t-0 lg:border-l border-white/5 pt-6 lg:pt-0 lg:pl-10">
+              <Button 
+                onClick={() => onAction(course.slug)}
+                className="w-full lg:w-44 h-14 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-black transition-all glow-blue border-none flex items-center justify-center gap-3"
+              >
+                View Asset <ArrowRight size={18} />
+              </Button>
+           </div>
+
+        </div>
+
+      </div>
+    </motion.div>
+  );
 };
 
-const DOMAIN_SLUGS = ['web-dev','devops','systems','system-design','ai-ml','cybersecurity','blockchain','mobile-dev','data-science','backend-dev'];
-
-// ─── CATEGORY CARD ────────────────────────────────────────
-function CategoryCard({ category, courseCount, onClick }) {
-  const meta = LANG_META[category.slug] || { Icon: BookOpen, color: '#555' };
-  const { Icon } = meta;
-
-  return (
-    <div
-      onClick={() => onClick(category)}
-      className="blade p-5 cursor-pointer hover:border-white/20 transition-all duration-150 group"
-    >
-      <div className="flex items-start gap-4">
-        <div
-          className="w-10 h-10 rounded-[4px] border border-white/[0.06] flex items-center justify-center flex-shrink-0 transition-all duration-150"
-          style={{ background: `${meta.color}10` }}
-        >
-          <Icon size={16} strokeWidth={1.5} style={{ color: meta.color }} />
-        </div>
-        <div className="flex-1 min-w-0">
-          <h3 className="font-bold text-sm text-white group-hover:text-cyber transition-colors duration-150 mb-1">
-            {category.name}
-          </h3>
-          <p className="font-mono text-[10px] font-bold text-[#555] uppercase tracking-wider">
-            {courseCount} {courseCount === 1 ? 'COURSE' : 'COURSES'} AVAILABLE
-          </p>
-        </div>
-        <div
-          className="w-7 h-7 rounded-[4px] border border-white/[0.06] flex items-center justify-center flex-shrink-0 text-[#444] group-hover:border-cyber/30 group-hover:text-cyber transition-all duration-150"
-        >
-          <ArrowRight size={13} strokeWidth={1.5} />
-        </div>
-      </div>
-      {category.description && (
-        <p className="mt-3 text-xs text-[#555] leading-relaxed line-clamp-2 pl-14">
-          {category.description}
-        </p>
-      )}
-    </div>
-  );
-}
-
-// ─── COURSE CARD ──────────────────────────────────────────
-function CourseCard({ course, onClick }) {
-  const enrolled  = course.isEnrolled || !!course.enrollment;
-  const completed = course.enrollment?.completedAt != null || course.enrollment?.progress === 100;
-  const progress  = course.enrollment?.progress || 0;
-  const meta = LANG_META[course.category?.slug] || { Icon: BookOpen, color: '#555' };
-  const { Icon } = meta;
-
-  return (
-    <div
-      onClick={() => onClick(course.slug)}
-      className="blade p-5 cursor-pointer hover:border-white/20 transition-all duration-150 group"
-      style={{ borderLeft: completed ? `2px solid ${meta.color}50` : undefined }}
-    >
-      {/* Header */}
-      <div className="flex items-start gap-3 mb-3">
-        <div
-          className="w-9 h-9 rounded-[4px] border border-white/[0.06] flex items-center justify-center flex-shrink-0"
-          style={{ background: `${meta.color}0D` }}
-        >
-          <Icon size={14} strokeWidth={1.5} style={{ color: meta.color }} />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1 flex-wrap">
-            <h3 className="font-bold text-sm text-white group-hover:text-cyber transition-colors duration-150 truncate">
-              {course.title}
-            </h3>
-            {completed && (
-              <span className="flex items-center gap-1 font-mono text-[9px] font-black text-emerald bg-emerald/[0.08] border border-emerald/20 px-1.5 py-0.5 rounded-[2px] uppercase flex-shrink-0">
-                <Check size={9} strokeWidth={2} /> DONE
-              </span>
-            )}
-          </div>
-          <span className={`inline-block font-mono text-[9px] px-2 py-0.5 rounded-[2px] uppercase tracking-wider font-bold border ${
-            course.difficulty === 'BEGINNER'
-              ? 'text-emerald border-emerald/20 bg-emerald/[0.06]'
-              : course.difficulty === 'INTERMEDIATE'
-              ? 'text-cyber border-cyber/20 bg-cyber/[0.06]'
-              : 'text-violet border-violet/20 bg-violet/[0.06]'
-          }`}>
-            {course.difficulty}
-          </span>
-        </div>
-      </div>
-
-      {course.description && (
-        <p className="text-xs text-[#555] leading-relaxed line-clamp-2 mb-3">{course.description}</p>
-      )}
-
-      {/* Progress */}
-      {enrolled && !completed && progress > 0 && (
-        <div className="mb-3">
-          <div className="flex justify-between mb-1">
-            <span className="font-mono text-[9px] font-bold text-[#555] uppercase tracking-wider">PROGRESS</span>
-            <span className="font-mono text-[10px] font-black text-cyber">{progress}%</span>
-          </div>
-          <div className="h-px bg-white/[0.06]">
-            <div className="h-px bg-cyber" style={{ width: `${progress}%` }} />
-          </div>
-        </div>
-      )}
-
-      {/* Footer */}
-      <div className="flex items-center gap-4 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
-        <span className="font-mono text-[10px] font-bold text-[#555] flex items-center gap-1.5 uppercase tracking-wider">
-          <BookOpen size={10} strokeWidth={1.5} />
-          {course._count?.lessons || 0} LESSONS
-        </span>
-        <span className="font-mono text-[10px] font-bold text-[#555] flex items-center gap-1.5 uppercase tracking-wider">
-          <Zap size={10} strokeWidth={1.5} className="text-amber-400" />
-          {course.xpReward || 0} XP
-        </span>
-        {enrolled && !completed && (
-          <span className="font-mono text-[10px] font-black text-cyber ml-auto uppercase tracking-wider">IN PROGRESS</span>
-        )}
-        {!enrolled && (
-          <span className="font-mono text-[10px] font-bold text-[#555] ml-auto group-hover:text-cyber transition-colors duration-150 flex items-center gap-1 uppercase tracking-wider">
-            START <ArrowRight size={10} strokeWidth={1.5} />
-          </span>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// ─── MAIN PAGE ────────────────────────────────────────────
+// ─── MAIN COURSES PAGE ──────────────────────────────────
 export default function CoursesPage() {
   const navigate = useNavigate();
-  const [categories, setCategories] = useState([]);
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [activeCategory, setActiveCategory] = useState(null);
-  const [activeTab, setActiveTab] = useState('CURRICULUM'); // CURRICULUM | LIBRARY
+  const [search, setSearch] = useState('');
+  const [filter, setFilter] = useState('ALL');
 
-  const loadData = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const [catRes, courseRes] = await Promise.allSettled([
-        api.get('/courses/categories'),
-        api.get('/courses?limit=300'),
-      ]);
-      const cats       = catRes.status === 'fulfilled' ? (catRes.value.data.categories || []) : [];
-      const coursesRaw = courseRes.status === 'fulfilled' ? (courseRes.value.data.courses || []) : [];
-      setCategories(cats);
+  useEffect(() => {
+    api.get('/courses')
+      .then(r => setCourses(r.data.courses || []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
 
-      let enrollMap = {};
-      try {
-        const enrollRes = await api.get('/courses/my-enrollments');
-        (enrollRes.data.enrollments || []).forEach(e => { enrollMap[e.courseId] = e; });
-      } catch {}
-
-      setCourses(coursesRaw.map(c => ({ ...c, enrollment: enrollMap[c.id] || null })));
-      if (cats.length === 0 && coursesRaw.length === 0) setError('no-data');
-    } catch {
-      setError('fetch-error');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => { loadData(); }, []);
-
-  const domainCategories = (categories || []).filter(c => c && DOMAIN_SLUGS.includes(c.slug));
-  const getCoursesByCategory = catId => (courses || []).filter(c => c && (c.categoryId === catId || c.category?.id === catId));
-  const handleCourseClick = slug => navigate(`/courses/${slug}`);
+  const filtered = courses.filter(c => {
+    const matchesSearch = c.title.toLowerCase().includes(search.toLowerCase()) || 
+                          c.description.toLowerCase().includes(search.toLowerCase());
+    const matchesFilter = filter === 'ALL' || c.level === filter;
+    return matchesSearch && matchesFilter;
+  });
 
   if (loading) return (
-    <div className="flex items-center justify-center min-h-[50vh]">
-      <div className="flex flex-col items-center gap-3">
-        <Spinner size={20} className="text-cyber" />
-        <span className="font-mono text-[10px] text-[#444] uppercase tracking-[0.2em]">LOADING CURRICULUM...</span>
-      </div>
+    <div className="flex items-center justify-center h-[50vh]">
+      <Spinner size={32} className="text-blue-500" />
     </div>
   );
 
-  if (error) return (
-    <div className="max-w-md mx-auto text-center py-32 space-y-5">
-      <div className="w-14 h-14 rounded-[4px] border border-white/[0.08] flex items-center justify-center mx-auto">
-        <BookOpen size={22} strokeWidth={1.5} className="text-[#333]" />
-      </div>
-      <div>
-        <h2 className="font-bold text-lg text-white mb-2 uppercase tracking-tight">
-          {error === 'no-data' ? 'NO COURSES AVAILABLE' : 'FAILED TO LOAD'}
-        </h2>
-        <p className="text-sm text-[#555]">
-          {error === 'no-data' ? 'Curriculum is being prepared. Check back soon.' : 'Could not connect to server. Please try again.'}
-        </p>
-      </div>
-      <button onClick={loadData} className="btn-secondary inline-flex items-center gap-2 text-[10px]">
-        <RefreshCw size={12} strokeWidth={1.5} /> TRY AGAIN
-      </button>
-    </div>
-  );
-
-  // Category drill-down
-  if (activeCategory) {
-    const activeCourses = getCoursesByCategory(activeCategory.id).sort((a, b) => a.order - b.order);
-    return (
-      <div className="max-w-5xl mx-auto space-y-6 pb-16 animate-fade-in">
-        <button
-          onClick={() => setActiveCategory(null)}
-          className="flex items-center gap-2 font-mono text-[11px] font-bold text-[#555] hover:text-white transition-colors duration-150 uppercase tracking-wider"
-        >
-          <ArrowLeft size={13} strokeWidth={1.5} /> BACK TO LIBRARY
-        </button>
-
-        <div style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '1.5rem' }}>
-          <h1 className="font-black text-2xl text-white tracking-tight uppercase">{activeCategory.name}</h1>
-          <p className="text-sm text-[#555] mt-2 max-w-2xl leading-relaxed">
-            {activeCategory.description || `Zero-to-hero curriculum for ${activeCategory.name}.`}
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          {activeCourses.length > 0 ? (
-            activeCourses.map(course => (
-              <CourseCard key={course.id} course={course} onClick={handleCourseClick} />
-            ))
-          ) : (
-            <div className="col-span-full py-14 text-center rounded-[4px] border border-dashed border-white/[0.06]">
-              <BookOpen size={22} strokeWidth={1} className="text-[#222] mx-auto mb-3" />
-              <p className="font-mono text-[11px] text-[#444] uppercase tracking-[0.15em]">NO COURSES IN THIS TRACK YET</p>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  // Main library view
   return (
-    <div className="max-w-6xl mx-auto pb-16 animate-fade-in">
-      {/* Header & Main Tab Switcher */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 pb-6 border-b border-white/[0.06]">
-        <div>
-          <h1 className="font-black text-3xl text-white tracking-tight uppercase mb-1">COURSES</h1>
-          <p className="text-sm text-[#555] max-w-md">
-            Master the world's programming languages and domain architectures through industrial training.
-          </p>
-        </div>
-        
-        <div className="flex items-center gap-0 border border-white/[0.08] rounded-[4px] p-0.5 bg-white/[0.02]">
-          <button
-            onClick={() => setActiveTab('CURRICULUM')}
-            className={`flex items-center gap-2 px-4 py-2.5 font-mono text-[10px] font-black tracking-widest transition-all ${
-              activeTab === 'CURRICULUM' ? 'bg-cyber text-white' : 'text-[#444] hover:text-white'
-            }`}
-          >
-            <BookOpen size={13} /> CURRICULUM CATALOG
-          </button>
-          <button
-            onClick={() => setActiveTab('LIBRARY')}
-            className={`flex items-center gap-2 px-4 py-2.5 font-mono text-[10px] font-black tracking-widest transition-all ${
-              activeTab === 'LIBRARY' ? 'bg-cyber text-white' : 'text-[#444] hover:text-white'
-            }`}
-          >
-            <Binary size={13} /> GLOBAL LANGUAGE LIBRARY
-          </button>
-        </div>
+    <div className="max-w-7xl mx-auto pb-40 space-y-16 animate-fade-in">
+      
+      {/* ── HEADER & SEARCH ── */}
+      <div className="flex flex-col items-center text-center space-y-6 max-w-3xl mx-auto pt-10">
+         <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600/10 border border-blue-600/20 rounded-full">
+            <BadgeCheck size={14} className="text-blue-500" />
+            <span className="text-[10px] font-bold text-blue-500 uppercase tracking-[0.2em]">Verified Curriculum</span>
+         </div>
+         <h1 className="text-5xl md:text-6xl font-black text-white tracking-tighter leading-none mb-4">Elite Coding Assets.</h1>
+         <p className="text-slate-500 text-lg font-medium leading-relaxed">
+            Acquire high-demand technical skills through our industrial-grade curriculum. 
+            Built for those who optimize for scale. 100% Free Acquisition.
+         </p>
+         
+         <div className="w-full relative group pt-10">
+            <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-600 group-hover:text-blue-500 transition-colors" size={20} />
+            <Input 
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search by asset name, skill, or difficulty..."
+              className="h-16 pl-16 pr-6 rounded-3xl bg-[#1e293b]/50 border-white/5 text-lg font-medium placeholder:text-slate-600 focus:bg-[#1e293b] focus:border-blue-600/50 transition-all w-full"
+            />
+         </div>
       </div>
 
-      {activeTab === 'CURRICULUM' ? (
-        <div className="space-y-10">
-          {domainCategories.length > 0 && (
-            <section>
-              <h2 className="font-mono text-[10px] font-black text-[#444] uppercase tracking-[0.2em] mb-4 flex items-center gap-3">
-                <span className="flex-1 h-px bg-white/[0.04]" />
-                DOMAIN ARCHITECTURES
-                <span className="flex-1 h-px bg-white/[0.04]" />
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {domainCategories.map(cat => (
-                  <CategoryCard key={cat.id} category={cat} courseCount={getCoursesByCategory(cat.id).length} onClick={setActiveCategory} />
-                ))}
+      {/* ── FILTER TABS ── */}
+      <div className="flex flex-wrap items-center justify-center gap-3">
+         {['ALL', 'Beginner', 'Intermediate', 'Advanced', 'Expert'].map(f => (
+           <button
+             key={f}
+             onClick={() => setFilter(f)}
+             className={`h-11 px-8 rounded-full text-xs font-black uppercase tracking-widest transition-all ${
+               filter === f 
+                 ? 'bg-blue-600 text-white shadow-xl shadow-blue-600/20' 
+                 : 'bg-[#1e293b] text-slate-500 hover:bg-slate-800 border border-white/5'
+             }`}
+           >
+             {f}
+           </button>
+         ))}
+      </div>
+
+      {/* ── ASSET LISTING ── */}
+      <div className="space-y-6">
+         <div className="flex items-center justify-between px-8 mb-8">
+            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-[0.3em]">{filtered.length} ASSETS FOUND</span>
+            <div className="flex items-center gap-3 text-slate-600">
+               <span className="text-[10px] font-bold uppercase tracking-widest">Sort:</span>
+               <button className="text-[10px] font-bold text-blue-500 uppercase tracking-widest hover:text-white transition-colors">Popularity</button>
+            </div>
+         </div>
+
+         <div className="space-y-6">
+            <AnimatePresence mode="popLayout">
+               {filtered.map(course => (
+                 <CourseListCard 
+                    key={course.id} 
+                    course={course} 
+                    onAction={(slug) => navigate(`/courses/${slug}`)} 
+                 />
+               ))}
+            </AnimatePresence>
+
+            {filtered.length === 0 && (
+              <div className="py-40 text-center bg-[#1e293b]/30 rounded-[40px] border border-dashed border-white/10">
+                 <Search size={48} className="text-slate-700 mx-auto mb-6" />
+                 <h4 className="text-xl font-bold text-white mb-2">No assets match your search.</h4>
+                 <p className="text-slate-500">Try adjusting your filters or search parameters.</p>
               </div>
-            </section>
-          )}
-        </div>
-      ) : (
-        <LanguageLibrary />
-      )}
+            )}
+         </div>
+      </div>
+
+      {/* ── FOOTER CALLOUT ── */}
+      <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-[50px] p-16 text-center text-white relative overflow-hidden">
+         <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[radial-gradient(circle_at_20%_20%,white,transparent)]" />
+         <div className="relative z-10 max-w-2xl mx-auto">
+            <Sparkles className="mx-auto mb-8 text-white/50" size={32} />
+            <h2 className="text-4xl md:text-5xl font-black tracking-tighter mb-6">Own Your Future today.</h2>
+            <p className="text-lg font-medium text-white/80 mb-10 leading-relaxed">
+               Every course you complete is a verified asset in your portfolio. 
+               Join 500k+ engineers mastering the industrial stack.
+            </p>
+            <Button className="h-16 px-12 rounded-2xl bg-white text-blue-600 hover:bg-slate-50 border-none font-black text-lg shadow-2xl">
+               Start Learning Now
+            </Button>
+         </div>
+      </div>
+
     </div>
   );
 }
