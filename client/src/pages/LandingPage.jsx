@@ -16,7 +16,8 @@ import {
   Database,
   Terminal as TerminalIcon,
   Layers,
-  Sparkles
+  Sparkles,
+  GitBranch
 } from 'lucide-react';
 import { Button } from '@/components/ui';
 
@@ -362,7 +363,7 @@ export default function LandingPage() {
           
           <div className="flex gap-8">
             <Globe size={18} className="text-slate-500 hover:text-white cursor-pointer transition-colors" />
-            <Github size={18} className="text-slate-500 hover:text-white cursor-pointer transition-colors" />
+            <GitBranch size={18} className="text-slate-500 hover:text-white cursor-pointer transition-colors" />
           </div>
         </div>
       </footer>
