@@ -11,37 +11,37 @@
 
 /* ─── CSS VARIABLES ─────────────────────────────────────── */
 :root {
-  /* Navy Premium Palette — Inspired by Acquire.com */
-  --navy-950: #0f172a;
-  --navy-900: #1e293b;
-  --navy-800: #334155;
-  --navy-700: #475569;
+  /* Industrial Onyx Palette — High Fidelity Black */
+  --onyx-950: #000000;
+  --onyx-900: #050505;
+  --onyx-800: #0a0a0a;
+  --onyx-700: #111111;
 
   /* Standard Design Tokens */
-  --background: 222 47% 7%;
+  --background: 0 0% 0%;
   --foreground: 0 0% 100%;
 
-  /* Card surfaces — High Trust */
-  --card: 222 47% 11%;
+  /* Card surfaces — Professional Depth */
+  --card: 0 0% 2%;
   --card-foreground: 0 0% 100%;
 
   /* Popover / Overlays */
-  --popover: 222 47% 7%;
+  --popover: 0 0% 0%;
   --popover-foreground: 0 0% 100%;
 
-  /* Primary — Premium Blue */
+  /* Primary — High Precision Blue */
   --primary: 217 91% 60%;
   --primary-foreground: 0 0% 100%;
 
-  /* Secondary — Professional Surface */
-  --secondary: 222 47% 15%;
+  /* Secondary — Mechanical Surface */
+  --secondary: 0 0% 7%;
   --secondary-foreground: 0 0% 100%;
 
   /* Muted */
-  --muted: 222 47% 20%;
-  --muted-foreground: 215 20% 65%;
+  --muted: 0 0% 10%;
+  --muted-foreground: 0 0% 63%;
 
-  /* Accent — Cyber Blue Clear */
+  /* Accent — Precision Blue */
   --accent: 217 91% 60%;
   --accent-foreground: 0 0% 100%;
 
@@ -50,12 +50,12 @@
   --destructive-foreground: 0 0% 100%;
 
   /* Borders & Shadows */
-  --border: 215 25% 27% / 0.3;
-  --input: 215 25% 27% / 0.5;
+  --border: 0 0% 15% / 0.5;
+  --input: 0 0% 15% / 0.7;
   --ring: 217 91% 60%;
 
   /* Premium Radius */
-  --radius: 24px; /* rounded-3xl style */
+  --radius: 24px; /* rounded-3xl standard */
 
   /* Functional accent colors */
   --cyber: #3B82F6;
@@ -64,13 +64,13 @@
   --crimson: #EF4444;
   --amber: #F59E0B;
 
-  /* Legacy mapping */
+  /* Legacy mapping — Updated to Onyx */
   --p: var(--cyber);
   --p-alt: #2563EB;
-  --bg: var(--navy-950);
-  --bg-subtle: var(--navy-900);
+  --bg: var(--onyx-950);
+  --bg-subtle: var(--onyx-900);
   --txt: #FFFFFF;
-  --txt-muted: #94a3b8;
+  --txt-muted: #666666;
 }
 
 /* ─── GLOBAL RESET ──────────────────────────────────────── */
