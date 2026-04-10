@@ -6,47 +6,32 @@ import { Avatar, Button, Spinner } from '@/components/ui';
 import {
   Zap, BookOpen, Target, Trophy, Play, ArrowRight, Terminal,
   Users, Check, TrendingUp, Flame, ChevronRight, Activity,
-  Layout, Sparkles, Clock, Cpu, Shield, Layers, Code
+  Layout, Sparkles, Clock, Cpu, Shield, Layers, Code, Command
 } from 'lucide-react';
 import api from '@/lib/api';
 
 const LEVEL_NAMES = ['Beginner','Apprentice','Coder','Developer','Senior Dev','Architect','Pro','Expert','Master','Legend'];
 const THRESHOLDS  = [0,500,1200,2500,4500,7500,12000,18000,26000,36000];
 
-// ─── INDUSTRIAL STAT CARD ────────────────────────────────
-function StatCard({ label, value, icon: Icon, trend, color = 'blue' }) {
-  const colors = {
-    blue: 'text-blue-500 bg-blue-500/10 border-blue-500/10 shadow-blue-500/5',
-    emerald: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/10 shadow-emerald-500/5',
-    violet: 'text-violet-500 bg-violet-500/10 border-violet-500/10 shadow-violet-500/5',
-    amber: 'text-amber-500 bg-amber-500/10 border-amber-500/10 shadow-amber-500/5'
-  };
-
+// ─── MINIMALIST TELEMETRY CARD ──────────────────────────
+function TelemetryCard({ label, value, icon: Icon, trend, color = 'white' }) {
   return (
-    <div className="bg-[#050505] rounded-[24px] border border-white/5 p-8 transition-all hover:bg-[#0a0a0a] group relative overflow-hidden">
-      <div className="absolute top-0 right-0 p-8 opacity-0 group-hover:opacity-5 transition-opacity">
-        <Icon size={120} />
-      </div>
-      <div className="flex items-center gap-5 relative z-10 mb-8">
-        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${colors[color]} border`}>
-          <Icon size={24} />
+    <div className="bg-[#050505] rounded-[16px] border border-white/5 p-8 transition-all hover:bg-[#0a0a0c] hover:border-white/10 group relative">
+      <div className="flex flex-col gap-6">
+        <div className="flex items-center justify-between">
+           <span className="text-[10px] font-bold text-slate-600 uppercase tracking-[0.2em] italic">{label}</span>
+           <Icon size={16} className="text-slate-600 group-hover:text-white transition-colors" />
         </div>
-        <div>
-          <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-1">{label}</p>
-          <p className="text-3xl font-black text-white tracking-tighter leading-none italic uppercase">{value}</p>
+        <div className="flex items-baseline gap-2">
+           <p className="text-3xl font-black text-white italic tracking-tighter uppercase leading-none">{value}</p>
+           {trend && <span className="text-[10px] font-bold text-emerald-500/80 italic">{trend}</span>}
         </div>
       </div>
-      {trend && (
-        <div className="flex items-center justify-between relative z-10 pt-4 border-t border-white/5">
-           <span className="text-[10px] font-black uppercase tracking-widest text-slate-600">Performance Flow</span>
-           <span className={`text-[10px] font-black uppercase tracking-widest ${trend.includes('+') ? 'text-emerald-500' : 'text-blue-500'}`}>{trend} Target</span>
-        </div>
-      )}
     </div>
   );
 }
 
-// ─── MAIN DASHBOARD ───────────────────────────────────────
+// ─── COMMAND CENTER DASHBOARD ───────────────────────────
 export default function DashboardPage() {
   const { user } = useAuthStore();
   const navigate = useNavigate();
@@ -74,192 +59,176 @@ export default function DashboardPage() {
 
   if (loading) return (
     <div className="flex items-center justify-center h-[50vh]">
-       <Spinner size={32} className="text-blue-500" />
+       <Spinner size={32} className="text-white opacity-20" />
     </div>
   );
 
   return (
-    <div className="max-w-7xl mx-auto pb-32 space-y-12 animate-fade-in">
+    <div className="max-w-7xl mx-auto pb-40 space-y-16 animate-reveal">
       
-      {/* ── COMMAND CONSOLE HEADER ── */}
-      <div className="flex flex-col md:flex-row items-center justify-between gap-10 pb-12 border-b border-white/5">
-        <div className="flex items-center gap-8">
-          <div className="relative">
-             <div className="absolute inset-0 bg-blue-600/30 blur-2xl rounded-full" />
-             <Avatar user={user} size={96} className="rounded-[32px] border-2 border-white/5 relative z-10" />
-          </div>
+      {/* ── MINIMALIST OPERATIONAL HEADER ── */}
+      <div className="flex flex-col md:flex-row items-end justify-between gap-10 pb-16 border-b border-white/5">
+        <div className="flex items-center gap-10">
+          <Avatar user={user} size={100} className="rounded-[24px] border border-white/10 grayscale" />
           <div>
-            <div className="flex items-center gap-4 mb-3">
-               <h1 className="text-4xl font-black text-white tracking-tighter italic uppercase">Operational Console</h1>
-               <div className="px-4 py-1.5 bg-blue-600/10 border border-blue-600/20 rounded-full flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse shadow-[0_0_8px_#3b82f6]" />
-                  <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest">Live Trace Active</span>
+            <div className="flex items-center gap-4 mb-4">
+               <h1 className="text-5xl font-black text-white tracking-[-0.05em] uppercase italic leading-none">Command Center</h1>
+               <div className="px-3 py-1 bg-white/5 border border-white/10 rounded-full">
+                  <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest leading-none">Live Session</span>
                </div>
             </div>
-            <p className="text-slate-500 font-bold text-sm tracking-widest uppercase italic">// Operative: {user?.username} | ID: {user?.id?.slice(-8).toUpperCase()}</p>
+            <p className="text-[11px] font-mono font-bold text-slate-600 uppercase tracking-[0.3em] italic">Operative_UID: {user?.id?.slice(-12).toUpperCase()} // Status: Optimal</p>
           </div>
         </div>
         
         <div className="flex items-center gap-4">
-           <Button variant="secondary" className="rounded-2xl h-14 px-8 border-white/10 hover:bg-white/5 text-xs font-black tracking-[0.2em] uppercase" onClick={() => navigate('/settings')}>Initialize Sync</Button>
-           <Button className="rounded-2xl h-14 px-10 bg-blue-600 hover:bg-blue-500 glow-blue border-none text-xs font-black tracking-[0.2em] uppercase" onClick={() => navigate('/courses')}>
-             Load Module
+           <Button className="rounded-full h-14 px-12 bg-white text-black hover:bg-slate-200 border-none text-[11px] font-bold tracking-[0.2em] uppercase transition-transform hover:scale-[1.02]" onClick={() => navigate('/courses')}>
+             Load Operational Module
            </Button>
         </div>
       </div>
 
-      {/* ── CORE TELEMETRY ── */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard label="Technical XP" value={xp.toLocaleString()} icon={Zap} trend="+12.4k" color="blue" />
-        <StatCard label="Modules Finished" value={user?.coursesCompleted || 0} icon={Layers} trend="Steady" color="emerald" />
-        <StatCard label="Arena Wins" value="42" icon={Shield} trend="+4.0" color="violet" />
-        <StatCard label="Uptime Streak" value={`${user?.streak || 0} Days`} icon={Flame} color="amber" />
+      {/* ── CORE TELEMETRY MATRIX ── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <TelemetryCard label="Operational XP" value={xp.toLocaleString()} icon={Zap} trend="+2.4k" />
+        <TelemetryCard label="Modules_Final" value={user?.coursesCompleted || 0} icon={Layers} />
+        <TelemetryCard label="Arena_Protocol" value="4.2" icon={Shield} trend="Active" />
+        <TelemetryCard label="Cycle_Streak" value={`${user?.streak || 0}d`} icon={Flame} />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
         
-        {/* ── SYSTEM FLOW COLUMN ── */}
-        <div className="lg:col-span-2 space-y-8">
+        {/* ── MAIN SYSTEM FLOW ── */}
+        <div className="lg:col-span-2 space-y-12">
           
           {/* PRIMARY TASK RELEASE */}
           {recentEnrollment && (
-            <div className="bg-[#050505] rounded-[48px] p-12 border border-white/5 relative overflow-hidden group">
-               <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none group-hover:scale-110 transition-transform">
-                  <Cpu size={160} className="text-blue-500" />
-               </div>
+            <div className="bg-[#050505] rounded-[32px] p-16 border border-white/5 relative overflow-hidden group">
                <div className="relative z-10">
-                  <div className="flex items-center gap-3 mb-6">
-                     <span className="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_8px_#3b82f6]" />
-                     <span className="text-[11px] font-black text-blue-500 uppercase tracking-[0.4em]">RESUME OPERATIONAL MODULE</span>
+                  <div className="flex items-center gap-3 mb-10">
+                     <span className="text-[10px] font-mono font-bold text-blue-500 uppercase tracking-[0.4em] italic underline">Active_Operation</span>
                   </div>
-                  <h3 className="text-5xl font-black text-white mt-4 mb-4 tracking-tighter italic uppercase leading-none">{recentEnrollment.course?.title}</h3>
-                  <p className="text-slate-500 mb-12 max-w-xl font-medium text-lg leading-relaxed">{recentEnrollment.course?.description}</p>
+                  <h3 className="text-6xl font-black text-white mb-6 tracking-[-0.06em] uppercase leading-none italic">{recentEnrollment.course?.title}</h3>
+                  <p className="text-slate-500 mb-16 max-w-xl font-medium text-lg leading-relaxed tracking-tight">{recentEnrollment.course?.description}</p>
                   
-                  <div className="flex flex-col gap-6 mb-12">
+                  <div className="space-y-4 mb-16">
                      <div className="flex justify-between items-end">
-                        <span className="text-[11px] font-black text-slate-500 uppercase tracking-[0.2em] italic">{recentEnrollment.progress}% Mastered</span>
-                        <span className="text-[11px] font-black text-white uppercase tracking-[0.2em] italic">Sequence Ready</span>
+                        <span className="text-[10px] font-mono font-bold text-slate-600 uppercase tracking-widest italic">{recentEnrollment.progress}% Mastered</span>
+                        <span className="text-[10px] font-mono font-bold text-white uppercase tracking-widest italic">Node: Execution</span>
                      </div>
-                     <div className="h-3 w-full bg-white/5 rounded-full overflow-hidden p-0.5 border border-white/5">
+                     <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
                         <motion.div 
                           initial={{ width: 0 }}
                           animate={{ width: `${recentEnrollment.progress}%` }}
-                          transition={{ duration: 1.5, ease: "easeOut" }}
-                          className="h-full bg-blue-600 rounded-full shadow-[0_0_20px_#2563eb]" 
+                          transition={{ duration: 1, ease: "easeOut" }}
+                          className="h-full bg-white opacity-80" 
                         />
                      </div>
                   </div>
 
-                  <Button 
-                    className="rounded-2xl h-16 px-12 bg-white text-black hover:bg-slate-100 border-none font-black text-sm tracking-[0.2em] uppercase flex items-center gap-4 transition-all hover:scale-105 italic"
-                    onClick={() => navigate(`/courses/${recentEnrollment.course?.slug}`)}
-                  >
-                    Execute Module <ArrowRight size={20} />
-                  </Button>
+                  <div className="flex items-center gap-10">
+                     <Button 
+                       className="rounded-full h-16 px-12 bg-white text-black hover:bg-slate-100 border-none font-bold text-[11px] tracking-[0.2em] uppercase italic"
+                       onClick={() => navigate(`/courses/${recentEnrollment.course?.slug}`)}
+                     >
+                       RESUME EXECUTION
+                     </Button>
+                     <p className="text-[10px] font-mono font-bold text-slate-700 uppercase tracking-widest italic animate-pulse underline">Awaiting Input Control...</p>
+                  </div>
                </div>
             </div>
           )}
 
-          {/* TELEMETRY FLOW GRAPH */}
-          <div className="bg-[#050505] rounded-[48px] p-12 border border-white/5">
-            <div className="flex items-center justify-between mb-12">
-               <div>
-                  <h3 className="text-2xl font-black text-white tracking-tighter italic uppercase">Telemetry Stream</h3>
-                  <p className="text-slate-500 text-xs font-bold mt-1 uppercase tracking-widest italic">// Cycle metrics from the last 128 global epochs.</p>
-               </div>
-               <Button variant="secondary" size="sm" className="rounded-xl px-6 border-white/5 text-[10px] font-bold tracking-widest uppercase italic">Export Logs</Button>
-            </div>
-            
-            <div className="h-48 flex items-end gap-2 overflow-hidden">
-               {Array.from({ length: 64 }).map((_, i) => {
-                 const h = 10 + Math.random() * 90;
-                 return (
-                   <div 
-                     key={i} 
-                     className="flex-1 rounded-t-sm bg-blue-600/10 hover:bg-blue-600/40 transition-colors relative group"
-                     style={{ height: `${h}%` }}
-                   >
-                      <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-full mb-3 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap px-3 py-1.5 bg-blue-600 rounded-lg text-[10px] font-black text-white uppercase tracking-widest shadow-2xl pointer-events-none z-20">
-                         LOG_SEQ_{i.toString().padStart(3, '0')}
-                      </div>
-                   </div>
-                 );
-               })}
-            </div>
-            <div className="flex justify-between mt-8 text-[11px] font-black text-slate-700 uppercase tracking-[0.3em] px-2 italic">
-               <span>EPOCH_START</span>
-               <span>CYCLE_CURRENT</span>
-            </div>
+          {/* SYSTEM METRICS GRAPHIC */}
+          <div className="bg-[#050505] rounded-[32px] p-16 border border-white/5">
+             <div className="flex items-center justify-between mb-16">
+                <h3 className="text-2xl font-black text-white tracking-tighter uppercase italic">Operational Sync</h3>
+                <span className="text-[10px] font-mono font-bold text-slate-700 uppercase tracking-[0.3em] italic">Export_Raw_Telemetry</span>
+             </div>
+             
+             <div className="h-40 flex items-end gap-1.5">
+                {Array.from({ length: 90 }).map((_, i) => {
+                  const h = 5 + Math.random() * 95;
+                  return (
+                    <div 
+                      key={i} 
+                      className={`flex-1 rounded-sm bg-white/${i % 10 === 0 ? '20' : '5'} hover:bg-white/40 transition-colors`}
+                      style={{ height: `${h}%` }}
+                    />
+                  );
+                })}
+             </div>
+             <div className="flex justify-between mt-8 text-[9px] font-mono font-bold text-slate-800 uppercase tracking-[0.4em] italic">
+                <span>EPOCH_INIT</span>
+                <span>SYSTEM_CYCLE_STABLE</span>
+                <span>EPOCH_CURRENT</span>
+             </div>
           </div>
         </div>
 
-        {/* ── ASCENSION MATRIX ── */}
-        <div className="space-y-8">
+        {/* ── ASCENSION MATRIX (SIDEBAR) ── */}
+        <div className="space-y-12">
           
-          {/* LEVEL MATRIX */}
-          <div className="bg-[#050505] rounded-[48px] p-10 border border-white/5 relative overflow-hidden">
-             <div className="absolute inset-0 bg-grid opacity-5 pointer-events-none" />
-             <div className="flex items-center gap-4 mb-10 relative z-10">
-                <Target size={20} className="text-emerald-500 shadow-[0_0_10px_#10b981]" />
-                <h4 className="text-xs font-black text-white uppercase tracking-[0.2em] italic">Ascension Matrix</h4>
-             </div>
+          {/* LEVEL MATRIX — MINIMALIST LINEAR */}
+          <div className="bg-[#050505] rounded-[32px] p-12 border border-white/5 relative bg-subtle-grid">
+             <h4 className="text-[10px] font-mono font-bold text-slate-600 mb-12 uppercase tracking-[0.3em] italic">Ascension_Matrix</h4>
              
-             <div className="flex flex-col items-center py-8 relative z-10">
-                <div className="relative w-48 h-48 flex items-center justify-center">
-                   <svg className="w-full h-full -rotate-90">
-                      <circle cx="96" cy="96" r="88" stroke="currentColor" strokeWidth="6" fill="transparent" className="text-white/5" />
-                      <circle 
-                        cx="96" cy="96" r="88" stroke="currentColor" strokeWidth="6" fill="transparent" strokeDasharray={552} strokeDashoffset={552 - (552 * xpPct) / 100}
-                        strokeLinecap="round" className="text-blue-600 drop-shadow-[0_0_15px_#2563eb]" 
+             <div className="space-y-10">
+                <div className="flex flex-col gap-4">
+                   <div className="flex justify-between items-end">
+                      <span className="text-4xl font-black text-white italic uppercase">{lvl}</span>
+                      <span className="text-[10px] font-mono font-bold text-slate-500 uppercase italic">Rank: {LEVEL_NAMES[lvl-1]}</span>
+                   </div>
+                   <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                      <motion.div 
+                        initial={{ width: 0 }} animate={{ width: `${xpPct}%` }}
+                        className="h-full bg-white opacity-60" 
                       />
-                   </svg>
-                   <div className="absolute flex flex-col items-center">
-                      <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest leading-none mb-1">Rank</span>
-                      <span className="text-6xl font-black text-white leading-tight italic uppercase">{lvl}</span>
+                   </div>
+                   <div className="flex justify-between text-[9px] font-mono font-bold text-slate-700 uppercase italic">
+                      <span>{xp.toLocaleString()} XP</span>
+                      <span>Target: {nextXP.toLocaleString()}</span>
                    </div>
                 </div>
-                <div className="mt-10 flex flex-col items-center gap-2">
-                   <span className="text-[12px] font-black text-white italic uppercase tracking-[0.2em]">{LEVEL_NAMES[lvl-1] || 'OPERATIVE'}</span>
-                   <span className="text-[10px] font-black text-slate-600 uppercase tracking-[0.3em] italic">TARGET: {nextXP.toLocaleString()} XP</span>
+
+                <div className="pt-10 border-t border-white/5 space-y-6">
+                   <p className="text-[10px] font-mono font-bold text-slate-600 uppercase tracking-widest italic">Global_Ranking</p>
+                   <div className="flex items-center justify-between">
+                      <p className="text-base font-black text-white italic uppercase tracking-tighter">Pos: #128</p>
+                      <p className="text-[10px] font-mono font-bold text-blue-500 uppercase italic underline">View_Hierarchy</p>
+                   </div>
                 </div>
              </div>
           </div>
 
-          {/* CRITICAL ALERT */}
-          <div className="bg-blue-600 rounded-[48px] p-10 text-white relative overflow-hidden group">
-             <div className="absolute -top-12 -right-12 p-12 opacity-10 rotate-12 group-hover:rotate-0 transition-transform">
-                <Trophy size={180} />
+          {/* ARENA PROTOCOL */}
+          <div className="bg-white rounded-[32px] p-12 text-black transition-transform hover:scale-[1.02] cursor-pointer">
+             <div className="flex items-center gap-3 mb-8">
+                <Activity size={16} className="text-black" />
+                <span className="text-[10px] font-mono font-bold uppercase tracking-[0.4em]">Arena_Final</span>
              </div>
-             <div className="relative z-10">
-                <div className="flex items-center gap-3 mb-6">
-                   <Activity size={16} className="text-white animate-pulse" />
-                   <span className="text-[11px] font-black uppercase tracking-[0.4em] text-white/80 italic">Priority Sequence</span>
-                </div>
-                <h4 className="text-3xl font-black mt-3 mb-4 tracking-tighter italic uppercase leading-none">The Arena Final.</h4>
-                <p className="text-sm font-bold text-white/80 mb-10 leading-relaxed italic uppercase tracking-widest underline">Termination in 23:54:12. Submit your kernels immediately for global ranking.</p>
-                <Button className="w-full h-16 rounded-[24px] bg-black text-white hover:bg-slate-900 border-none font-black text-[11px] tracking-[0.3em] uppercase shadow-2xl transition-all hover:scale-[1.02] italic">
-                   Deploy to Battlefield
-                </Button>
-             </div>
+             <h4 className="text-4xl font-black mb-8 tracking-[-0.06em] italic uppercase leading-none">The Battlefield.</h4>
+             <p className="text-[11px] font-bold text-black/60 mb-12 uppercase tracking-[0.2em] italic leading-relaxed">System termination in 23 hours. Initialize submission immediately.</p>
+             <Button className="w-full h-16 rounded-full bg-black text-white hover:bg-slate-900 border-none font-bold text-[11px] tracking-[0.3em] uppercase italic">
+                INITIATE COMBAT
+             </Button>
           </div>
 
-          {/* RECOMMENDED OPS */}
-          <div className="bg-[#050505] rounded-[48px] p-10 border border-white/5">
-             <h4 className="text-[11px] font-black text-white mb-10 flex items-center gap-4 uppercase tracking-[0.3em] italic">
-                <Sparkles size={18} className="text-blue-500" /> RECOMMENDED OPS
-             </h4>
-             <div className="space-y-4">
+          {/* SYSTEM ALERTS */}
+          <div className="bg-[#050505] rounded-[32px] p-12 border border-white/5">
+             <h4 className="text-[10px] font-mono font-bold text-slate-600 mb-10 uppercase tracking-[0.3em] italic">System_Alerts</h4>
+             <div className="space-y-6">
                 {[
-                  { t: 'High-Freq Trading', l: 'Expert' },
-                  { t: 'Distributed DB', l: 'Master' },
-                  { t: 'Cloud Security', l: 'Senior' }
-                ].map((op, i) => (
-                  <div key={op.t} className="flex items-center justify-between p-5 bg-white/[0.02] rounded-[24px] border border-white/5 hover:border-blue-500/30 hover:bg-blue-600/5 cursor-pointer transition-all group">
+                  { t: 'Module_Update', d: 'New Architect course available.' },
+                  { t: 'Registry_Sync', d: 'Your portfolio has been indexed.' },
+                  { t: 'Security_Patch', d: 'Node build 14.2 operational.' }
+                ].map((a, i) => (
+                  <div key={a.t} className="flex gap-4">
+                     <div className="w-1.5 h-1.5 rounded-full bg-white/20 mt-1 flex-shrink-0" />
                      <div>
-                        <p className="text-[14px] font-black text-white mb-1 tracking-tight italic uppercase">{op.t}</p>
-                        <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest leading-none italic group-hover:text-blue-500 transition-colors">{op.l} Architecture</p>
+                        <p className="text-[11px] font-bold text-white uppercase italic tracking-widest">{a.t}</p>
+                        <p className="text-[10px] font-medium text-slate-600 italic">{a.d}</p>
                      </div>
-                     <ChevronRight size={16} className="text-slate-700 group-hover:text-blue-500 transition-colors" />
                   </div>
                 ))}
              </div>
