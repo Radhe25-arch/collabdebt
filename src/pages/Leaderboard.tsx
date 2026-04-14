@@ -80,11 +80,11 @@ export function Leaderboard() {
                 )}
                 <motion.div 
                   variants={itemVariants}
-                  className={\`grid grid-cols-12 gap-4 px-4 py-3.5 items-center rounded-xl transition-all duration-200 group \${
+                  className={`grid grid-cols-12 gap-4 px-4 py-3.5 items-center rounded-xl transition-all duration-200 group \${
                     user.isCurrentUser 
                       ? 'bg-indigo-600/10 border border-indigo-500/30 shadow-[0_0_20px_rgba(79,70,229,0.1)]' 
                       : 'border border-transparent hover:bg-zinc-900/50 hover:border-zinc-800'
-                  }\`}
+                  }`}
                 >
                   <div className="col-span-1 flex justify-center items-center gap-2">
                     {user.rank === 1 ? <Medal className="text-yellow-500 drop-shadow-[0_0_10px_rgba(234,179,8,0.5)]" size={24} /> :
@@ -100,8 +100,8 @@ export function Leaderboard() {
                   
                   <div className="col-span-5 flex items-center gap-4">
                     <div className="relative">
-                      <div className={\`w-10 h-10 rounded-full bg-zinc-900 overflow-hidden border-2 \${user.rank <= 3 ? 'border-yellow-500/50' : 'border-zinc-800'}\`}>
-                        <img src={\`https://api.dicebear.com/7.x/avataaars/svg?seed=\${user.handle}\`} alt={user.name} />
+                      <div className={`w-10 h-10 rounded-full bg-zinc-900 overflow-hidden border-2 \${user.rank <= 3 ? 'border-yellow-500/50' : 'border-zinc-800'}`}>
+                        <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=\${user.handle}`} alt={user.name} />
                       </div>
                       {user.rank <= 3 && (
                         <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-zinc-900 rounded-full flex items-center justify-center border border-zinc-800">
@@ -110,7 +110,7 @@ export function Leaderboard() {
                       )}
                     </div>
                     <div>
-                      <p className={\`font-display font-medium \${user.isCurrentUser ? 'text-indigo-400' : 'text-white'}\`}>
+                      <p className={`font-display font-medium \${user.isCurrentUser ? 'text-indigo-400' : 'text-white'}`}>
                         {user.name}
                       </p>
                       <p className="text-xs text-zinc-500 font-mono mt-0.5 group-hover:text-zinc-400 transition-colors">
@@ -120,21 +120,21 @@ export function Leaderboard() {
                   </div>
                   
                   <div className="col-span-2 text-right">
-                    <Badge variant="outline" className={\`font-mono rounded bg-zinc-950/50 \${user.isCurrentUser ? 'border-indigo-500/30 text-indigo-400' : 'border-zinc-800 text-zinc-400'}\`}>
+                    <Badge variant="outline" className={`font-mono rounded bg-zinc-950/50 \${user.isCurrentUser ? 'border-indigo-500/30 text-indigo-400' : 'border-zinc-800 text-zinc-400'}`}>
                       Lvl {user.level}
                     </Badge>
                   </div>
                   
                   <div className="col-span-2 flex items-center justify-end gap-1.5 font-mono text-sm">
-                    <Flame size={14} className={\`\${user.streak > 100 ? 'text-orange-500 animate-pulse' : 'text-zinc-500'}\`} />
+                    <Flame size={14} className={`\${user.streak > 100 ? 'text-orange-500 animate-pulse' : 'text-zinc-500'}`} />
                     <span className={user.streak > 100 ? 'text-orange-400' : 'text-zinc-400'}>{user.streak}</span>
                   </div>
                   
                   <div className="col-span-2 flex items-center justify-end gap-2">
-                    <span className={\`font-mono font-bold tracking-tight \${user.isCurrentUser ? 'text-white' : 'text-zinc-300'}\`}>
+                    <span className={`font-mono font-bold tracking-tight \${user.isCurrentUser ? 'text-white' : 'text-zinc-300'}`}>
                       {user.xp.toLocaleString()}
                     </span>
-                    <Zap size={14} className={\`\${user.rank <= 3 ? 'text-yellow-500' : 'text-zinc-600'}\`} />
+                    <Zap size={14} className={`\${user.rank <= 3 ? 'text-yellow-500' : 'text-zinc-600'}`} />
                   </div>
                 </motion.div>
               </React.Fragment>

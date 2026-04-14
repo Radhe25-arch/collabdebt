@@ -67,11 +67,11 @@ export function Courses() {
           <button 
             key={cat} 
             onClick={() => setActiveCategory(cat)}
-            className={\`px-4 py-1.5 rounded-full whitespace-nowrap text-xs font-mono transition-all duration-200 \${
+            className={`px-4 py-1.5 rounded-full whitespace-nowrap text-xs font-mono transition-all duration-200 \${
               activeCategory === cat 
                 ? 'bg-indigo-600 text-white shadow-[0_0_15px_rgba(79,70,229,0.3)]' 
                 : 'bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700'
-            }\`}
+            }`}
           >
             {cat}
           </button>
@@ -87,13 +87,13 @@ export function Courses() {
       >
         {filteredCourses.map((course) => (
           <motion.div key={course.id} variants={itemVariants}>
-            <Link to={\`/app/courses/\${course.id}\`} className="block group h-full">
-              <div className={\`flex flex-col h-full rounded-2xl bg-zinc-900/40 border border-zinc-800 p-6 transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(0,0,0,0.5)] group-hover:bg-zinc-900/80 relative overflow-hidden\`}>
+            <Link to={`/app/courses/\${course.id}`} className="block group h-full">
+              <div className={`flex flex-col h-full rounded-2xl bg-zinc-900/40 border border-zinc-800 p-6 transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(0,0,0,0.5)] group-hover:bg-zinc-900/80 relative overflow-hidden`}>
                 {/* Background Gradient */}
-                <div className={\`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br \${course.color} blur-3xl opacity-50 group-hover:opacity-100 transition-opacity\`} />
+                <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br \${course.color} blur-3xl opacity-50 group-hover:opacity-100 transition-opacity`} />
                 
                 <div className="flex justify-between items-start mb-4 relative z-10">
-                  <Badge variant="outline" className={\`font-mono text-[10px] uppercase tracking-wider \${course.border} bg-black/50 text-zinc-300\`}>
+                  <Badge variant="outline" className={`font-mono text-[10px] uppercase tracking-wider \${course.border} bg-black/50 text-zinc-300`}>
                     {course.domain}
                   </Badge>
                   <div className="flex items-center gap-1 text-xs font-mono text-yellow-500/80 bg-yellow-500/10 px-2 py-0.5 rounded border border-yellow-500/20">

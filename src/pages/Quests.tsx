@@ -49,25 +49,25 @@ export function Quests() {
             ].map((quest) => (
               <div 
                 key={quest.id} 
-                className={\`p-4 rounded-xl border transition-all duration-300 \${
+                className={`p-4 rounded-xl border transition-all duration-300 \${
                   quest.done 
                     ? 'border-green-500/20 bg-green-500/5' 
                     : 'border-zinc-800 bg-zinc-900/50 hover:bg-zinc-900 hover:border-zinc-700'
-                }\`}
+                }`}
               >
                 <div className="flex justify-between items-start mb-3">
                   <div className="flex items-start gap-3">
-                    <div className={\`mt-1 \${quest.done ? 'text-green-500' : 'text-zinc-600'}\`}>
+                    <div className={`mt-1 \${quest.done ? 'text-green-500' : 'text-zinc-600'}`}>
                       <quest.icon size={18} />
                     </div>
                     <div>
-                      <p className={\`font-medium \${quest.done ? 'text-zinc-500 line-through' : 'text-zinc-200'}\`}>{quest.title}</p>
-                      <Badge variant="outline" className={\`mt-1.5 font-mono text-[10px] uppercase tracking-wider \${quest.done ? 'border-green-500/30 text-green-500 bg-green-500/10' : 'border-zinc-700 text-zinc-400 bg-black'}\`}>
+                      <p className={`font-medium \${quest.done ? 'text-zinc-500 line-through' : 'text-zinc-200'}`}>{quest.title}</p>
+                      <Badge variant="outline" className={`mt-1.5 font-mono text-[10px] uppercase tracking-wider \${quest.done ? 'border-green-500/30 text-green-500 bg-green-500/10' : 'border-zinc-700 text-zinc-400 bg-black'}`}>
                         {quest.type}
                       </Badge>
                     </div>
                   </div>
-                  <div className={\`font-mono text-sm font-bold \${quest.done ? 'text-green-500' : 'text-indigo-400'}\`}>
+                  <div className={`font-mono text-sm font-bold \${quest.done ? 'text-green-500' : 'text-indigo-400'}`}>
                     +{quest.xp} XP
                   </div>
                 </div>
@@ -75,9 +75,9 @@ export function Quests() {
                   <div className="h-1.5 flex-1 bg-black rounded-full overflow-hidden border border-zinc-800">
                     <motion.div 
                       initial={{ width: 0 }}
-                      animate={{ width: \`\${(quest.progress / quest.total) * 100}%\` }}
+                      animate={{ width: `\${(quest.progress / quest.total) * 100}%` }}
                       transition={{ duration: 1 }}
-                      className={\`h-full \${quest.done ? 'bg-green-500' : 'bg-indigo-500'}\`} 
+                      className={`h-full \${quest.done ? 'bg-green-500' : 'bg-indigo-500'}`} 
                     />
                   </div>
                   <span className="text-xs font-mono text-zinc-500 w-10 text-right">{quest.progress}/{quest.total}</span>

@@ -83,10 +83,10 @@ export function Profile() {
                 <div className="h-1.5 bg-zinc-900 rounded-full overflow-hidden">
                   <motion.div 
                     initial={{ width: 0 }}
-                    whileInView={{ width: \`\${item.level}%\` }}
+                    whileInView={{ width: `\${item.level}%` }}
                     viewport={{ once: true }}
                     transition={{ duration: 1, ease: "easeOut" }}
-                    className={\`h-full \${item.color}\`} 
+                    className={`h-full \${item.color}`} 
                   />
                 </div>
               </div>
@@ -108,7 +108,7 @@ export function Profile() {
               { name: "Pioneer", icon: Zap, color: "text-indigo-400", bg: "bg-indigo-500/10", border: "border-indigo-500/20" },
             ].map((badge, i) => (
               <div key={i} className="flex flex-col items-center gap-2 text-center group cursor-pointer">
-                <div className={\`w-14 h-14 rounded-xl \${badge.bg} flex items-center justify-center border \${badge.border} transition-all duration-300 group-hover:scale-110 group-hover:shadow-[0_0_20px_rgba(255,255,255,0.05)]\`}>
+                <div className={`w-14 h-14 rounded-xl \${badge.bg} flex items-center justify-center border \${badge.border} transition-all duration-300 group-hover:scale-110 group-hover:shadow-[0_0_20px_rgba(255,255,255,0.05)]`}>
                   <badge.icon size={24} className={badge.color} strokeWidth={1.5} />
                 </div>
                 <span className="text-[10px] font-mono text-zinc-500 group-hover:text-zinc-300 transition-colors uppercase">{badge.name}</span>
