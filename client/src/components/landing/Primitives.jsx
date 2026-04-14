@@ -9,12 +9,12 @@ function cn(...inputs) {
 /**
  * Premium Glassmorphism Panel with layered borders and depth.
  */
-export function GlassPanel({ 
-  children, 
-  className, 
+export function GlassPanel({
+  children,
+  className,
   hover = false,
   intensity = 'medium',
-  ...props 
+  ...props
 }) {
   const intensities = {
     low: 'bg-white/5 backdrop-blur-sm border-white/5',
@@ -42,12 +42,12 @@ export function GlassPanel({
 /**
  * Physics-based Neon Button with glow effects.
  */
-export function NeonButton({ 
-  children, 
-  variant = 'teal', 
-  className, 
+export function NeonButton({
+  children,
+  variant = 'teal',
+  className,
   onClick,
-  ...props 
+  ...props
 }) {
   const variants = {
     teal: 'border-teal-400/30 text-teal-400 hover:text-white bg-teal-400/5 hover:bg-teal-400 shadow-teal-500/0 hover:shadow-teal-500/40',
