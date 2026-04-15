@@ -1,8 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { Target, Gift, Star, CheckCircle2, Zap, Trophy } from 'lucide-react';
+import { Trophy, Flame, Target, Zap, CheckCircle2, Star, Calendar, ArrowRight } from 'lucide-react';
+import { useGameStore } from '@/store/useGameStore';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -18,118 +18,122 @@ const itemVariants = {
 };
 
 export function Quests() {
+  const { quests, completeQuest } = useGameStore();
+
   return (
-    <div className="space-y-8 max-w-6xl mx-auto">
+    <div className="space-y-8 max-w-6xl mx-auto animate-in fade-in duration-700">
       <div>
         <h1 className="text-3xl font-display font-bold text-white tracking-tight flex items-center gap-3">
-          <Target className="text-indigo-500" size={32} /> Quests & Rewards
+          <Target className="text-indigo-500" size={32} /> Daily & Weekly Quests
         </h1>
-        <p className="text-zinc-500 mt-2 font-mono text-sm tracking-wide">Complete daily and weekly challenges to earn bonus XP and badges.</p>
+        <p className="text-zinc-500 mt-2 font-mono text-sm tracking-wide uppercase">Engineered for consistent progress</p>
       </div>
 
       <motion.div 
         variants={containerVariants}
         initial="hidden"
         animate="show"
-        className="grid grid-cols-1 md:grid-cols-3 gap-6"
+        className="grid grid-cols-1 md:grid-cols-3 gap-8"
       >
-        <motion.div variants={itemVariants} className="md:col-span-2 rounded-2xl border border-zinc-800 bg-zinc-950/50 p-6 backdrop-blur-xl">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-xl font-display font-medium text-white flex items-center gap-2">
-              <Trophy className="text-zinc-400" size={20} /> Daily Quests
+        {/* Main Quest List */}
+        <motion.div variants={itemVariants} className="md:col-span-2 space-y-4">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-display font-bold text-white flex items-center gap-2">
+              <Calendar className="text-zinc-500" size={18} /> Active Quests
             </h2>
-            <div className="text-xs font-mono text-zinc-500 bg-zinc-900 border border-zinc-800 px-2 py-1 rounded">Resets in 4h 12m</div>
           </div>
           
           <div className="space-y-4">
-            {[
-              { id: 1, title: "Solve 3 Algorithm Challenges", progress: 2, total: 3, xp: 150, type: "Coding", done: false, icon: Zap, color: "text-yellow-500" },
-              { id: 2, title: "Review 5 PRs in Forum", progress: 5, total: 5, xp: 200, type: "Community", done: true, icon: CheckCircle2, color: "text-green-500" },
-              { id: 3, title: "Complete a Course Module", progress: 0, total: 1, xp: 300, type: "Learning", done: false, icon: Star, color: "text-indigo-400" },
-            ].map((quest) => (
+            {quests.map((quest) => (
               <div 
                 key={quest.id} 
-                className={`p-4 rounded-xl border transition-all duration-300 \${
+                className={`group p-6 rounded-2xl border transition-all duration-300 ${
                   quest.done 
                     ? 'border-green-500/20 bg-green-500/5' 
-                    : 'border-zinc-800 bg-zinc-900/50 hover:bg-zinc-900 hover:border-zinc-700'
+                    : 'border-zinc-800 bg-zinc-900/40 hover:bg-zinc-900 hover:border-zinc-700'
                 }`}
               >
-                <div className="flex justify-between items-start mb-3">
-                  <div className="flex items-start gap-3">
-                    <div className={`mt-1 \${quest.done ? 'text-green-500' : 'text-zinc-600'}`}>
-                      <quest.icon size={18} />
+                <div className="flex justify-between items-start">
+                  <div className="flex gap-5">
+                    <div className={`mt-1 flex-shrink-0 w-10 h-10 rounded-xl border flex items-center justify-center transition-all duration-500 ${
+                      quest.done 
+                        ? 'bg-green-500 border-green-500 shadow-[0_0_20px_rgba(34,197,94,0.3)]' 
+                        : 'bg-zinc-800 border-zinc-700 group-hover:border-zinc-500 group-hover:bg-zinc-700'
+                    }`}>
+                      {quest.done ? <CheckCircle2 size={20} className="text-black" /> : <Zap size={20} className="text-zinc-500 group-hover:text-indigo-400" />}
                     </div>
                     <div>
-                      <p className={`font-medium \${quest.done ? 'text-zinc-500 line-through' : 'text-zinc-200'}`}>{quest.title}</p>
-                      <Badge variant="outline" className={`mt-1.5 font-mono text-[10px] uppercase tracking-wider \${quest.done ? 'border-green-500/30 text-green-500 bg-green-500/10' : 'border-zinc-700 text-zinc-400 bg-black'}`}>
-                        {quest.type}
-                      </Badge>
+                      <h3 className={`font-display font-bold text-lg ${quest.done ? 'text-zinc-500 line-through' : 'text-white'}`}>
+                        {quest.title}
+                      </h3>
+                      <div className="flex items-center gap-3 mt-2">
+                        <Badge variant="outline" className={`font-mono text-[10px] uppercase tracking-wider py-0 px-2 ${quest.done ? 'border-green-500/20 text-green-500/60' : 'border-zinc-800 text-zinc-500'}`}>
+                          {quest.title.includes('Lesson') ? 'Curriculum' : quest.title.includes('Battle') ? 'Combat' : 'Community'}
+                        </Badge>
+                        <span className="text-[10px] font-mono text-zinc-600 uppercase tracking-widest">+{quest.xp} XP reward</span>
+                      </div>
                     </div>
                   </div>
-                  <div className={`font-mono text-sm font-bold \${quest.done ? 'text-green-500' : 'text-indigo-400'}`}>
-                    +{quest.xp} XP
-                  </div>
+                  
+                  {!quest.done && (
+                    <button 
+                      onClick={() => completeQuest(quest.id)}
+                      className="text-xs font-mono font-bold text-indigo-400 hover:text-white flex items-center gap-1.5 transition-colors"
+                    >
+                      Complete <ArrowRight size={14} />
+                    </button>
+                  )}
                 </div>
-                <div className="flex items-center gap-4 pl-8">
-                  <div className="h-1.5 flex-1 bg-black rounded-full overflow-hidden border border-zinc-800">
+                
+                <div className="mt-6 flex items-center gap-4">
+                  <div className="flex-1 h-1.5 bg-black rounded-full overflow-hidden border border-zinc-800 p-0">
                     <motion.div 
                       initial={{ width: 0 }}
-                      animate={{ width: `\${(quest.progress / quest.total) * 100}%` }}
-                      transition={{ duration: 1 }}
-                      className={`h-full \${quest.done ? 'bg-green-500' : 'bg-indigo-500'}`} 
+                      animate={{ width: `${(quest.progress / quest.total) * 100}%` }}
+                      transition={{ duration: 1.5, ease: "easeOut" }}
+                      className={`h-full ${quest.done ? 'bg-green-500' : 'bg-gradient-to-r from-indigo-600 to-blue-500'}`} 
                     />
                   </div>
-                  <span className="text-xs font-mono text-zinc-500 w-10 text-right">{quest.progress}/{quest.total}</span>
+                  <span className="text-xs font-mono text-zinc-500 w-12 text-right">{quest.progress}/{quest.total}</span>
                 </div>
               </div>
             ))}
           </div>
         </motion.div>
 
-        <motion.div variants={itemVariants} className="rounded-2xl border border-yellow-500/20 bg-gradient-to-b from-yellow-500/10 to-zinc-950 p-6 relative overflow-hidden group">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(234,179,8,0.15),transparent_50%)]" />
-          
-          <div className="relative z-10">
-            <h2 className="text-xl font-display font-medium text-white flex items-center gap-2 mb-8">
-              <Star className="text-yellow-500 fill-yellow-500/20" size={20} /> Weekly Epic
+        {/* Rewards Sidebar */}
+        <motion.div variants={itemVariants} className="space-y-8">
+          <section className="bg-zinc-900/40 border border-zinc-800 rounded-3xl p-6 backdrop-blur-sm">
+            <h2 className="text-lg font-display font-bold text-white mb-6 flex items-center gap-2">
+              <Trophy className="text-yellow-500" size={18} /> Bonus Rewards
             </h2>
-            
-            <div className="space-y-6 text-center">
-              <div className="w-24 h-24 mx-auto rounded-2xl bg-gradient-to-tr from-yellow-500 to-orange-500 p-1 shadow-[0_0_30px_rgba(234,179,8,0.3)] group-hover:shadow-[0_0_50px_rgba(234,179,8,0.5)] transition-shadow duration-500">
-                <div className="w-full h-full bg-zinc-950 rounded-xl flex items-center justify-center">
-                  <Gift size={40} className="text-yellow-500" strokeWidth={1.5} />
+            <div className="space-y-4">
+              {[
+                { title: "Streak Master", req: "15 Day Streak", xp: 500, done: false },
+                { title: "Speed Demon", req: "Lesson in < 5m", xp: 250, done: true },
+                { title: "Arena Legend", req: "5 Win Streak", xp: 1000, done: false },
+              ].map((r, i) => (
+                <div key={i} className={`p-4 rounded-xl border ${r.done ? 'border-zinc-800 bg-zinc-950/50' : 'border-zinc-800/50 bg-black/20'} space-y-2`}>
+                  <div className="flex justify-between items-center">
+                    <span className={`text-xs font-bold ${r.done ? 'text-zinc-500' : 'text-zinc-300'}`}>{r.title}</span>
+                    {r.done && <CheckCircle2 size={12} className="text-green-500" />}
+                  </div>
+                  <div className="flex justify-between items-end">
+                    <span className="text-[10px] font-mono text-zinc-600">{r.req}</span>
+                    <span className={`text-[10px] font-mono ${r.done ? 'text-zinc-600' : 'text-indigo-400'}`}>+{r.xp} XP</span>
+                  </div>
                 </div>
-              </div>
-              
-              <div>
-                <h3 className="font-bold text-lg text-white">Master of Concurrency</h3>
-                <p className="text-sm text-zinc-400 mt-2 font-mono leading-relaxed">Finish the Advanced Rust Concurrency course before Sunday midnight.</p>
-              </div>
-              
-              <div className="space-y-2 text-left bg-black/40 p-4 rounded-xl border border-yellow-500/20">
-                <div className="flex justify-between text-sm font-medium font-mono text-zinc-400">
-                  <span>Progress</span>
-                  <span className="text-yellow-500">33%</span>
-                </div>
-                <div className="h-1.5 bg-zinc-900 rounded-full overflow-hidden">
-                  <motion.div 
-                    initial={{ width: 0 }}
-                    animate={{ width: "33%" }}
-                    transition={{ duration: 1.5, delay: 0.5 }}
-                    className="h-full bg-yellow-500" 
-                  />
-                </div>
-              </div>
-              
-              <div className="pt-4 border-t border-yellow-500/20">
-                <p className="text-xs font-mono uppercase tracking-widest text-zinc-500 mb-2">Reward</p>
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-yellow-500/10 border border-yellow-500/30 rounded-lg text-yellow-500 font-mono font-bold text-xl shadow-[0_0_15px_rgba(234,179,8,0.2)]">
-                  <Zap size={20} className="fill-current" /> +5,000 XP
-                </div>
-              </div>
+              ))}
             </div>
-          </div>
+          </section>
+
+          <section className="bg-indigo-600/10 border border-indigo-500/20 rounded-3xl p-6 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500 blur-3xl opacity-10 group-hover:opacity-20 transition-opacity" />
+            <Star className="text-indigo-400 mb-4" size={24} />
+            <h3 className="text-white font-display font-bold text-sm mb-2">Weekend Challenge</h3>
+            <p className="text-zinc-400 text-xs leading-relaxed mb-4">Complete 10 lessons this weekend to earn a "Polyglot" limited edition badge and 2,000 XP.</p>
+            <div className="text-[10px] font-mono text-indigo-400 font-bold tracking-widest uppercase">2 Days Remaining</div>
+          </section>
         </motion.div>
       </motion.div>
     </div>

@@ -440,7 +440,7 @@ export function Landing() {
       {/* ════════════════════════════════════════════════
           SECTION 4 — HOW IT WORKS
       ════════════════════════════════════════════════ */}
-      <section className="w-full max-w-6xl mx-auto px-4 py-20">
+      <section id="how-it-works" className="w-full max-w-6xl mx-auto px-4 py-20">
         <Reveal className="text-center mb-20">
           <Chip icon={Sparkles}>How It Works</Chip>
           <h2
@@ -526,7 +526,7 @@ export function Landing() {
       {/* ════════════════════════════════════════════════
           SECTION 5 — BENTO GRID
       ════════════════════════════════════════════════ */}
-      <section className="w-full max-w-6xl mx-auto px-4 py-20">
+      <section id="features" className="w-full max-w-6xl mx-auto px-4 py-20">
         <Reveal className="text-center mb-16">
           <Chip icon={Zap}>Platform Features</Chip>
           <h2
@@ -624,7 +624,7 @@ export function Landing() {
       {/* ════════════════════════════════════════════════
           SECTION 6 — SOCIAL PROOF
       ════════════════════════════════════════════════ */}
-      <section className="w-full py-28 relative overflow-hidden"
+      <section id="testimonials" className="w-full py-28 relative overflow-hidden"
                style={{ borderTop: '1px solid rgba(255,255,255,0.05)', borderBottom: '1px solid rgba(255,255,255,0.05)', background: 'rgba(6,6,6,0.9)' }}>
         <div className="max-w-6xl mx-auto px-4">
           <Reveal className="text-center mb-16">

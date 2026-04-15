@@ -39,16 +39,27 @@ const bottomNavItems = [
   { icon: Settings, label: 'Settings', path: '/app/settings' },
 ];
 
-const XP_CURRENT = 12450;
-const XP_NEXT    = 15000;
-const XP_PCT     = Math.round((XP_CURRENT / XP_NEXT) * 100);
+import { useGameStore } from '@/store/useGameStore';
+import { MOCK_COURSES } from '@/data/mockData';
 
 export function AppLayout() {
+  const { stats } = useGameStore();
+  const XP_CURRENT = stats.xp;
+  const XP_NEXT    = stats.level * 1000;
+  const XP_PCT     = Math.round((XP_CURRENT / XP_NEXT) * 100);
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const searchResults = searchQuery.trim() === '' 
+    ? [] 
+    : MOCK_COURSES.filter(c => 
+        c.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        c.domain.toLowerCase().includes(searchQuery.toLowerCase())
+      ).slice(0, 5);
 
   // ⌘K shortcut
   useEffect(() => {
@@ -176,7 +187,7 @@ export function AppLayout() {
                 style={{ background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.15)' }}
               >
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-xs font-semibold" style={{ color: '#a5b4fc' }}>Level 42</span>
+                  <span className="text-xs font-semibold" style={{ color: '#a5b4fc' }}>Level {stats.level}</span>
                   <span className="text-[10px]" style={{ color: '#6366f1', fontFamily: 'Geist Mono, monospace' }}>
                     {XP_CURRENT.toLocaleString()} / {XP_NEXT.toLocaleString()} XP
                   </span>
@@ -248,7 +259,7 @@ export function AppLayout() {
               style={{ background: 'rgba(251,146,60,0.1)', border: '1px solid rgba(251,146,60,0.2)', color: '#fb923c' }}
             >
               <Zap size={11} fill="currentColor" />
-              14 day streak
+              {stats.streak} day streak
             </div>
             {/* Notification */}
             <div className="relative">
@@ -318,6 +329,8 @@ export function AppLayout() {
                 <Search size={16} style={{ color: '#6366f1' }} />
                 <input
                   ref={searchRef}
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
                   className="flex-1 py-4 bg-transparent text-sm outline-none placeholder:text-[#404040]"
                   style={{ color: '#f5f5f5', fontFamily: 'Inter, sans-serif' }}
                   placeholder="Search courses, users, or domains..."
@@ -329,25 +342,63 @@ export function AppLayout() {
                 </button>
               </div>
               <div className="p-3">
-                {['Dashboard', 'Courses', 'AI Mentor', 'Battles', 'Leaderboard'].map((item, i) => (
-                  <button
-                    key={item}
-                    className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-left transition-colors"
-                    style={{ color: '#a3a3a3' }}
-                    onMouseEnter={e => {
-                      e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
-                      e.currentTarget.style.color = '#f5f5f5';
-                    }}
-                    onMouseLeave={e => {
-                      e.currentTarget.style.background = 'transparent';
-                      e.currentTarget.style.color = '#a3a3a3';
-                    }}
-                    onClick={() => setSearchOpen(false)}
-                  >
-                    <Command size={13} style={{ color: '#6366f1', opacity: 0.7 }} />
-                    {item}
-                  </button>
-                ))}
+                {searchQuery.trim() === '' ? (
+                  ['Dashboard', 'Courses', 'AI Mentor', 'Battles', 'Leaderboard'].map((item, i) => (
+                    <button
+                      key={item}
+                      className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-left transition-colors"
+                      style={{ color: '#a3a3a3' }}
+                      onMouseEnter={e => {
+                        e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
+                        e.currentTarget.style.color = '#f5f5f5';
+                      }}
+                      onMouseLeave={e => {
+                        e.currentTarget.style.background = 'transparent';
+                        e.currentTarget.style.color = '#a3a3a3';
+                      }}
+                      onClick={() => {
+                        const path = item === 'Dashboard' ? '/app' : `/app/${item.toLowerCase().replace(' ', '')}`;
+                        window.location.href = path;
+                        setSearchOpen(false);
+                      }}
+                    >
+                      <Command size={13} style={{ color: '#6366f1', opacity: 0.7 }} />
+                      {item}
+                    </button>
+                  ))
+                ) : (
+                  searchResults.length > 0 ? (
+                    searchResults.map((course) => (
+                      <button
+                        key={course.id}
+                        className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-left transition-colors"
+                        style={{ color: '#a3a3a3' }}
+                        onMouseEnter={e => {
+                          e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
+                          e.currentTarget.style.color = '#f5f5f5';
+                        }}
+                        onMouseLeave={e => {
+                          e.currentTarget.style.background = 'transparent';
+                          e.currentTarget.style.color = '#a3a3a3';
+                        }}
+                        onClick={() => {
+                          window.location.href = `/app/courses/${course.id}`;
+                          setSearchOpen(false);
+                        }}
+                      >
+                        <course.icon size={13} style={{ color: '#6366f1', opacity: 0.7 }} />
+                        <div className="flex-1">
+                          <div className="text-white font-medium">{course.title}</div>
+                          <div className="text-[10px] text-zinc-600 font-mono uppercase">{course.domain}</div>
+                        </div>
+                      </button>
+                    ))
+                  ) : (
+                    <div className="px-4 py-8 text-center text-xs text-zinc-600 font-mono">
+                      No results found for "{searchQuery}"
+                    </div>
+                  )
+                )}
               </div>
             </motion.div>
           </motion.div>

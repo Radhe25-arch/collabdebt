@@ -1,548 +1,247 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
-import {
-  Play, Trophy, Target, Flame, ArrowRight, Code2, Cpu,
-  TrendingUp, BookOpen, CheckCircle2, Circle, Zap, Star,
-  BarChart2, Clock, Users, Activity,
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  Zap, Trophy, Flame, Target, ChevronRight, Play, 
+  Search, BookOpen, Clock, Star, Swords, Sparkles,
+  ArrowUpRight, TrendingUp, Users
 } from 'lucide-react';
-import { motion, useInView, animate } from 'framer-motion';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
+import { Link, useNavigate } from 'react-router-dom';
+import { useGameStore } from '@/store/useGameStore';
+import { MOCK_COURSES, LEADERBOARD_TOP, UPCOMING_EVENTS } from '@/data/mockData';
 
-/* ── helpers ─────────────────────────────────────────────────── */
-function useCounter(end: number, duration = 1.5, start = false) {
-  const [val, setVal] = useState(0);
-  useEffect(() => {
-    if (!start) return;
-    const controls = animate(0, end, {
-      duration,
-      ease: [0.22, 1, 0.36, 1],
-      onUpdate: v => setVal(Math.round(v)),
-    });
-    return controls.stop;
-  }, [end, duration, start]);
-  return val;
-}
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1 }
+  }
+};
 
-/* ── STAT CARD ────────────────────────────────────────────────── */
-function StatCard({
-  label,
-  value,
-  suffix = '',
-  icon: Icon,
-  accent,
-  trend,
-  delay = 0,
-}: {
-  label: string;
-  value: number;
-  suffix?: string;
-  icon: React.ElementType;
-  accent: string;
-  trend?: string;
-  delay?: number;
-}) {
-  const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { once: true });
-  const count = useCounter(value, 1.4, inView);
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
+};
 
+function StatCard({ icon: Icon, label, value, trend, color }: any) {
   return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 20 }}
-      animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay }}
-      className="rounded-2xl p-5"
-      style={{
-        background: 'rgba(10,10,10,0.8)',
-        border: '1px solid rgba(255,255,255,0.06)',
-        transition: 'border-color 0.2s, box-shadow 0.2s, transform 0.2s cubic-bezier(0.22, 1, 0.36, 1)',
-      }}
-      onMouseEnter={e => {
-        (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.1)';
-        (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)';
-        (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 30px rgba(0,0,0,0.3)';
-      }}
-      onMouseLeave={e => {
-        (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.06)';
-        (e.currentTarget as HTMLElement).style.transform = 'translateY(0)';
-        (e.currentTarget as HTMLElement).style.boxShadow = 'none';
-      }}
+    <motion.div 
+      variants={itemVariants}
+      className="bg-zinc-900/40 border border-zinc-800 rounded-2xl p-5 hover:border-zinc-700 transition-all duration-300 group relative overflow-hidden"
     >
-      <div className="flex items-start justify-between mb-3">
-        <div
-          className="w-9 h-9 rounded-xl flex items-center justify-center"
-          style={{ background: `${accent}14`, border: `1px solid ${accent}30` }}
-        >
-          <Icon size={16} style={{ color: accent }} />
+      <div className={`absolute top-0 right-0 w-24 h-24 bg-gradient-to-br ${color} blur-3xl opacity-10 group-hover:opacity-20 transition-opacity`} />
+      <div className="flex items-start justify-between relative z-10">
+        <div className={`p-2.5 rounded-xl bg-zinc-800/50 border border-zinc-700/50 ${color.replace('from-', 'text-').split(' ')[0]}`}>
+          <Icon size={20} />
         </div>
         {trend && (
-          <span
-            className="text-xs flex items-center gap-1 px-2 py-0.5 rounded-full"
-            style={{ background: 'rgba(34,197,94,0.08)', color: '#22c55e', border: '1px solid rgba(34,197,94,0.15)', fontFamily: 'Geist Mono, monospace' }}
-          >
-            <TrendingUp size={9} /> {trend}
-          </span>
-        )}
-      </div>
-      <div
-        className="text-2xl font-bold mb-1 tabular-nums"
-        style={{ color: '#f5f5f5', fontFamily: 'Geist Mono, monospace' }}
-      >
-        {count.toLocaleString()}{suffix}
-      </div>
-      <div className="text-xs" style={{ color: '#525252' }}>{label}</div>
-    </motion.div>
-  );
-}
-
-/* ── XP RING ──────────────────────────────────────────────────── */
-function XPRing({ pct = 83 }: { pct?: number }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { once: true });
-  const R = 54;
-  const CIRCUMF = 2 * Math.PI * R;
-
-  return (
-    <div ref={ref} className="relative flex items-center justify-center" style={{ width: 144, height: 144 }}>
-      <svg width="144" height="144" style={{ transform: 'rotate(-90deg)' }}>
-        <circle cx="72" cy="72" r={R} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="6" />
-        <motion.circle
-          cx="72" cy="72" r={R}
-          fill="none"
-          stroke="url(#xp-grad)"
-          strokeWidth="6"
-          strokeLinecap="round"
-          strokeDasharray={CIRCUMF}
-          initial={{ strokeDashoffset: CIRCUMF }}
-          animate={inView ? { strokeDashoffset: CIRCUMF * (1 - pct / 100) } : {}}
-          transition={{ duration: 1.6, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
-        />
-        <defs>
-          <linearGradient id="xp-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#6366f1" />
-            <stop offset="100%" stopColor="#818cf8" />
-          </linearGradient>
-        </defs>
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-        <div
-          className="text-2xl font-bold tabular-nums"
-          style={{ color: '#f5f5f5', fontFamily: 'Geist Mono, monospace' }}
-        >
-          {pct}%
-        </div>
-        <div className="text-[10px] mt-0.5" style={{ color: '#525252' }}>to Lv 43</div>
-      </div>
-    </div>
-  );
-}
-
-/* ── MINI SPARKLINE ───────────────────────────────────────────── */
-function Sparkline({ data }: { data: number[] }) {
-  const max = Math.max(...data);
-  const min = Math.min(...data);
-  const norm = (v: number) => ((v - min) / (max - min || 1)) * 32;
-  const w = 64;
-  const points = data.map((v, i) => `${(i / (data.length - 1)) * w},${32 - norm(v)}`).join(' ');
-  return (
-    <svg width={w} height="32" style={{ overflow: 'visible' }}>
-      <polyline points={points} fill="none" stroke="#6366f1" strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-/* ── ACTIVITY HEATMAP ─────────────────────────────────────────── */
-function ActivityHeatmap() {
-  const weeks = 26;
-  const days = 7;
-  const data = Array.from({ length: weeks * days }, () => Math.floor(Math.random() * 5));
-  const colors = ['#111111', '#1e1b4b', '#3730a3', '#4f46e5', '#6366f1'];
-
-  return (
-    <div style={{ display: 'flex', gap: '3px' }}>
-      {Array.from({ length: weeks }, (_, w) => (
-        <div key={w} style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
-          {Array.from({ length: days }, (_, d) => {
-            const val = data[w * days + d];
-            return (
-              <div
-                key={d}
-                title={`${val} contributions`}
-                style={{
-                  width: 10,
-                  height: 10,
-                  borderRadius: 2,
-                  background: colors[val],
-                  transition: 'opacity 0.2s',
-                  cursor: 'default',
-                }}
-              />
-            );
-          })}
-        </div>
-      ))}
-    </div>
-  );
-}
-
-/* ── COURSE ROW ───────────────────────────────────────────────── */
-function CourseRow({
-  title,
-  domain,
-  progress,
-  icon: Icon,
-  accent,
-}: {
-  title: string;
-  domain: string;
-  progress: number;
-  icon: React.ElementType;
-  accent: string;
-}) {
-  return (
-    <motion.div
-      whileHover={{ x: 2 }}
-      className="flex items-center gap-4 py-3 cursor-pointer group"
-      style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}
-    >
-      <div
-        className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors"
-        style={{ background: `${accent}12`, border: `1px solid ${accent}25` }}
-      >
-        <Icon size={15} style={{ color: accent }} />
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-1.5">
-          <span className="text-sm font-medium truncate" style={{ color: '#e5e5e5' }}>{title}</span>
-          <span
-            className="text-[10px] px-1.5 py-0.5 rounded-md flex-shrink-0"
-            style={{ background: `${accent}12`, color: accent, border: `1px solid ${accent}25`, fontFamily: 'Geist Mono, monospace' }}
-          >
-            {domain}
-          </span>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="flex-1 h-1 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.05)' }}>
-            <motion.div
-              className="h-full rounded-full"
-              initial={{ width: 0 }}
-              animate={{ width: `${progress}%` }}
-              transition={{ duration: 1, ease: [0.22, 1, 0.36, 1], delay: 0.5 }}
-              style={{ background: `linear-gradient(90deg, ${accent}, ${accent}cc)` }}
-            />
+          <div className="flex items-center gap-1 text-[10px] font-mono text-green-500 bg-green-500/10 px-2 py-0.5 rounded-full border border-green-500/20">
+            <TrendingUp size={10} /> {trend}
           </div>
-          <span className="text-xs flex-shrink-0 tabular-nums" style={{ color: '#525252', fontFamily: 'Geist Mono, monospace' }}>
-            {progress}%
-          </span>
-        </div>
+        )}
       </div>
-      <button
-        className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
-        style={{ background: 'rgba(99,102,241,0.12)', border: '1px solid rgba(99,102,241,0.2)' }}
-      >
-        <Play size={12} fill="#818cf8" style={{ color: '#818cf8', marginLeft: 1 }} />
-      </button>
+      <div className="mt-4 relative z-10">
+        <div className="text-2xl font-display font-bold text-white tracking-tight">{value}</div>
+        <div className="text-xs text-zinc-500 font-mono uppercase tracking-wider mt-1">{label}</div>
+      </div>
     </motion.div>
   );
 }
-
-/* ── QUEST ROW ────────────────────────────────────────────────── */
-function QuestRow({ title, progress, total, xp, done }: { title: string; progress: number; total: number; xp: number; done?: boolean }) {
-  const pct = (progress / total) * 100;
-  return (
-    <div className="flex items-center gap-3 py-2.5">
-      {done ? (
-        <CheckCircle2 size={15} style={{ color: '#6366f1', flexShrink: 0 }} />
-      ) : (
-        <Circle size={15} style={{ color: '#2a2a2a', flexShrink: 0 }} />
-      )}
-      <div className="flex-1">
-        <div className="flex items-center justify-between mb-1.5">
-          <span className="text-xs font-medium" style={{ color: done ? '#3a3a3a' : '#a3a3a3', textDecoration: done ? 'line-through' : 'none' }}>
-            {title}
-          </span>
-          <span className="text-[10px] font-semibold" style={{ color: '#6366f1', fontFamily: 'Geist Mono, monospace' }}>
-            +{xp} XP
-          </span>
-        </div>
-        <div className="h-1 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.05)' }}>
-          <div
-            className="h-full rounded-full"
-            style={{
-              width: `${pct}%`,
-              background: done ? '#6366f1' : 'rgba(99,102,241,0.4)',
-              transition: 'width 1s ease',
-            }}
-          />
-        </div>
-      </div>
-      <span className="text-[10px] flex-shrink-0" style={{ color: '#404040', fontFamily: 'Geist Mono, monospace' }}>
-        {progress}/{total}
-      </span>
-    </div>
-  );
-}
-
-/* ── LEADERBOARD ROW ──────────────────────────────────────────── */
-function LeaderboardRow({ rank, name, xp, avatar, isYou }: { rank: number; name: string; xp: number; avatar: string; isYou?: boolean }) {
-  const medals = ['🥇', '🥈', '🥉'];
-  return (
-    <div
-      className="flex items-center gap-3 py-2.5 px-3 rounded-xl transition-colors"
-      style={{
-        background: isYou ? 'rgba(99,102,241,0.08)' : 'transparent',
-        border: isYou ? '1px solid rgba(99,102,241,0.15)' : '1px solid transparent',
-      }}
-    >
-      <span className="text-sm w-5 text-center flex-shrink-0" style={{ fontFamily: 'Geist Mono, monospace', color: '#404040' }}>
-        {rank <= 3 ? medals[rank - 1] : rank}
-      </span>
-      <div className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0" style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
-        <img src={`https://api.dicebear.com/7.x/notionists/svg?seed=${avatar}&backgroundColor=1a1a2e`} alt={name} />
-      </div>
-      <span className="flex-1 text-xs font-medium truncate" style={{ color: isYou ? '#818cf8' : '#a3a3a3' }}>
-        {isYou ? 'You' : name}
-      </span>
-      <span className="text-[10px] tabular-nums flex-shrink-0" style={{ color: '#525252', fontFamily: 'Geist Mono, monospace' }}>
-        {xp.toLocaleString()} XP
-      </span>
-    </div>
-  );
-}
-
-/* ── WIDGET SHELL ─────────────────────────────────────────────── */
-function Widget({ title, children, action, href }: { title: string; children: React.ReactNode; action?: string; href?: string }) {
-  return (
-    <div
-      className="rounded-2xl p-5"
-      style={{ background: 'rgba(10,10,10,0.8)', border: '1px solid rgba(255,255,255,0.06)' }}
-    >
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-sm font-semibold" style={{ color: '#e5e5e5' }}>{title}</h2>
-        {action && href && (
-          <Link to={href} className="flex items-center gap-1 text-xs transition-colors" style={{ color: '#525252' }}
-            onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = '#818cf8')}
-            onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = '#525252')}>
-            {action} <ArrowRight size={10} />
-          </Link>
-        )}
-      </div>
-      {children}
-    </div>
-  );
-}
-
-/* ─────────────────────────────────────────────────────────────────── */
-/* ──────────────────── MAIN DASHBOARD ────────────────────────────── */
-/* ─────────────────────────────────────────────────────────────────── */
-const HOURS = new Date().getHours();
-const GREETING = HOURS < 12 ? 'Good morning' : HOURS < 18 ? 'Good afternoon' : 'Good evening';
-
-const SPARKLINE_DATA = [820, 950, 790, 1100, 1340, 980, 1450, 1230, 1680, 1840];
 
 export function Dashboard() {
-  const [time, setTime] = useState(new Date());
-  useEffect(() => {
-    const t = setInterval(() => setTime(new Date()), 1000);
-    return () => clearInterval(t);
-  }, []);
+  const navigate = useNavigate();
+  const { stats, coursesCompleted, courseProgress, quests } = useGameStore();
+  const [battleLoading, setBattleLoading] = useState(false);
+
+  const startQuickBattle = () => {
+    setBattleLoading(true);
+    setTimeout(() => {
+      setBattleLoading(false);
+      navigate('/app/battles');
+    }, 2000);
+  };
+
+  // Logic to find the most recently accessed course
+  const lastAccessedCourseId = Object.entries(courseProgress)
+    .sort(([, a], [, b]) => b.lastAccessed - a.lastAccessed)[0]?.[0];
+  
+  const currentCourse = MOCK_COURSES.find(c => c.id === lastAccessedCourseId) || MOCK_COURSES[0];
+  const progress = courseProgress[currentCourse.id] || { completedLessons: [], lastAccessed: 0 };
+  const progressPct = Math.round((progress.completedLessons.length / currentCourse.totalLessons) * 100);
 
   return (
-    <div className="space-y-6 pb-8">
-      {/* ── HERO GREETING ─────────────────────────────────────────── */}
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className="flex items-start justify-between flex-wrap gap-4"
-      >
+    <div className="space-y-8 animate-in fade-in duration-700">
+      {/* Header section */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <p className="text-sm" style={{ color: '#525252' }}>{GREETING}</p>
-            <span style={{ fontSize: '13px', color: '#403020' }}>
-              {time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-            </span>
-          </div>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-[-0.03em]" style={{ color: '#f5f5f5' }}>
-            Welcome back, <span style={{
-              background: 'linear-gradient(135deg, #818cf8, #6366f1)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-            }}>Developer</span> 👋
+          <h1 className="text-3xl font-display font-bold text-white tracking-tight flex items-center gap-3">
+            Welcome back, <span className="text-indigo-400">Developer</span> <Sparkles className="text-yellow-500" size={24} />
           </h1>
-          <p className="mt-1 text-sm" style={{ color: '#525252' }}>
-            You're in the top 5% of learners this week. Keep it up.
-          </p>
+          <p className="text-zinc-500 mt-2 font-mono text-sm tracking-wide">Season 4 • Day 14 of your streak</p>
         </div>
-
-        {/* Quick action */}
-        <Link to="/app/battles">
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium"
-            style={{
-              background: 'linear-gradient(135deg, #6366f1, #818cf8)',
-              color: '#fff',
-              boxShadow: '0 0 0 1px rgba(99,102,241,0.4), 0 4px 16px rgba(99,102,241,0.25)',
-            }}
+        <div className="flex items-center gap-3">
+          <Button 
+            onClick={startQuickBattle}
+            disabled={battleLoading}
+            className="bg-indigo-600 hover:bg-indigo-500 text-white font-mono font-bold px-6 h-11 rounded-xl shadow-[0_0_20px_rgba(79,70,229,0.3)] transition-all hover:scale-105 active:scale-95"
           >
-            <Zap size={14} fill="currentColor" />
-            Quick Battle
-          </motion.button>
-        </Link>
-      </motion.div>
-
-      {/* ── STATS ROW ─────────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Day Streak"        value={14}     suffix="d"  icon={Flame}      accent="#f97316" trend="+2d"   delay={0}    />
-        <StatCard label="Total XP Earned"   value={12450}  suffix=""   icon={Trophy}     accent="#6366f1" trend="+840"  delay={0.06} />
-        <StatCard label="Courses Completed" value={8}      suffix=""   icon={BookOpen}   accent="#22c55e" delay={0.12} />
-        <StatCard label="Global Rank"       value={1024}   suffix=""   icon={Star}       accent="#fbbf24" trend="↑12"   delay={0.18} />
+            {battleLoading ? (
+              <span className="flex items-center gap-2">
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                Finding Match...
+              </span>
+            ) : (
+              <span className="flex items-center gap-2 shadow-sm">
+                <Swords size={18} /> Quick Battle
+              </span>
+            )}
+          </Button>
+        </div>
       </div>
 
-      {/* ── MAIN 2-COL GRID ──────────────────────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      {/* Stats Row */}
+      <motion.div 
+        variants={containerVariants}
+        initial="hidden"
+        animate="show"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+      >
+        <StatCard icon={Zap} label="Growth Points" value={stats.totalXp.toLocaleString()} trend="+1.2k" color="from-yellow-500/20 to-orange-500/5" />
+        <StatCard icon={Trophy} label="Global Rank" value={`#${stats.rank}`} trend="-12" color="from-indigo-500/20 to-blue-500/5" />
+        <StatCard icon={Flame} label="Daily Streak" value={`${stats.streak} Days`} trend="Hot" color="from-orange-500/20 to-red-500/5" />
+        <StatCard icon={Target} label="Accuracy" value="94.2%" trend="+0.4%" color="from-green-500/20 to-emerald-500/5" />
+      </motion.div>
 
-        {/* LEFT COL — 2/3 */}
-        <div className="lg:col-span-2 space-y-5">
-
-          {/* XP & Level Card */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
-            className="rounded-2xl p-6 relative overflow-hidden"
-            style={{ background: 'rgba(10,10,10,0.8)', border: '1px solid rgba(99,102,241,0.15)' }}
-          >
-            <div
-              className="absolute inset-0 pointer-events-none"
-              style={{
-                background: 'radial-gradient(ellipse 60% 60% at 80% 50%, rgba(99,102,241,0.08) 0%, transparent 70%)',
-              }}
-            />
-            <div className="flex items-center gap-8 relative z-10 flex-wrap">
-              <XPRing pct={83} />
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full"
-                        style={{ background: 'rgba(99,102,241,0.12)', color: '#818cf8', fontFamily: 'Geist Mono, monospace' }}>
-                    Level 42
-                  </span>
-                  <span className="text-[10px]" style={{ color: '#404040' }}>→</span>
-                  <span className="text-[10px]" style={{ color: '#404040', fontFamily: 'Geist Mono, monospace' }}>Level 43</span>
-                </div>
-                <h2 className="text-xl font-bold mb-1" style={{ color: '#f5f5f5' }}>Senior Architect</h2>
-                <p className="text-sm mb-4" style={{ color: '#525252' }}>2,550 XP remaining to unlock Level 43</p>
-
-                {/* XP bar */}
-                <div className="h-2 rounded-full overflow-hidden mb-2" style={{ background: 'rgba(255,255,255,0.05)' }}>
-                  <motion.div
-                    className="h-full rounded-full"
-                    initial={{ width: 0 }}
-                    animate={{ width: '83%' }}
-                    transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1], delay: 0.5 }}
-                    style={{ background: 'linear-gradient(90deg, #6366f1, #818cf8, #a78bfa)' }}
-                  />
-                </div>
-                <div className="flex justify-between text-xs" style={{ color: '#404040', fontFamily: 'Geist Mono, monospace' }}>
-                  <span>12,450 XP</span>
-                  <span>15,000 XP</span>
-                </div>
-              </div>
-
-              {/* Sparkline */}
-              <div className="hidden sm:flex flex-col items-center gap-1">
-                <Sparkline data={SPARKLINE_DATA} />
-                <span className="text-[10px]" style={{ color: '#404040' }}>XP / day</span>
-              </div>
+      {/* Main Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {/* Left Column - Continue Learning */}
+        <div className="lg:col-span-8 space-y-8">
+          <section>
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-xl font-display font-medium text-white flex items-center gap-2">
+                <BookOpen className="text-zinc-500" size={20} /> Continue Learning
+              </h2>
+              <Link to="/app/courses" className="text-xs font-mono text-zinc-500 hover:text-indigo-400 transition-colors flex items-center gap-1">
+                View Curriculum <ChevronRight size={14} />
+              </Link>
             </div>
-          </motion.div>
-
-          {/* Continue Learning */}
-          <Widget title="Continue Learning" action="View all" href="/app/courses">
-            <div className="divide-y" style={{ borderColor: 'rgba(255,255,255,0.04)' }}>
-              <CourseRow title="Advanced Rust Concurrency"   domain="Systems"      progress={68} icon={Cpu}   accent="#f97316" />
-              <CourseRow title="Microservices with Go"       domain="Architecture" progress={32} icon={Code2} accent="#6366f1" />
-              <CourseRow title="TypeScript Generics Deep Dive" domain="Frontend"   progress={91} icon={Code2} accent="#22c55e" />
-            </div>
-          </Widget>
-
-          {/* Activity Heatmap */}
-          <Widget title="Coding Activity — Last 6 Months">
-            <div className="overflow-x-auto pb-1">
-              <ActivityHeatmap />
-            </div>
-            <div className="flex items-center justify-end gap-2 mt-3">
-              <span className="text-[10px]" style={{ color: '#404040' }}>Less</span>
-              {['#111', '#1e1b4b', '#3730a3', '#4f46e5', '#6366f1'].map(c => (
-                <div key={c} style={{ width: 10, height: 10, borderRadius: 2, background: c }} />
-              ))}
-              <span className="text-[10px]" style={{ color: '#404040' }}>More</span>
-            </div>
-          </Widget>
-        </div>
-
-        {/* RIGHT COL — 1/3 */}
-        <div className="space-y-5">
-          {/* Daily Quests */}
-          <Widget title="Daily Quests">
-            <div className="space-y-1">
-              <QuestRow title="Complete 2 Lessons"   progress={1} total={2} xp={50}  />
-              <QuestRow title="Win a Battle"         progress={0} total={1} xp={100} />
-              <QuestRow title="Help in Forum"        progress={3} total={3} xp={75}  done />
-              <QuestRow title="Run 5 Code Challenges" progress={4} total={5} xp={60}  />
-            </div>
-            <div
-              className="mt-4 pt-4 flex justify-between items-center"
-              style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}
-            >
-              <span className="text-xs" style={{ color: '#525252' }}>Daily progress</span>
-              <span className="text-xs font-semibold" style={{ color: '#6366f1', fontFamily: 'Geist Mono, monospace' }}>125 / 285 XP</span>
-            </div>
-          </Widget>
-
-          {/* Global Leaderboard Mini */}
-          <Widget title="Global Top" action="Full board" href="/app/leaderboard">
-            <div className="space-y-0.5">
-              <LeaderboardRow rank={1} name="alex_code"   xp={98240} avatar="alex"   />
-              <LeaderboardRow rank={2} name="priya_dev"   xp={94180} avatar="priya"  />
-              <LeaderboardRow rank={3} name="kenji_sys"   xp={91330} avatar="kenji"  />
-              <div className="my-2" style={{ borderTop: '1px dashed rgba(255,255,255,0.05)' }} />
-              <LeaderboardRow rank={1024} name="you" xp={12450} avatar="Felix" isYou />
-            </div>
-          </Widget>
-
-          {/* Upcoming Events */}
-          <Widget title="Upcoming Events">
-            <div className="space-y-3">
-              {[
-                { title: 'Weekly Algorithm Battle', time: 'Today, 8:00 PM', accent: '#ef4444', type: 'Battle' },
-                { title: 'System Design AMA',        time: 'Tomorrow, 2:00 PM', accent: '#6366f1', type: 'Live' },
-                { title: 'Rust Workshop Series',     time: 'Fri, 6:00 PM',  accent: '#f97316', type: 'Course' },
-              ].map((ev, i) => (
-                <div key={i} className="flex gap-3 items-start">
-                  <div
-                    className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0"
-                    style={{ background: ev.accent, boxShadow: `0 0 6px ${ev.accent}` }}
-                  />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium truncate" style={{ color: '#a3a3a3' }}>{ev.title}</p>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <Clock size={9} style={{ color: '#404040' }} />
-                      <span className="text-[10px]" style={{ color: '#404040' }}>{ev.time}</span>
-                      <span
-                        className="text-[9px] px-1.5 py-0.5 rounded-full"
-                        style={{ background: `${ev.accent}14`, color: ev.accent, border: `1px solid ${ev.accent}25`, fontFamily: 'Geist Mono, monospace' }}
-                      >
-                        {ev.type}
+            
+            <Link to={`/app/courses/${currentCourse.id}`} className="block group">
+              <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-8 relative overflow-hidden transition-all duration-500 group-hover:border-zinc-700/50 group-hover:shadow-[0_0_50px_rgba(0,0,0,0.3)]">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-indigo-600/10 to-transparent blur-3xl" />
+                
+                <div className="flex flex-col md:flex-row gap-8 relative z-10">
+                  <div className="w-full md:w-32 h-32 rounded-2xl bg-zinc-800/50 border border-zinc-700/50 flex items-center justify-center group-hover:scale-105 transition-transform duration-500">
+                    <currentCourse.icon size={48} className="text-indigo-400" />
+                  </div>
+                  <div className="flex-1 space-y-4">
+                    <div className="flex flex-wrap items-center gap-3">
+                      <Badge variant="outline" className="font-mono text-[10px] uppercase tracking-wider border-indigo-500/30 text-indigo-400 px-2 py-0">
+                        {currentCourse.domain}
+                      </Badge>
+                      <span className="text-xs text-zinc-500 font-mono flex items-center gap-1">
+                        <Clock size={12} /> {currentCourse.duration} remaining
                       </span>
                     </div>
+                    <h3 className="text-2xl font-display font-bold text-white group-hover:text-indigo-400 transition-colors">
+                      {currentCourse.title}
+                    </h3>
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-xs font-mono">
+                        <span className="text-zinc-400">{progressPct}% Complete</span>
+                        <span className="text-zinc-500">{progress.completedLessons.length}/{currentCourse.totalLessons} Lessons</span>
+                      </div>
+                      <div className="h-2 bg-zinc-800 rounded-full overflow-hidden p-0.5 border border-zinc-700/30">
+                        <motion.div 
+                          initial={{ width: 0 }}
+                          animate={{ width: `${progressPct}%` }}
+                          transition={{ duration: 1, ease: "easeOut" }}
+                          className="h-full bg-gradient-to-r from-indigo-600 to-blue-500 rounded-full relative"
+                        >
+                          <div className="absolute inset-0 bg-white/20 animate-pulse" />
+                        </motion.div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-12 h-12 rounded-full border border-zinc-800 bg-zinc-950 flex items-center justify-center text-white group-hover:bg-indigo-600 group-hover:border-indigo-500 transition-all duration-300">
+                      <Play size={20} fill="currentColor" className="ml-1" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Link>
+          </section>
+
+          {/* Activity/Events Section */}
+          <section>
+            <h2 className="text-xl font-display font-medium text-white mb-5 flex items-center gap-2">
+              <Zap className="text-zinc-500" size={20} /> Upcoming Events
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {UPCOMING_EVENTS.map((event, i) => (
+                <div key={i} className="bg-zinc-950/50 border border-zinc-900 rounded-2xl p-4 hover:bg-zinc-900 transition-colors cursor-pointer group">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className={`w-2 h-2 rounded-full`} style={{ backgroundColor: event.accent }} />
+                    <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">{event.type}</span>
+                  </div>
+                  <div className="font-semibold text-white text-sm mb-1 group-hover:text-indigo-400 transition-colors">{event.title}</div>
+                  <div className="text-xs text-zinc-600 font-mono">{event.time}</div>
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
+
+        {/* Right Column - Quests & Leaderboard */}
+        <div className="lg:col-span-4 space-y-8">
+          <section className="bg-zinc-900/40 border border-zinc-800 rounded-3xl p-6 backdrop-blur-sm">
+            <h2 className="text-lg font-display font-bold text-white mb-6 flex items-center gap-2">
+              <Target className="text-indigo-400" size={18} /> Daily Quests
+            </h2>
+            <div className="space-y-4">
+              {quests.map((q) => (
+                <div key={q.id} className="flex gap-4">
+                  <div className={`mt-1 flex-shrink-0 w-5 h-5 rounded-md border flex items-center justify-center transition-colors ${q.done ? 'bg-green-500 border-green-500' : 'border-zinc-700'}`}>
+                    {q.done && <Zap size={10} className="text-black fill-black" />}
+                  </div>
+                  <div className="flex-1">
+                    <div className={`text-sm font-medium ${q.done ? 'text-zinc-500 line-through' : 'text-zinc-200'}`}>{q.title}</div>
+                    <div className="text-[10px] font-mono text-zinc-600 mt-0.5">{q.progress}/{q.total} • +{q.xp} XP</div>
                   </div>
                 </div>
               ))}
             </div>
-          </Widget>
+            <Button variant="ghost" className="w-full mt-6 text-zinc-500 hover:text-white font-mono text-xs border border-dashed border-zinc-800" onClick={() => navigate('/app/quests')}>
+              View All Quests
+            </Button>
+          </section>
+
+          <section className="bg-zinc-900/40 border border-zinc-800 rounded-3xl p-6 backdrop-blur-sm">
+            <h2 className="text-lg font-display font-bold text-white mb-6 flex items-center gap-2">
+              <Users className="text-indigo-400" size={18} /> Global Top
+            </h2>
+            <div className="space-y-5">
+              {LEADERBOARD_TOP.map((user, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <div className="w-8 font-mono text-xs text-zinc-600 font-bold">#0{user.rank}</div>
+                  <div className="w-8 h-8 rounded-full bg-zinc-800 overflow-hidden border border-zinc-700">
+                    <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`} alt={user.name} />
+                  </div>
+                  <div className="flex-1 overflow-hidden">
+                    <div className="text-xs font-bold text-zinc-200 truncate">@{user.name}</div>
+                    <div className="text-[10px] font-mono text-zinc-500">{user.xp.toLocaleString()} XP</div>
+                  </div>
+                  {i === 0 && <Trophy size={14} className="text-yellow-500" />}
+                </div>
+              ))}
+            </div>
+            <Button variant="ghost" className="w-full mt-6 text-zinc-500 hover:text-white font-mono text-xs border border-zinc-800 bg-black/20" onClick={() => navigate('/app/leaderboard')}>
+              Full Leaderboard
+            </Button>
+          </section>
         </div>
       </div>
     </div>

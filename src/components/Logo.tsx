@@ -7,7 +7,7 @@ export function Logo({ className }: { className?: string }) {
       <div className="bg-primary text-primary-foreground p-1.5 rounded-lg">
         <Terminal size={20} strokeWidth={2.5} />
       </div>
-      <span>CodeyCoach</span>
+      <span>SkillForge</span>
     </div>
   );
 }
