@@ -5,10 +5,9 @@ import { ArrowRight, Menu, X } from 'lucide-react';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 
 const NAV_LINKS = [
-  { label: 'Features',   href: '#features'   },
+  { label: 'Features', href: '#features' },
   { label: 'How it works', href: '#how-it-works' },
   { label: 'Testimonials', href: '#testimonials' },
-  { label: 'Pricing',    href: '#pricing'    },
 ];
 
 export function LandingLayout() {
@@ -179,7 +178,7 @@ export function LandingLayout() {
           ].map(col => (
             <div key={col.title}>
               <h4 className="text-xs font-semibold uppercase tracking-widest mb-4"
-                  style={{ color: '#404040', fontFamily: 'Geist Mono, monospace' }}>
+                style={{ color: '#404040', fontFamily: 'Geist Mono, monospace' }}>
                 {col.title}
               </h4>
               <ul className="space-y-2.5">

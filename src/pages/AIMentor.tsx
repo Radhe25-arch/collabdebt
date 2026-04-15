@@ -28,7 +28,7 @@ const INITIAL_MESSAGES: Message[] = [
   }
 ];
 
-function CodeBlock({ code }: { code: string }) {
+function CodeBlock({ code }: { key?: React.Key; code: string }) {
   const [copied, setCopied] = useState(false);
   const copy = () => {
     navigator.clipboard.writeText(code);
@@ -48,7 +48,7 @@ function CodeBlock({ code }: { code: string }) {
   );
 }
 
-function MessageBubble({ msg }: { msg: Message }) {
+function MessageBubble({ msg }: { key?: React.Key; msg: Message }) {
   const isUser = msg.role === 'user';
   const parts = msg.content.split(/(```[\s\S]*?```)/g);
   return (

@@ -69,7 +69,7 @@ const ENDED = [
   { id: 8, title: 'Cloud Architecture Duel', winner: '@cloudninja88', xp: 5000, participants: 384, tags: ['AWS', 'K8s'] },
 ];
 
-function LiveCard({ t }: { t: typeof LIVE_TOURNAMENTS[0] }) {
+function LiveCard({ t }: { key?: React.Key, t: typeof LIVE_TOURNAMENTS[0] }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
@@ -108,7 +108,7 @@ function LiveCard({ t }: { t: typeof LIVE_TOURNAMENTS[0] }) {
   );
 }
 
-function UpcomingCard({ t }: { t: typeof UPCOMING[0] }) {
+function UpcomingCard({ t }: { key?: React.Key, t: typeof UPCOMING[0] }) {
   const countdown = useCountdown(t.startsAt);
   const pads = (n: number) => String(n).padStart(2, '0');
 

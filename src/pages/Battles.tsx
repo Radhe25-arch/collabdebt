@@ -15,7 +15,7 @@ const PROBLEMS = [
 
 type Phase = 'lobby' | 'matchmaking' | 'duel' | 'result';
 
-function TestCase({ id, passed, delay }: { id: number; passed: boolean; delay: number }) {
+function TestCase({ id, passed, delay }: { key?: React.Key, id: number; passed: boolean; delay: number }) {
   const [visible, setVisible] = useState(false);
   React.useEffect(() => {
     const t = setTimeout(() => setVisible(true), delay);
